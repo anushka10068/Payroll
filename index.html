@@ -1,0 +1,3220 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <title>Fingerprint Attendance & Payroll Master System</title>
+    <!-- Google Fonts for Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Segoe+UI&display=swap" rel="stylesheet">
+    <!-- SheetJS Library for reading Excel files -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-light: #eff6ff;
+            --surface: #ffffff;
+            --bg: #f8fafc;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --success-hover: #059669;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.04);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.07), 0 4px 6px -4px rgba(0,0,0,0.04);
+            --radius-md: 8px;
+            --radius-lg: 12px;
+        }
+
+        body { 
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text-main);
+            margin: 0;
+            padding: 25px 15px; 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container { 
+            max-width: 1380px; 
+            margin: auto; 
+            background: var(--surface); 
+            padding: 30px; 
+            border-radius: var(--radius-lg); 
+            box-shadow: var(--shadow-lg); 
+            border: 1px solid var(--border);
+        }
+
+        .header-title-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 20px;
+        }
+        .header-title-wrapper h2 {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #1e293b 0%, #2563eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .developer-badge {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1d4ed8;
+            background: #dbeafe;
+            border: 1px solid #bfdbfe;
+            padding: 8px 18px;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .system-bar {
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 12px; 
+            align-items: center; 
+            justify-content: space-between; 
+            background: #f1f5f9; 
+            border: 1px solid var(--border); 
+            border-radius: var(--radius-md); 
+            padding: 12px 18px;
+            margin-bottom: 25px;
+        }
+        .system-bar-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .upload-area { 
+            border: 2px dashed #93c5fd; 
+            padding: 30px 20px; 
+            text-align: center; 
+            border-radius: var(--radius-lg); 
+            background: #f8fafc; 
+            cursor: pointer; 
+            margin-bottom: 30px; 
+            transition: all 0.2s ease-in-out;
+        }
+        .upload-area:hover { 
+            background: #eff6ff; 
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+        .upload-area h3 { margin: 0 0 6px 0; color: var(--primary); font-size: 18px; font-family: 'Poppins', sans-serif; font-weight: 600; }
+        .upload-area p { margin: 0; color: var(--text-muted); font-size: 13px; }
+
+        .tab-container { 
+            display: flex; 
+            gap: 8px; 
+            background: #f1f5f9; 
+            padding: 6px; 
+            border-radius: var(--radius-lg); 
+            margin-bottom: 25px; 
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        .tab-btn { 
+            padding: 10px 20px; 
+            font-size: 14px; 
+            font-weight: 600; 
+            border: none; 
+            background: transparent; 
+            cursor: pointer; 
+            border-radius: var(--radius-md); 
+            color: var(--text-muted); 
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .tab-btn:hover:not(.active) { 
+            color: var(--text-main); 
+            background: rgba(255, 255, 255, 0.6); 
+        }
+        .tab-btn.active { 
+            background: var(--surface); 
+            color: var(--primary); 
+            box-shadow: var(--shadow-sm); 
+        }
+
+        .sub-tab-container {
+            display: flex;
+            gap: 6px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+        .sub-tab-btn {
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid transparent;
+            background: #f1f5f9;
+            color: #475569;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .sub-tab-btn:hover {
+            background: #e2e8f0;
+        }
+        .sub-tab-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.2s ease-in-out; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .data-table { 
+            width: 100%; 
+            border-collapse: separate; 
+            border-spacing: 0; 
+            background: white; 
+            margin-top: 15px; 
+            font-size: 13px; 
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+        .data-table th, .data-table td { 
+            padding: 10px 12px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--border);
+            border-right: 1px solid #f1f5f9;
+        }
+        .data-table th:last-child, .data-table td:last-child { border-right: none; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table th { 
+            background: #f8fafc; 
+            color: #334155; 
+            font-weight: 600; 
+            border-bottom: 2px solid var(--border);
+        }
+        .data-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .btn-action { 
+            padding: 7px 14px; 
+            border: none; 
+            border-radius: var(--radius-md); 
+            font-weight: 600; 
+            cursor: pointer; 
+            font-size: 12px; 
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-action:hover { opacity: 0.92; transform: translateY(-1px); }
+        .btn-save { background: var(--success); color: white; }
+        .btn-save:hover { background: var(--success-hover); }
+        .btn-submit { 
+            display: block; 
+            width: 100%; 
+            padding: 14px; 
+            background: var(--success); 
+            color: white; 
+            border: none; 
+            border-radius: var(--radius-md); 
+            font-size: 15px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            margin-top: 20px; 
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        .btn-submit:hover { background: var(--success-hover); transform: translateY(-1px); }
+
+        .badge { 
+            padding: 4px 8px; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            color: white; 
+            display: inline-block; 
+            font-size: 11px; 
+        }
+        .badge-dept { background-color: #64748b; }
+        .badge-active { background-color: var(--success); }
+        .badge-inactive { background-color: var(--danger); }
+        .badge-locked { background-color: #059669; padding: 4px 10px; border-radius: 20px; font-size: 11px; }
+        .badge-poya { background-color: #d97706; }
+        .badge-hours { background-color: #1e40af; font-size: 12px; padding: 5px 10px; }
+
+        .summary-card { 
+            background: #eff6ff; 
+            border-left: 4px solid var(--primary); 
+            padding: 14px 18px; 
+            margin-bottom: 20px; 
+            font-size: 13.5px; 
+            border-radius: var(--radius-md); 
+            line-height: 1.6; 
+            color: #1e3a8a;
+        }
+        .selection-box { 
+            background: #ffffff; 
+            border: 1px solid var(--border); 
+            padding: 24px; 
+            border-radius: var(--radius-lg); 
+            margin-bottom: 25px; 
+            box-shadow: var(--shadow-sm); 
+            display: none; 
+        }
+        .poya-box { 
+            background: #fffbeb; 
+            border: 1px solid #fde68a; 
+            padding: 16px 20px; 
+            border-radius: var(--radius-md); 
+            margin-bottom: 22px; 
+        }
+        .report-card { 
+            background: #ffffff; 
+            border: 1px solid var(--border); 
+            border-radius: var(--radius-lg); 
+            margin-bottom: 20px; 
+            padding: 18px; 
+            box-shadow: var(--shadow-sm); 
+        }
+        .report-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 12px; 
+            margin-bottom: 15px; 
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .report-header h4 { margin: 0; color: #1e293b; font-size: 15px; font-weight: 600; font-family: 'Poppins', sans-serif; }
+        .filter-box { 
+            margin-bottom: 18px; 
+            padding: 12px 16px; 
+            background: #f8fafc; 
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md); 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            flex-wrap: wrap;
+        }
+        .filter-box select, .filter-box input { 
+            padding: 7px 12px; 
+            border-radius: 6px; 
+            border: 1px solid #cbd5e1; 
+            font-size: 13px; 
+            outline: none;
+        }
+        .filter-box select:focus, .filter-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(37,99,235,0.15);
+        }
+        .time-missing { color: var(--danger); font-weight: bold; background-color: #fef2f2; }
+        .input-cell { 
+            width: 90%; 
+            padding: 5px 8px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 4px; 
+            font-size: 12px; 
+            outline: none;
+        }
+        .input-cell:focus {
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-title-wrapper">
+        <h2>📊 Attendance & Payroll Management System</h2>
+        <div class="developer-badge">
+            <span>💻 Developed By</span> <strong>Anushka Nawarathna</strong>
+        </div>
+    </div>
+
+    <!-- Modern System Bar -->
+    <div class="system-bar">
+        <div style="font-weight:600; font-size:13.5px; color:#334155; display:flex; align-items:center; gap:6px;">
+            <span>🔐 System Backup & Security</span>
+        </div>
+        <div class="system-bar-actions">
+            <button class="btn-action" style="background:#2563eb; color:white;" onclick="saveEncryptedBackup()">💾 Save Full System (Encrypted)</button>
+            <button class="btn-action" style="background:#7c3aed; color:white;" onclick="document.getElementById('restoreFileInput').click()">📂 Load Backup File (Decrypt)</button>
+            <input type="file" id="restoreFileInput" accept=".enc" style="display:none;" onchange="handleRestoreFileSelect(event)">
+        </div>
+    </div>
+
+    <!-- Company Profile Box -->
+    <div class="summary-card" id="companyProfileSection" style="background:#fffbeb; border-left:4px solid #f59e0b; color:#78350f;">
+        <div id="companyProfileView"></div>
+        <div id="companyProfileEditForm" style="display:none;">
+            <strong style="color:#b45309; font-size:15px; font-family:'Poppins', sans-serif;">🏢 Company Profile — Edit</strong>
+            <div style="display:flex; flex-wrap:wrap; gap:15px; margin-top:12px;">
+                <div>
+                    <label style="font-size:12px; color:#64748b; font-weight:600;">NAME OF COMPANY</label><br>
+                    <input type="text" id="cpName" style="padding:7px; width:250px; border-radius:6px; border:1px solid #cbd5e1;">
+                </div>
+                <div>
+                    <label style="font-size:12px; color:#64748b; font-weight:600;">ADDRESS</label><br>
+                    <input type="text" id="cpAddress" style="padding:7px; width:300px; border-radius:6px; border:1px solid #cbd5e1;">
+                </div>
+                <div>
+                    <label style="font-size:12px; color:#64748b; font-weight:600;">TELEPHONE NUMBER</label><br>
+                    <input type="text" id="cpPhone" style="padding:7px; width:180px; border-radius:6px; border:1px solid #cbd5e1;">
+                </div>
+                <div>
+                    <label style="font-size:12px; color:#64748b; font-weight:600;">EPF NUMBER (OPTIONAL)</label><br>
+                    <input type="text" id="cpEpfNumber" style="padding:7px; width:180px; border-radius:6px; border:1px solid #cbd5e1;">
+                </div>
+            </div>
+            <div style="margin-top:14px;">
+                <button class="btn-action" style="background:#15803d; color:white;" onclick="saveCompanyProfile()">💾 Save</button>
+                <button class="btn-action" style="background:#64748b; color:white;" onclick="cancelCompanyProfileEdit()">✖ Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Area -->
+    <div class="upload-area" onclick="document.getElementById('excelFile').click()">
+        <h3>📁 Fingerprint Excel File එක මෙතැනට Upload කරන්න</h3>
+        <p>Book1 - Copy.xlsx හෝ එම Format එකේ Excel File එකක් Click කර තෝරන්න</p>
+        <input type="file" id="excelFile" accept=".xlsx, .xls" style="display:none;" onchange="processExcel(event)">
+    </div>
+
+    <!-- Main Navigation Tabs -->
+    <div class="tab-container">
+        <button class="tab-btn active" onclick="switchMainTab('masterProfiles', this)">👤 Employee Master Profiles</button>
+        <button class="tab-btn" onclick="switchMainTab('attendanceReports', this)">⏱️ Attendance Reports & Summaries</button>
+        <button class="tab-btn" onclick="switchMainTab('salaryReportCenter', this)">💰 Salary Report Center</button>
+        <button class="tab-btn" onclick="switchMainTab('paySheet', this)">🧾 Pay Sheet</button>
+    </div>
+
+    <!-- TAB 1: MASTER EMPLOYEE PROFILES -->
+    <div id="masterProfiles" class="tab-content active">
+        <div class="summary-card">
+            <strong>💡 Master Employee Database (Local Storage):</strong> මෙහි ඇති සේවක විස්තර ස්ථිරව Save වී පවතී. අලුත් Excel එකක් Upload කළ විට දැනට නැති අලුත් FP ID පමණක් Auto-Add වේ. Group 1 සේවකයින්ගේ EPF 8%, 12%, ETF 3% අගයන් Salary Report Generate වන විට Auto-Calculate වන අතර අවශ්‍ය නම් Edit කර Save කළ හැක. <strong>Manually එක් කළ Group 2 සේවකයින් පමණක් අවශ්‍ය විට Delete කර සම්පූර්ණයෙන්ම ඉවත් කළ හැක.</strong>
+        </div>
+
+        <h3 style="color:#1e293b; margin-top:25px; font-size:18px; font-family:'Poppins', sans-serif;">🔒 Group 1 Employees</h3>
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>FP ID</th>
+                        <th>Employee Name</th>
+                        <th>Dept</th>
+                        <th>Group</th>
+                        <th>Basic Salary</th>
+                        <th>OT Rate</th>
+                        <th>Sunday Rate</th>
+                        <th>Poya Rate</th>
+                        <th>No Pay Rate</th>
+                        <th>Late</th>
+                        <th>Telephone</th>
+                        <th>Special</th>
+                        <th>Performance 01</th>
+                        <th>EPF 8%</th>
+                        <th>EPF 12%</th>
+                        <th>ETF 3%</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="masterProfileTbodyG1"></tbody>
+            </table>
+        </div>
+
+        <h3 style="color:#1e293b; margin-top:35px; font-size:18px; font-family:'Poppins', sans-serif;">📋 Group 2 Employees</h3>
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>FP ID</th>
+                        <th>Employee Name</th>
+                        <th>Dept</th>
+                        <th>Group</th>
+                        <th>Basic Salary</th>
+                        <th>OT Rate</th>
+                        <th>Sunday Rate</th>
+                        <th>Poya Rate</th>
+                        <th>No Pay Rate</th>
+                        <th>Late</th>
+                        <th>Telephone</th>
+                        <th>Special</th>
+                        <th>Performance 01</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="masterProfileTbodyG2"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 2: ATTENDANCE REPORTS -->
+    <div id="attendanceReports" class="tab-content">
+        <div id="selectionArea" class="selection-box">
+            <div class="poya-box">
+                <h4 style="margin:0 0 8px 0; color:#b45309; font-size:15px; font-family:'Poppins', sans-serif;">🌕 අදාළ මාසයේ පොහෝ දින තෝරන්න (Poya Days Configuration):</h4>
+                <p style="margin:0; font-size:13px; color:#78350f;">මෙම මාසයේ පෝය දිනයන් 1ක් හෝ 2ක් ඇත්නම් Calendar එකෙන් තෝරන්න. <strong>(ඉරිදා දින පෝය ලෙස තෝරාගත නොහැක)</strong></p>
+                <div class="poya-inputs" style="display:flex; gap:15px; align-items:center; flex-wrap:wrap; margin-top:12px;">
+                    <label><strong>පෝය දිනය 1:</strong> <input type="date" id="poyaDate1" onchange="validatePoyaSunday(this)"></label>
+                    <label><strong>පෝය දිනය 2 (තිබේ නම්):</strong> <input type="date" id="poyaDate2" onchange="validatePoyaSunday(this)"></label>
+                    <button class="btn-action" style="background:#f59e0b; color:white; padding: 8px 15px;" onclick="updatePoyaDaysUI()">🌕 Poya Days Update කරන්න</button>
+                    <span id="poyaStatus" style="font-size:13px; font-weight:bold; color:#b45309; margin-left: 10px;"></span>
+                </div>
+            </div>
+
+            <h3 style="text-align:center; color:#1e293b; margin-top:10px; font-family:'Poppins', sans-serif;">⚙️ සේවකයින් Group වලට වෙන් කිරීම තවුරු කරන්න</h3>
+            <p style="text-align: center; color: var(--text-muted); font-size: 13.5px; margin-bottom:15px;">
+                🔒 <strong>FP ID 1 - 29</strong> Group 1 හි ස්ථිරයි. | ➕ Group 2 සේවකයින් අවශ්‍ය නම් Group 1 ට මාරු කළ හැක.
+            </p>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>FP ID</th>
+                        <th>Employee Name</th>
+                        <th>Department</th>
+                        <th style="text-align: center;">Group Assignment</th>
+                    </tr>
+                </thead>
+                <tbody id="employeeListBody"></tbody>
+            </table>
+            <button class="btn-submit" onclick="generateReport()">✅ දත්ත සැකසීම තවුරු කරන්න (Generate Report)</button>
+        </div>
+
+        <div id="reportArea" style="display: none;">
+            <div id="tabHeader" class="sub-tab-container">
+                <button class="sub-tab-btn active" onclick="switchSubTab('group1', this)">Group 1 Summary</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('group2', this)">Group 2 Summary</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('reportCenter', this)">📋 Report Center (Raw Log)</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('manualEntryTab', this)">✍️ Manual Entry (Group 2)</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('adjReportCenter', this)">⏱️ Adjusted Attendance Report</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('performance01', this)">P 01</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('performance02', this)">P 02</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('performance03', this)">P 03</button>
+            </div>
+
+            <div id="group1" class="tab-content active"></div>
+            <div id="group2" class="tab-content"></div>
+            
+            <div id="reportCenter" class="tab-content">
+                <div class="filter-box">
+                    <label><strong>🔍 සේවකයා තෝරන්න:</strong></label>
+                    <select id="employeeFilter" onchange="filterReportCenter()"></select>
+                </div>
+                <div id="reportCenterContent"></div>
+            </div>
+
+            <!-- TAB: MANUAL ENTRY (GROUP 2 EMPLOYEES WITH DROPDOWN SELECTOR) -->
+            <div id="manualEntryTab" class="tab-content">
+                <div class="summary-card" style="background:#ecfdf5; border-left:4px solid var(--success); color:#065f46;">
+                    <strong>✍️ Manually Add / Edit Group 2 Employee:</strong> Fingerprint සටහන් නොවන සේවකයින්ගේ විස්තර එක් කරන්න. දැනටමත් එක් කළ සේවකයෙකුගේ In/Out Time පසුව දැමීමට නම් දකුණු පස ඇති Drop-down List එකෙන් සේවකයා තෝරන්න.
+                </div>
+
+                <div class="filter-box" style="background:#ffffff; border:1px solid var(--border); box-shadow:var(--shadow-sm); gap:15px; align-items:flex-end;">
+                    <div>
+                        <label style="font-size:12px; font-weight:bold; color:#475569;">TEMPORARY EMP ID:</label><br>
+                        <input type="text" id="manualEmpId" placeholder="e.g. TMP-01, M501" style="width:150px; font-weight:bold;">
+                    </div>
+                    <div>
+                        <label style="font-size:12px; font-weight:bold; color:#475569;">EMPLOYEE NAME:</label><br>
+                        <input type="text" id="manualEmpName" placeholder="Full Name" style="width:230px;">
+                    </div>
+                    <div>
+                        <label style="font-size:12px; font-weight:bold; color:#475569;">DEPARTMENT:</label><br>
+                        <input type="text" id="manualEmpDept" value="Manual" style="width:150px;">
+                    </div>
+                    <div>
+                        <button class="btn-action" style="background:var(--primary); color:white; padding:9px 16px;" onclick="loadManualAttendanceTable()">📋 Create / Open Attendance Table</button>
+                    </div>
+                    <!-- Right Side Dropdown for Existing Manual Employees -->
+                    <div style="border-left:2px solid var(--border); padding-left:15px;">
+                        <label style="font-size:12px; font-weight:bold; color:#b45309;">👤 SELECT SAVED MANUAL EMPLOYEE:</label><br>
+                        <select id="manualExistingSelect" style="min-width:240px; font-weight:600; border-color:#f59e0b;" onchange="selectExistingManualEmployee(this.value)">
+                            <option value="">-- තෝරන්න (Select Employee) --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="manualEntryContainer" style="margin-top:20px;"></div>
+            </div>
+
+            <div id="adjReportCenter" class="tab-content">
+                <div class="filter-box">
+                    <label><strong>🔍 සේවකයා තෝරන්න:</strong></label>
+                    <select id="adjEmployeeFilter" onchange="filterAdjReportCenter()"></select>
+                </div>
+                <div id="adjEmployeeFilterContent"></div>
+            </div>
+
+            <div id="performance01" class="tab-content">
+                <h3 style="color:#1e293b; margin:15px 0 20px 0; font-size:18px; font-family:'Poppins', sans-serif;">Performance 01</h3>
+                <div class="filter-box">
+                    <div>
+                        <label><strong>💰 මුළු මුදල (Base Amount) Rs:</strong></label>
+                        <input type="number" id="p01BaseAmount" value="4000" style="width:110px;" onchange="updateP01Config()">
+                    </div>
+                    <div>
+                        <label><strong>➖ නිවාඩුවකට අඩුවන මුදල (Per Absent Day) Rs:</strong></label>
+                        <input type="number" id="p01PerDayDeduction" value="500" style="width:110px;" onchange="updateP01Config()">
+                    </div>
+                </div>
+                <div class="filter-box">
+                    <label><strong>➕ සේවකයෙක් තෝරන්න:</strong></label>
+                    <select id="p01EmployeeSelect" style="min-width:250px;"></select>
+                    <button class="btn-action" style="background:var(--primary); color:white; padding:8px 16px;" onclick="addP01Employee()">Add</button>
+                </div>
+                <div id="p01TableContainer" style="margin-top:20px; overflow-x:auto;"></div>
+            </div>
+
+            <div id="performance02" class="tab-content">
+                <h3 style="color:#1e293b; margin:15px 0 20px 0; font-size:18px; font-family:'Poppins', sans-serif;">Performance 02</h3>
+                <div class="filter-box">
+                    <div>
+                        <label><strong>💰 මුළු මුදල (Base Amount) Rs:</strong></label>
+                        <input type="number" id="p02BaseAmount" value="2000" style="width:110px;" onchange="updateP02Config()">
+                    </div>
+                    <div>
+                        <label><strong>➖ නිවාඩුවකට අඩුවන මුදල (Per Absent Day) Rs:</strong></label>
+                        <input type="number" id="p02PerDayDeduction" value="500" style="width:110px;" onchange="updateP02Config()">
+                    </div>
+                </div>
+                <div class="filter-box">
+                    <label><strong>➕ සේවකයෙක් තෝරන්න:</strong></label>
+                    <select id="p02EmployeeSelect" style="min-width:250px;"></select>
+                    <button class="btn-action" style="background:var(--primary); color:white; padding:8px 16px;" onclick="addP02Employee()">Add</button>
+                </div>
+                <div id="p02TableContainer" style="margin-top:20px; overflow-x:auto;"></div>
+            </div>
+
+            <div id="performance03" class="tab-content">
+                <h3 style="color:#1e293b; margin:15px 0 20px 0; font-size:18px; font-family:'Poppins', sans-serif;">Performance 03</h3>
+                <div class="filter-box">
+                    <div>
+                        <label><strong>💰 මුදල 1 (Amount 1) Rs:</strong></label>
+                        <input type="number" id="p03Amount1" value="5000" style="width:110px;" onchange="updateP03Config()">
+                    </div>
+                    <div>
+                        <label><strong>💰 මුදල 2 (Amount 2) Rs:</strong></label>
+                        <input type="number" id="p03Amount2" value="3000" style="width:110px;" onchange="updateP03Config()">
+                    </div>
+                    <div>
+                        <label><strong>➖ නිවාඩුවකට අඩුවන මුදල (Per Absent Day) Rs:</strong></label>
+                        <input type="number" id="p03PerDayDeduction" value="1000" style="width:110px;" onchange="updateP03Config()">
+                    </div>
+                </div>
+                <div class="filter-box">
+                    <label><strong>➕ සේවකයෙක් තෝරන්න:</strong></label>
+                    <select id="p03EmployeeSelect" style="min-width:250px;"></select>
+                    <label><strong>මුදල තෝරන්න:</strong></label>
+                    <select id="p03TierSelect"></select>
+                    <button class="btn-action" style="background:var(--primary); color:white; padding:8px 16px;" onclick="addP03Employee()">Add</button>
+                </div>
+                <div id="p03TableContainer" style="margin-top:20px; overflow-x:auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: SALARY REPORT CENTER -->
+    <div id="salaryReportCenter" class="tab-content">
+        <div class="summary-card">
+            <strong>💡 Salary Report Center:</strong> මෙම Report එක Excel එකක් Upload කර Report Generate කළ පසු Auto-Update වේ. (අදාළ මාසයේ එක දිනක් හෝ පැමිණි සේවකයින් පමණක් මෙහි ඇතුළත් වේ)
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:15px; margin: 25px 0;">
+            <div style="background:#ffffff; border:1px solid var(--border); padding:18px; border-radius:var(--radius-lg); text-align:center; box-shadow:var(--shadow-sm);">
+                <div style="font-size:12px; color:var(--text-muted); font-weight:600; text-transform:uppercase; margin-bottom:6px;">Total Active Employees</div>
+                <div id="srcTotalEmployees" style="font-size:26px; font-weight:bold; color:var(--primary);">0</div>
+            </div>
+            <div style="background:#ffffff; border:1px solid var(--border); padding:18px; border-radius:var(--radius-lg); text-align:center; box-shadow:var(--shadow-sm);">
+                <div style="font-size:12px; color:var(--text-muted); font-weight:600; text-transform:uppercase; margin-bottom:6px;">Total Salary (All Groups)</div>
+                <div id="srcTotalSalary" style="font-size:26px; font-weight:bold; color:#059669;">Rs 0.00</div>
+            </div>
+            <div style="background:#ffffff; border:1px solid var(--border); padding:18px; border-radius:var(--radius-lg); text-align:center; box-shadow:var(--shadow-sm);">
+                <div style="font-size:12px; color:var(--text-muted); font-weight:600; text-transform:uppercase; margin-bottom:6px;">Group 1 Total Salary</div>
+                <div id="srcGroup1Total" style="font-size:26px; font-weight:bold; color:var(--primary);">Rs 0.00</div>
+            </div>
+            <div style="background:#ffffff; border:1px solid var(--border); padding:18px; border-radius:var(--radius-lg); text-align:center; box-shadow:var(--shadow-sm);">
+                <div style="font-size:12px; color:var(--text-muted); font-weight:600; text-transform:uppercase; margin-bottom:6px;">Group 2 Total Salary</div>
+                <div id="srcGroup2Total" style="font-size:26px; font-weight:bold; color:#d97706;">Rs 0.00</div>
+            </div>
+        </div>
+
+        <h3 style="color:#1e293b; margin-top:35px; font-size:18px; font-family:'Poppins', sans-serif;">🔒 Group 1 Salary Report</h3>
+        <div id="srcGroup1Meta" style="color:var(--text-muted); font-size:13.5px; margin-bottom:12px;"></div>
+        <div style="display:flex; gap:10px; margin-bottom:12px;">
+            <button class="btn-action" style="background:#dc2626; color:white;" onclick="downloadSalaryReportPDF(1)">📄 PDF Download</button>
+            <button class="btn-action" style="background:#15803d; color:white;" onclick="downloadSalaryReportExcel(1)">📊 Excel Download</button>
+        </div>
+        <div id="srcGroup1TableContainer" style="overflow-x:auto;"></div>
+
+        <h3 style="color:#1e293b; margin-top:35px; font-size:18px; font-family:'Poppins', sans-serif;">📋 Group 2 Salary Report</h3>
+        <div id="srcGroup2Meta" style="color:var(--text-muted); font-size:13.5px; margin-bottom:12px;"></div>
+        <div style="display:flex; gap:10px; margin-bottom:12px;">
+            <button class="btn-action" style="background:#dc2626; color:white;" onclick="downloadSalaryReportPDF(2)">📄 PDF Download</button>
+            <button class="btn-action" style="background:#15803d; color:white;" onclick="downloadSalaryReportExcel(2)">📊 Excel Download</button>
+        </div>
+        <div id="srcGroup2TableContainer" style="overflow-x:auto;"></div>
+
+        <h3 style="color:#1e293b; margin-top:35px; font-size:18px; font-family:'Poppins', sans-serif;">🔍 Employee Salary Search</h3>
+        <div class="filter-box">
+            <label><strong>සේවකයා තෝරන්න:</strong></label>
+            <select id="srcEmployeeSelect" style="min-width:250px;" onchange="renderSalaryEmployeeDetail()"></select>
+        </div>
+        <div id="srcEmployeeDetailContainer" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- TAB 4: PAY SHEET -->
+    <div id="paySheet" class="tab-content">
+        <h3 style="color:#1e293b; margin:15px 0 20px 0; font-size:18px; font-family:'Poppins', sans-serif;">🧾 Pay Sheet</h3>
+
+        <h4 style="color:#1e293b; margin-top:25px; font-size:16px; font-family:'Poppins', sans-serif;">🔒 Group 1 Pay Sheet</h4>
+        <div class="filter-box">
+            <label><strong>සේවකයා තෝරන්න:</strong></label>
+            <select id="paySheetG1Select" style="min-width:250px;" onchange="renderPaySheetGroup1Selected()"></select>
+            <button class="btn-action" id="paySheetG1PdfBtn" style="background:#dc2626; color:white;" onclick="downloadPaySheetPDF(1)">📄 PDF Download</button>
+        </div>
+        <div id="paySheetGroup1Container" style="margin-top:15px;"></div>
+
+        <h4 style="color:#1e293b; margin-top:35px; font-size:16px; font-family:'Poppins', sans-serif;">📋 Group 2 Pay Sheet</h4>
+        <div class="filter-box">
+            <label><strong>සේවකයා තෝරන්න:</strong></label>
+            <select id="paySheetG2Select" style="min-width:250px;" onchange="renderPaySheetGroup2Selected()"></select>
+            <button class="btn-action" id="paySheetG2PdfBtn" style="background:#dc2626; color:white;" onclick="downloadPaySheetPDF(2)">📄 PDF Download</button>
+        </div>
+        <div id="paySheetGroup2Container" style="margin-top:15px;"></div>
+    </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'MASTER_EMPLOYEE_PROFILES';
+const P01_SELECTED_KEY = 'P01_SELECTED_EMPLOYEES';
+const P01_CONFIG_KEY = 'P01_CONFIG';
+const P02_SELECTED_KEY = 'P02_SELECTED_EMPLOYEES';
+const P02_CONFIG_KEY = 'P02_CONFIG';
+const P03_SELECTED_KEY = 'P03_SELECTED_EMPLOYEES';
+const P03_CONFIG_KEY = 'P03_CONFIG';
+const SL_AD_KEY = 'SL_AD_VALUES';
+const COMPANY_PROFILE_KEY = 'COMPANY_PROFILE';
+const CURRENT_UPLOADED_DATA_KEY = 'CURRENT_UPLOADED_DATA_STATE';
+const POYA_DATES_CONFIG_KEY = 'POYA_DATES_CONFIG_STATE';
+
+let companyProfile = { name: '', address: '', phone: '', epfNumber: '' };
+
+const APP_BACKUP_KEYS = [
+    STORAGE_KEY, P01_SELECTED_KEY, P01_CONFIG_KEY,
+    P02_SELECTED_KEY, P02_CONFIG_KEY, P03_SELECTED_KEY, P03_CONFIG_KEY, SL_AD_KEY,
+    COMPANY_PROFILE_KEY, CURRENT_UPLOADED_DATA_KEY, POYA_DATES_CONFIG_KEY
+];
+
+function loadCompanyProfile() {
+    let saved = localStorage.getItem(COMPANY_PROFILE_KEY);
+    companyProfile = saved ? JSON.parse(saved) : { name: '', address: '', phone: '', epfNumber: '' };
+}
+
+function renderCompanyProfileView() {
+    let view = document.getElementById('companyProfileView');
+    if (!view) return;
+    let hasData = companyProfile.name || companyProfile.address || companyProfile.phone || companyProfile.epfNumber;
+
+    if (!hasData) {
+        view.innerHTML = `
+            <strong style="color:#b45309;">🏢 Company Profile:</strong> තවම සකසා නොමැත.
+            <button class="btn-action" style="background:#f59e0b; color:white; margin-left:10px;" onclick="showCompanyProfileEditForm()">➕ Add Company Profile</button>
+        `;
+        return;
+    }
+
+    view.innerHTML = `
+        <strong style="color:#b45309;">🏢 Company Profile:</strong>
+        <div style="margin-top:8px; line-height:1.8;">
+            <div><strong>Name Of Company:</strong> ${companyProfile.name || '-'}</div>
+            <div><strong>Address:</strong> ${companyProfile.address || '-'}</div>
+            <div><strong>Telephone Number:</strong> ${companyProfile.phone || '-'}</div>
+            <div><strong>EPF Number:</strong> ${companyProfile.epfNumber || '-'}</div>
+        </div>
+        <button class="btn-action" style="background:#f59e0b; color:white; margin-top:8px;" onclick="showCompanyProfileEditForm()">✏️ Edit Company Profile</button>
+    `;
+}
+
+function showCompanyProfileEditForm() {
+    document.getElementById('companyProfileView').style.display = 'none';
+    document.getElementById('companyProfileEditForm').style.display = 'block';
+    document.getElementById('cpName').value = companyProfile.name || '';
+    document.getElementById('cpAddress').value = companyProfile.address || '';
+    document.getElementById('cpPhone').value = companyProfile.phone || '';
+    document.getElementById('cpEpfNumber').value = companyProfile.epfNumber || '';
+}
+
+function cancelCompanyProfileEdit() {
+    document.getElementById('companyProfileEditForm').style.display = 'none';
+    document.getElementById('companyProfileView').style.display = 'block';
+}
+
+function saveCompanyProfile() {
+    companyProfile = {
+        name: document.getElementById('cpName').value.trim(),
+        address: document.getElementById('cpAddress').value.trim(),
+        phone: document.getElementById('cpPhone').value.trim(),
+        epfNumber: document.getElementById('cpEpfNumber').value.trim()
+    };
+    localStorage.setItem(COMPANY_PROFILE_KEY, JSON.stringify(companyProfile));
+
+    document.getElementById('companyProfileEditForm').style.display = 'none';
+    document.getElementById('companyProfileView').style.display = 'block';
+    renderCompanyProfileView();
+}
+
+async function deriveEncryptionKey(password, salt) {
+    let enc = new TextEncoder();
+    let keyMaterial = await crypto.subtle.importKey(
+        'raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveKey']
+    );
+    return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: salt, iterations: 150000, hash: 'SHA-256' },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+    );
+}
+
+async function encryptText(plaintext, password) {
+    let salt = crypto.getRandomValues(new Uint8Array(16));
+    let iv = crypto.getRandomValues(new Uint8Array(12));
+    let key = await deriveEncryptionKey(password, salt);
+    let enc = new TextEncoder();
+    let ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, enc.encode(plaintext));
+
+    let combined = new Uint8Array(salt.length + iv.length + ciphertext.byteLength);
+    combined.set(salt, 0);
+    combined.set(iv, salt.length);
+    combined.set(new Uint8Array(ciphertext), salt.length + iv.length);
+
+    let binary = '';
+    combined.forEach(b => binary += String.fromCharCode(b));
+    return btoa(binary);
+}
+
+async function decryptText(base64Data, password) {
+    let binary = atob(base64Data);
+    let combined = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) combined[i] = binary.charCodeAt(i);
+
+    let salt = combined.slice(0, 16);
+    let iv = combined.slice(16, 28);
+    let ciphertext = combined.slice(28);
+
+    let key = await deriveEncryptionKey(password, salt);
+    let decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ciphertext);
+    return new TextDecoder().decode(decrypted);
+}
+
+function gatherBackupData() {
+    let data = {};
+    
+    if (currentUploadedData && currentUploadedData.length > 0) {
+        localStorage.setItem(CURRENT_UPLOADED_DATA_KEY, JSON.stringify(currentUploadedData));
+    }
+    let poyaConfigState = {
+        poyaDates: poyaDates,
+        poyaDate1: document.getElementById('poyaDate1') ? document.getElementById('poyaDate1').value : '',
+        poyaDate2: document.getElementById('poyaDate2') ? document.getElementById('poyaDate2').value : ''
+    };
+    localStorage.setItem(POYA_DATES_CONFIG_KEY, JSON.stringify(poyaConfigState));
+
+    APP_BACKUP_KEYS.forEach(k => {
+        let v = localStorage.getItem(k);
+        if (v !== null) data[k] = v;
+    });
+
+    return JSON.stringify({ 
+        app: 'Attendance & Payroll Management System', 
+        version: 3, 
+        savedAt: new Date().toISOString(), 
+        data: data
+    });
+}
+
+async function saveEncryptedBackup() {
+    let proceed = confirm('ඔබට මෙම System එකේ ඒ මොහොතේ තිබෙන සියලුම දත්ත (Master Profiles, Attendance records, Reports ඇතුළු සියල්ල) Encrypted File එකක් ලෙස Save කිරීමට අවශ්‍යද?');
+    if (!proceed) return;
+
+    let password = prompt('File එක Encrypt කිරීමට Password එකක් ඇතුළත් කරන්න:');
+    if (!password) { alert('Password ලබා නොදුන් නිසා Save කිරීම නවත්වන ලදී.'); return; }
+
+    let confirmPassword = prompt('තහවුරු කිරීම සඳහා Password එක නැවත Type කරන්න:');
+    if (password !== confirmPassword) { alert('❌ Password දෙක නොගැලපේ.'); return; }
+
+    try {
+        let plaintext = gatherBackupData();
+        let encrypted = await encryptText(plaintext, password);
+
+        let blob = new Blob([encrypted], { type: 'text/plain' });
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        let dateStr = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = `Attendance_System_Backup_${dateStr}.enc`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        alert('✅ ඒ මොහොතේ තිබූ සම්පූර්ණ දත්ත සාර්ථකව Backup File එකක් ලෙස Encrypt කර Save කරන ලදී.');
+    } catch (e) {
+        alert('❌ දෝෂයක් ඇති විය: ' + e.message);
+    }
+}
+
+function handleRestoreFileSelect(event) {
+    let file = event.target.files[0];
+    event.target.value = '';
+    if (!file) return;
+    restoreEncryptedBackup(file);
+}
+
+async function restoreEncryptedBackup(file) {
+    let password = prompt('මෙම Backup File එක Decrypt කිරීමට Password එක ඇතුළත් කරන්න:');
+    if (!password) return;
+
+    try {
+        let cipherText = (await file.text()).trim();
+        let decryptedJson = await decryptText(cipherText, password);
+        let parsed = JSON.parse(decryptedJson);
+
+        if (!parsed || !parsed.data) throw new Error('Invalid backup file format');
+
+        let proceed = confirm('Decryption සාර්ථකයි. මෙම Backup එකේ තිබූ සියලුම දත්ත සහ Reports සම්පූර්ණයෙන්ම Restore කිරීමට අවශ්‍යද?');
+        if (!proceed) return;
+
+        Object.keys(parsed.data).forEach(k => {
+            localStorage.setItem(k, parsed.data[k]);
+        });
+
+        if (parsed.currentMonthData) {
+            if (parsed.currentMonthData.currentUploadedData) {
+                localStorage.setItem(CURRENT_UPLOADED_DATA_KEY, JSON.stringify(parsed.currentMonthData.currentUploadedData));
+            }
+            let pConfig = {
+                poyaDates: parsed.currentMonthData.poyaDates || [],
+                poyaDate1: parsed.currentMonthData.poyaDate1 || '',
+                poyaDate2: parsed.currentMonthData.poyaDate2 || ''
+            };
+            localStorage.setItem(POYA_DATES_CONFIG_KEY, JSON.stringify(pConfig));
+        }
+
+        alert('✅ Backup File එක සාර්ථකව Restore කරන ලදී! සියලුම Data සහ Reports නැවත Load වේ.');
+        window.location.reload();
+    } catch (e) {
+        alert('❌ Decrypt කිරීමට නොහැකි විය. Password එක වැරදිදැයි බලන්න.');
+    }
+}
+
+let masterProfiles = {}; 
+let currentUploadedData = []; 
+let p01SelectedIds = []; 
+let slAdValues = {}; 
+let p01Config = { baseAmount: 4000, perDayDeduction: 500 }; 
+let p02SelectedIds = []; 
+let p02Config = { baseAmount: 2000, perDayDeduction: 500 }; 
+let p03Selected = []; 
+let p03Config = { amount1: 5000, amount2: 3000, perDayDeduction: 1000 }; 
+
+function loadP01Data() {
+    let savedSelected = localStorage.getItem(P01_SELECTED_KEY);
+    p01SelectedIds = savedSelected ? JSON.parse(savedSelected) : [];
+    let savedConfig = localStorage.getItem(P01_CONFIG_KEY);
+    p01Config = savedConfig ? JSON.parse(savedConfig) : { baseAmount: 4000, perDayDeduction: 500 };
+}
+
+function saveP01Selected() { localStorage.setItem(P01_SELECTED_KEY, JSON.stringify(p01SelectedIds)); }
+function saveP01Config() { localStorage.setItem(P01_CONFIG_KEY, JSON.stringify(p01Config)); }
+
+function loadP02Data() {
+    let savedSelected = localStorage.getItem(P02_SELECTED_KEY);
+    p02SelectedIds = savedSelected ? JSON.parse(savedSelected) : [];
+    let savedConfig = localStorage.getItem(P02_CONFIG_KEY);
+    p02Config = savedConfig ? JSON.parse(savedConfig) : { baseAmount: 2000, perDayDeduction: 500 };
+}
+
+function saveP02Selected() { localStorage.setItem(P02_SELECTED_KEY, JSON.stringify(p02SelectedIds)); }
+function saveP02Config() { localStorage.setItem(P02_CONFIG_KEY, JSON.stringify(p02Config)); }
+
+function loadP03Data() {
+    let savedSelected = localStorage.getItem(P03_SELECTED_KEY);
+    p03Selected = savedSelected ? JSON.parse(savedSelected) : [];
+    let savedConfig = localStorage.getItem(P03_CONFIG_KEY);
+    p03Config = savedConfig ? JSON.parse(savedConfig) : { amount1: 5000, amount2: 3000, perDayDeduction: 1000 };
+}
+
+function saveP03Selected() { localStorage.setItem(P03_SELECTED_KEY, JSON.stringify(p03Selected)); }
+function saveP03Config() { localStorage.setItem(P03_CONFIG_KEY, JSON.stringify(p03Config)); }
+
+function loadSlAdValues() {
+    let saved = localStorage.getItem(SL_AD_KEY);
+    slAdValues = saved ? JSON.parse(saved) : {};
+}
+
+function saveSlAdValues() { localStorage.setItem(SL_AD_KEY, JSON.stringify(slAdValues)); }
+
+function updateSlAd(empId, value) {
+    value = String(value).trim();
+    if (value === '') delete slAdValues[empId];
+    else slAdValues[empId] = value;
+    saveSlAdValues();
+    renderSalaryReportCenter();
+}
+
+let poyaDates = [];
+
+window.onload = function() {
+    loadMasterProfiles();
+    renderMasterProfilesTable();
+    loadP01Data();
+    loadP02Data();
+    loadP03Data();
+    loadSlAdValues();
+    loadCompanyProfile();
+    renderCompanyProfileView();
+    updateManualEmployeesDropdown();
+
+    let savedAttendanceState = localStorage.getItem(CURRENT_UPLOADED_DATA_KEY);
+    let savedPoyaState = localStorage.getItem(POYA_DATES_CONFIG_KEY);
+
+    if (savedPoyaState) {
+        try {
+            let pState = JSON.parse(savedPoyaState);
+            poyaDates = pState.poyaDates || [];
+            if (document.getElementById('poyaDate1')) document.getElementById('poyaDate1').value = pState.poyaDate1 || '';
+            if (document.getElementById('poyaDate2')) document.getElementById('poyaDate2').value = pState.poyaDate2 || '';
+            updatePoyaDaysUI();
+        } catch(e) {}
+    }
+
+    if (savedAttendanceState) {
+        try {
+            let parsedAttendance = JSON.parse(savedAttendanceState);
+            if (parsedAttendance && parsedAttendance.length > 0) {
+                currentUploadedData = parsedAttendance;
+                renderSelectionList();
+                generateReport();
+                switchMainTab('attendanceReports', document.querySelectorAll('.tab-btn')[1]);
+            }
+        } catch(e) {
+            console.error('Error loading attendance records from state:', e);
+        }
+    }
+};
+
+function loadMasterProfiles() {
+    let saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) masterProfiles = JSON.parse(saved);
+}
+
+function saveMasterProfiles() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(masterProfiles));
+    alert('✅ සේවක Profiles සාර්ථකව Save විය!');
+    renderMasterProfilesTable();
+    updateManualEmployeesDropdown();
+}
+
+function normalizeDateStr(dateStr) {
+    if (!dateStr) return "";
+    let clean = String(dateStr).trim().split(' ')[0];
+    let parts = clean.split(/[-/.]/);
+    if (parts.length === 3) {
+        if (parts[0].length === 4) {
+            return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+        } else if (parts[2].length === 4) {
+            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        } else if (parts[2].length === 2 || parts[2].length === 1) {
+            let yearNum = parseInt(parts[2], 10);
+            let fullYear = yearNum <= 69 ? 2000 + yearNum : 1900 + yearNum;
+            return `${fullYear}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+        }
+    }
+    return clean;
+}
+
+function validatePoyaSunday(inputElem) {
+    if (!inputElem.value) return;
+    let selectedDate = new Date(inputElem.value + "T00:00:00");
+    if (selectedDate.getDay() === 0) {
+        alert("⚠️ ඔබ තෝරාගත් දිනය ඉරිදා දිනයකි!\n\nඉරිදා දින Holidays ලෙස ගණනය වන බැවින්, පෝය දිනය ලෙස ඉරිදා නොවන දිනයක් තෝරන්න.");
+        inputElem.value = "";
+    }
+}
+
+function syncPoyaDatesArray() {
+    poyaDates = [];
+    let d1 = document.getElementById('poyaDate1').value;
+    let d2 = document.getElementById('poyaDate2').value;
+    if (d1) poyaDates.push(normalizeDateStr(d1));
+    if (d2) poyaDates.push(normalizeDateStr(d2));
+
+    let pState = {
+        poyaDates: poyaDates,
+        poyaDate1: d1,
+        poyaDate2: d2
+    };
+    localStorage.setItem(POYA_DATES_CONFIG_KEY, JSON.stringify(pState));
+}
+
+function updatePoyaDaysUI() {
+    syncPoyaDatesArray();
+    let count = poyaDates.length;
+    let statusText = count > 0 
+        ? `✅ පිහිටුවන ලද පෝය දින: ${poyaDates.join(', ')} (දින ${count} යි)` 
+        : '⚠️ පෝය දින තෝරා නොමැත.';
+    document.getElementById('poyaStatus').innerText = statusText;
+}
+
+function rawTimeToMinutes(val) {
+    if (val === undefined || val === null || val === "" || String(val).trim() === "***") return null;
+    let strVal = String(val).trim();
+    if (strVal.includes(":")) {
+        let parts = strVal.split(":");
+        return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+    }
+    let numVal = parseFloat(strVal);
+    if (!isNaN(numVal) && numVal >= 0 && numVal < 1) {
+        let totalSeconds = Math.round(numVal * 86400);
+        return Math.floor(totalSeconds / 3600) * 60 + Math.floor((totalSeconds % 3600) / 60);
+    }
+    return null;
+}
+
+function minutesToFormattedTime(totalMinutes) {
+    if (totalMinutes === null) return "***";
+    let hours = Math.floor(totalMinutes / 60);
+    let minutes = totalMinutes % 60;
+    let ampm = hours >= 12 ? 'PM' : 'AM';
+    let displayHours = hours % 12 ? hours % 12 : 12;
+    let pad = (n) => n.toString().padStart(2, '0');
+    return `${pad(displayHours)}:${pad(minutes)} ${ampm}`;
+}
+
+function minutesToRaw24Hour(totalMinutes) {
+    if (totalMinutes === null) return "***";
+    let hours = Math.floor(totalMinutes / 60);
+    let minutes = totalMinutes % 60;
+    let pad = (n) => n.toString().padStart(2, '0');
+    return `${pad(hours)}:${pad(minutes)}:00`;
+}
+
+function getAdjInMinutes(rawMinutes) {
+    if (rawMinutes === null) return null;
+    if (rawMinutes <= 450) return 450; 
+    let remainder = rawMinutes % 15;
+    return (remainder === 0) ? rawMinutes + 15 : rawMinutes + (15 - remainder);
+}
+
+function adjustInTime(rawMinutes) { return minutesToFormattedTime(getAdjInMinutes(rawMinutes)); }
+
+function getAdjOutMinutes(rawMinutes) {
+    if (rawMinutes === null) return null;
+    return rawMinutes - (rawMinutes % 15);
+}
+
+function adjustOutTime(rawMinutes) { return minutesToFormattedTime(getAdjOutMinutes(rawMinutes)); }
+
+function getWorkingMinutes(inMinutes, outMinutes) {
+    let adjIn = getAdjInMinutes(inMinutes);
+    let adjOut = getAdjOutMinutes(outMinutes);
+    if (adjIn === null || adjOut === null) return 0;
+    let diffMins = adjOut - adjIn;
+    if (diffMins <= 0) return 0;
+    if (diffMins > 240) diffMins -= 45; 
+    return diffMins;
+}
+
+function calculateWorkingHours(inMinutes, outMinutes) {
+    let diffMins = getWorkingMinutes(inMinutes, outMinutes);
+    if (diffMins === 0 && (inMinutes === null || outMinutes === null)) return "***";
+    let hrs = Math.floor(diffMins / 60);
+    let mins = diffMins % 60;
+    let pad = (n) => n.toString().padStart(2, '0');
+    return `${pad(hrs)}:${pad(mins)}`;
+}
+
+function processExcel(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array', raw: false, cellDates: true, cellText: true});
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(worksheet, {header: 1, raw: false});
+        
+        let currentDept = "Unknown";
+        currentUploadedData = [];
+        let currentEmp = null;
+
+        for (let i = 0; i < rows.length; i++) {
+            let row = rows[i];
+            if (!row || row.length === 0) continue;
+            let col0 = row[0] ? String(row[0]).trim() : "";
+
+            if (col0.startsWith("Department:")) {
+                currentDept = col0.replace("Department:", "").trim();
+                continue;
+            }
+
+            if (col0.includes("Fingerprint ID :")) {
+                if (currentEmp) currentUploadedData.push(currentEmp);
+
+                let idMatch = col0.match(/Fingerprint ID :\s*(\d+)\s*-\s*([^/]+)/);
+                let empId = idMatch ? parseInt(idMatch[1].trim(), 10) : 0;
+                let empName = idMatch ? idMatch[2].trim() : col0;
+
+                let isFixed = (empId >= 1 && empId <= 29);
+                if (!masterProfiles[empId]) {
+                    masterProfiles[empId] = {
+                        id: empId,
+                        name: empName,
+                        dept: currentDept,
+                        group: isFixed ? 1 : 2,
+                        isFixed: isFixed,
+                        basicSalary: 0,
+                        otRate: 0,
+                        sundayRate: 0,
+                        poyaRate: 0,
+                        noPayRate: 0,
+                        late: 0,
+                        phone: '',
+                        special: '',
+                        performance01: '',
+                        epf8: 0,
+                        epf12: 0,
+                        etf3: 0,
+                        status: 'Active'
+                    };
+                } else {
+                    if (isFixed) {
+                        masterProfiles[empId].isFixed = true;
+                        masterProfiles[empId].group = 1;
+                    }
+                }
+
+                currentEmp = {
+                    id: empId,
+                    name: masterProfiles[empId].name,
+                    dept: currentDept,
+                    workDays: 0, 
+                    holidays: 0,
+                    poyaDaysWorked: 0,
+                    absentDays: 0,
+                    shortLeaveDays: 0,
+                    dailyRecords: []
+                };
+                continue;
+            }
+
+            if (currentEmp && row[4] !== undefined) {
+                let status = String(row[4]).trim();
+                let dateVal = row[0] ? String(row[0]).trim().split(' ')[0] : "";
+                let dayVal = row[1] ? String(row[1]).trim() : "";
+                let inMinutes = rawTimeToMinutes(row[2]);
+                let outMinutes = rawTimeToMinutes(row[3]);
+
+                currentEmp.dailyRecords.push({
+                    date: dateVal,
+                    normDate: normalizeDateStr(dateVal),
+                    day: dayVal,
+                    rawInTime: minutesToRaw24Hour(inMinutes),
+                    rawOutTime: minutesToRaw24Hour(outMinutes),
+                    adjInTime: adjustInTime(inMinutes),
+                    adjOutTime: adjustOutTime(outMinutes),
+                    workingMinutes: getWorkingMinutes(inMinutes, outMinutes),
+                    workingHours: calculateWorkingHours(inMinutes, outMinutes),
+                    status: status,
+                    isPoya: false
+                });
+
+                if (status === 'ABH' || status === 'SL') currentEmp.shortLeaveDays++;
+            }
+        }
+
+        if (currentEmp) currentUploadedData.push(currentEmp);
+
+        Object.values(masterProfiles).forEach(mEmp => {
+            if (mEmp.isManual && !currentUploadedData.some(e => String(e.id) === String(mEmp.id))) {
+                let blueprint = getMonthDateBlueprint();
+                currentUploadedData.push({
+                    id: mEmp.id,
+                    name: mEmp.name,
+                    dept: mEmp.dept,
+                    workDays: 0,
+                    holidays: 0,
+                    poyaDaysWorked: 0,
+                    absentDays: 0,
+                    shortLeaveDays: 0,
+                    dailyRecords: blueprint.map(b => ({
+                        date: b.date,
+                        normDate: b.normDate,
+                        day: b.day,
+                        rawInTime: '***',
+                        rawOutTime: '***',
+                        adjInTime: '***',
+                        adjOutTime: '***',
+                        workingMinutes: 0,
+                        workingHours: '***',
+                        status: 'AB',
+                        isPoya: false
+                    }))
+                });
+            }
+        });
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(masterProfiles));
+        localStorage.setItem(CURRENT_UPLOADED_DATA_KEY, JSON.stringify(currentUploadedData));
+        renderMasterProfilesTable();
+        updateManualEmployeesDropdown();
+        renderSelectionList();
+        switchMainTab('attendanceReports', document.querySelectorAll('.tab-btn')[1]);
+    };
+
+    reader.readAsBuffer ? reader.readAsArrayBuffer(file) : reader.readAsArrayBuffer(file);
+}
+
+function buildMasterRowHtml(emp, includeEpfEtf) {
+    let epfEtfCells = includeEpfEtf ? `
+            <td><input type="number" step="0.01" class="input-cell" value="${emp.epf8 || 0}" onchange="updateMasterField('${emp.id}', 'epf8', this.value)"></td>
+            <td><input type="number" step="0.01" class="input-cell" value="${emp.epf12 || 0}" onchange="updateMasterField('${emp.id}', 'epf12', this.value)"></td>
+            <td><input type="number" step="0.01" class="input-cell" value="${emp.etf3 || 0}" onchange="updateMasterField('${emp.id}', 'etf3', this.value)"></td>` : '';
+
+    let deleteBtn = emp.isManual ? `<button class="btn-action" style="background:#dc2626; color:white; margin-left:4px;" onclick="deleteManualEmployee('${emp.id}')">🗑️ Delete</button>` : '';
+
+    return `
+            <td><strong>${emp.id}</strong></td>
+            <td><input type="text" class="input-cell" value="${emp.name}" onchange="updateMasterField('${emp.id}', 'name', this.value)"></td>
+            <td><span class="badge badge-dept">${emp.dept}</span></td>
+            <td>${emp.isFixed ? '🔒 G1' : `G${emp.group}`}</td>
+            <td><input type="number" class="input-cell" value="${emp.basicSalary}" onchange="updateMasterField('${emp.id}', 'basicSalary', this.value)"></td>
+            <td><input type="number" class="input-cell" value="${emp.otRate}" onchange="updateMasterField('${emp.id}', 'otRate', this.value)"></td>
+            <td><input type="number" class="input-cell" value="${emp.sundayRate}" onchange="updateMasterField('${emp.id}', 'sundayRate', this.value)"></td>
+            <td><input type="number" class="input-cell" value="${emp.poyaRate}" onchange="updateMasterField('${emp.id}', 'poyaRate', this.value)"></td>
+            <td><input type="number" class="input-cell" value="${emp.noPayRate}" onchange="updateMasterField('${emp.id}', 'noPayRate', this.value)"></td>
+            <td><input type="text" class="input-cell" style="text-align:right;" value="${formatAccounting(emp.late)}" onchange="updateMasterLate('${emp.id}', this.value)"></td>
+            <td><input type="text" class="input-cell" value="${emp.phone || ''}" onchange="updateMasterField('${emp.id}', 'phone', this.value)"></td>
+            <td><input type="text" class="input-cell" value="${emp.special || ''}" placeholder="Special notes..." onchange="updateMasterField('${emp.id}', 'special', this.value)"></td>
+            <td><input type="text" class="input-cell" value="${emp.performance01 || ''}" placeholder="Perf 01..." onchange="updateMasterField('${emp.id}', 'performance01', this.value)"></td>${epfEtfCells}
+            <td>
+                <select class="input-cell" onchange="updateMasterField('${emp.id}', 'status', this.value)">
+                    <option value="Active" ${emp.status === 'Active' ? 'selected' : ''}>Active</option>
+                    <option value="Inactive" ${emp.status === 'Inactive' ? 'selected' : ''}>Inactive</option>
+                </select>
+            </td>
+            <td style="white-space:nowrap;">
+                <button class="btn-action btn-save" onclick="saveMasterProfiles()">💾 Save</button>${deleteBtn}
+            </td>
+        `;
+}
+
+function renderMasterProfilesTable() {
+    let tbodyG1 = document.getElementById('masterProfileTbodyG1');
+    let tbodyG2 = document.getElementById('masterProfileTbodyG2');
+    tbodyG1.innerHTML = "";
+    tbodyG2.innerHTML = "";
+
+    let sortedIds = Object.keys(masterProfiles).sort((a, b) => {
+        let numA = parseInt(a, 10), numB = parseInt(b, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a).localeCompare(String(b));
+    });
+
+    let g1Ids = sortedIds.filter(id => masterProfiles[id].isFixed || masterProfiles[id].group === 1);
+    let g2Ids = sortedIds.filter(id => !masterProfiles[id].isFixed && masterProfiles[id].group === 2);
+
+    if (g1Ids.length === 0) {
+        tbodyG1.innerHTML = `<tr><td colspan="18" style="text-align:center; color:#777;">තවම Group 1 සේවකයින් ඇතුළත් කර නොමැත.</td></tr>`;
+    } else {
+        g1Ids.forEach(id => {
+            let emp = masterProfiles[id];
+            let tr = document.createElement('tr');
+            tr.innerHTML = buildMasterRowHtml(emp, true);
+            tbodyG1.appendChild(tr);
+        });
+    }
+
+    if (g2Ids.length === 0) {
+        tbodyG2.innerHTML = `<tr><td colspan="15" style="text-align:center; color:#777;">තවම Group 2 සේවකයින් ඇතුළත් කර නොමැත.</td></tr>`;
+    } else {
+        g2Ids.forEach(id => {
+            let emp = masterProfiles[id];
+            let tr = document.createElement('tr');
+            tr.innerHTML = buildMasterRowHtml(emp, false);
+            tbodyG2.appendChild(tr);
+        });
+    }
+}
+
+// ===================== MANUAL EMPLOYEE ENTRY FUNCTIONS =====================
+
+function updateManualEmployeesDropdown() {
+    let select = document.getElementById('manualExistingSelect');
+    if (!select) return;
+
+    let manualEmps = Object.values(masterProfiles).filter(e => e.isManual);
+    let html = `<option value="">-- තෝරන්න (${manualEmps.length} Employees) --</option>`;
+
+    manualEmps.sort((a, b) => String(a.id).localeCompare(String(b.id))).forEach(emp => {
+        html += `<option value="${emp.id}">EMP ID: ${emp.id} - ${emp.name}</option>`;
+    });
+
+    select.innerHTML = html;
+}
+
+function selectExistingManualEmployee(empId) {
+    if (!empId) return;
+    let emp = masterProfiles[empId];
+    if (!emp) return;
+
+    document.getElementById('manualEmpId').value = emp.id;
+    document.getElementById('manualEmpName').value = emp.name;
+    document.getElementById('manualEmpDept').value = emp.dept || 'Manual';
+
+    loadManualAttendanceTable();
+}
+
+function getMonthDateBlueprint() {
+    let foundEmp = currentUploadedData.find(e => e.dailyRecords && e.dailyRecords.length > 0);
+    if (foundEmp) {
+        return foundEmp.dailyRecords.map(r => ({
+            date: r.date,
+            normDate: r.normDate,
+            day: r.day
+        }));
+    }
+
+    let now = new Date();
+    let year = now.getFullYear();
+    let month = now.getMonth();
+    let daysInMonth = new Date(year, month + 1, 0).getDate();
+    let daysArr = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    let blueprint = [];
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        let dt = new Date(year, month, d);
+        let padM = String(month + 1).padStart(2, '0');
+        let padD = String(d).padStart(2, '0');
+        let dateStr = `${padM}-${padD}-${String(year).slice(-2)}`;
+        let normStr = `${year}-${padM}-${padD}`;
+        blueprint.push({
+            date: dateStr,
+            normDate: normStr,
+            day: daysArr[dt.getDay()]
+        });
+    }
+    return blueprint;
+}
+
+function loadManualAttendanceTable() {
+    let idInput = document.getElementById('manualEmpId');
+    let nameInput = document.getElementById('manualEmpName');
+    let deptInput = document.getElementById('manualEmpDept');
+    let container = document.getElementById('manualEntryContainer');
+
+    let empId = idInput.value.trim();
+    let empName = nameInput.value.trim();
+    let empDept = deptInput.value.trim() || 'Manual';
+
+    if (!empId) {
+        alert('කරුණාකර වලංගු Temporary EMP ID (Letters හෝ Numbers) එකක් ඇතුළත් කරන්න.');
+        return;
+    }
+    if (!empName) {
+        alert('කරුණාකර සේවකයාගේ නම ඇතුළත් කරන්න.');
+        return;
+    }
+
+    let numCheck = parseInt(empId, 10);
+    if (!isNaN(numCheck) && String(numCheck) === empId && numCheck >= 1 && numCheck <= 29) {
+        alert('FP ID 1 - 29 Group 1 ස්ථිර සේවකයින් සඳහා වෙන් කර ඇත. වෙනත් ID එකක් යොදන්න.');
+        return;
+    }
+
+    if (!masterProfiles[empId]) {
+        masterProfiles[empId] = {
+            id: empId,
+            name: empName,
+            dept: empDept,
+            group: 2,
+            isFixed: false,
+            isManual: true,
+            basicSalary: 0,
+            otRate: 0,
+            sundayRate: 0,
+            poyaRate: 0,
+            noPayRate: 0,
+            late: 0,
+            phone: '',
+            special: '',
+            performance01: '',
+            epf8: 0,
+            epf12: 0,
+            etf3: 0,
+            status: 'Active'
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(masterProfiles));
+        renderMasterProfilesTable();
+        updateManualEmployeesDropdown();
+    }
+
+    let existingInUploaded = currentUploadedData.find(e => String(e.id) === String(empId));
+    let blueprint = getMonthDateBlueprint();
+    let dailyRecords = [];
+
+    if (existingInUploaded && existingInUploaded.dailyRecords && existingInUploaded.dailyRecords.length > 0) {
+        dailyRecords = existingInUploaded.dailyRecords;
+    } else {
+        dailyRecords = blueprint.map(b => ({
+            date: b.date,
+            normDate: b.normDate,
+            day: b.day,
+            rawInTime: '***',
+            rawOutTime: '***',
+            adjInTime: '***',
+            adjOutTime: '***',
+            workingMinutes: 0,
+            workingHours: '***',
+            status: 'AB',
+            isPoya: false
+        }));
+    }
+
+    let escapedId = encodeURIComponent(empId);
+    let html = `
+        <div class="report-card" style="border: 2px solid var(--primary); background:#fff;">
+            <div class="report-header">
+                <h4>✍️ Attendance Entry Table — EMP ID: <strong>${empId}</strong> | ${empName} (${empDept})</h4>
+                <button class="btn-action btn-save" style="padding:8px 18px; font-size:13px;" onclick="saveManualEmployeeAttendance('${escapedId}', '${encodeURIComponent(empName)}', '${encodeURIComponent(empDept)}')">💾 Save Attendance Records</button>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="data-table" id="manualTable_${escapedId}">
+                    <thead>
+                        <tr>
+                            <th style="width:40px;">#</th>
+                            <th>Date</th>
+                            <th>Day</th>
+                            <th>In Time (HH:MM / HH:MM:SS)</th>
+                            <th>Out Time (HH:MM / HH:MM:SS)</th>
+                            <th style="width:100px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+    dailyRecords.forEach((rec, idx) => {
+        let inVal = rec.rawInTime === '***' ? '' : rec.rawInTime;
+        let outVal = rec.rawOutTime === '***' ? '' : rec.rawOutTime;
+        let statusVal = rec.status || 'AB';
+
+        html += `
+            <tr data-row="${idx}">
+                <td>${idx + 1}</td>
+                <td><strong>${rec.date}</strong></td>
+                <td>${rec.day}</td>
+                <td><input type="text" class="input-cell" style="width:130px;" value="${inVal}" placeholder="e.g. 08:00" onchange="handleManualTimeChange('${escapedId}', ${idx})"></td>
+                <td><input type="text" class="input-cell" style="width:130px;" value="${outVal}" placeholder="e.g. 17:00" onchange="handleManualTimeChange('${escapedId}', ${idx})"></td>
+                <td>
+                    <select class="input-cell" style="font-weight:bold; color:${statusVal==='W'?'green':'red'};" onchange="this.style.color=(this.value==='W'?'green':'red')">
+                        <option value="W" ${statusVal==='W'?'selected':''}>W</option>
+                        <option value="AB" ${statusVal==='AB'?'selected':''}>AB</option>
+                        <option value="ABH" ${statusVal==='ABH'?'selected':''}>ABH</option>
+                        <option value="SL" ${statusVal==='SL'?'selected':''}>SL</option>
+                    </select>
+                </td>
+            </tr>`;
+    });
+
+    html += `
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn-submit" style="margin-top:15px;" onclick="saveManualEmployeeAttendance('${escapedId}', '${encodeURIComponent(empName)}', '${encodeURIComponent(empDept)}')">💾 Save Attendance & Sync to Group 2</button>
+        </div>`;
+
+    container.innerHTML = html;
+}
+
+function handleManualTimeChange(escapedId, rowIndex) {
+    let table = document.getElementById(`manualTable_${escapedId}`);
+    if (!table) return;
+    let tr = table.querySelector(`tr[data-row="${rowIndex}"]`);
+    if (!tr) return;
+
+    let inputs = tr.querySelectorAll('input');
+    let inVal = inputs[0].value.trim();
+    let outVal = inputs[1].value.trim();
+    let statusSelect = tr.querySelector('select');
+
+    if (inVal !== '' || outVal !== '') {
+        statusSelect.value = 'W';
+        statusSelect.style.color = 'green';
+    } else {
+        statusSelect.value = 'AB';
+        statusSelect.style.color = 'red';
+    }
+}
+
+function saveManualEmployeeAttendance(escapedId, encName, encDept) {
+    let empId = decodeURIComponent(escapedId);
+    let empName = decodeURIComponent(encName);
+    let empDept = decodeURIComponent(encDept);
+    let table = document.getElementById(`manualTable_${escapedId}`);
+    if (!table) return;
+
+    let blueprint = getMonthDateBlueprint();
+    let rows = table.querySelectorAll('tbody tr');
+    let dailyRecords = [];
+    let shortLeaveDays = 0;
+
+    rows.forEach((tr, idx) => {
+        let b = blueprint[idx] || {};
+        let inputs = tr.querySelectorAll('input');
+        let statusSelect = tr.querySelector('select');
+
+        let rawIn = inputs[0].value.trim();
+        let rawOut = inputs[1].value.trim();
+        let status = statusSelect.value;
+
+        let inMinutes = rawTimeToMinutes(rawIn);
+        let outMinutes = rawTimeToMinutes(rawOut);
+
+        dailyRecords.push({
+            date: b.date,
+            normDate: b.normDate,
+            day: b.day,
+            rawInTime: minutesToRaw24Hour(inMinutes),
+            rawOutTime: minutesToRaw24Hour(outMinutes),
+            adjInTime: adjustInTime(inMinutes),
+            adjOutTime: adjustOutTime(outMinutes),
+            workingMinutes: getWorkingMinutes(inMinutes, outMinutes),
+            workingHours: calculateWorkingHours(inMinutes, outMinutes),
+            status: status,
+            isPoya: false
+        });
+
+        if (status === 'ABH' || status === 'SL') shortLeaveDays++;
+    });
+
+    if (!masterProfiles[empId]) {
+        masterProfiles[empId] = {
+            id: empId,
+            name: empName,
+            dept: empDept,
+            group: 2,
+            isFixed: false,
+            isManual: true,
+            basicSalary: 0,
+            otRate: 0,
+            sundayRate: 0,
+            poyaRate: 0,
+            noPayRate: 0,
+            late: 0,
+            phone: '',
+            special: '',
+            performance01: '',
+            epf8: 0,
+            epf12: 0,
+            etf3: 0,
+            status: 'Active'
+        };
+    } else {
+        masterProfiles[empId].isManual = true;
+        masterProfiles[empId].name = empName;
+        masterProfiles[empId].dept = empDept;
+        masterProfiles[empId].group = 2;
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(masterProfiles));
+
+    let existingIndex = currentUploadedData.findIndex(e => String(e.id) === String(empId));
+    let empObj = {
+        id: empId,
+        name: empName,
+        dept: empDept,
+        workDays: 0,
+        holidays: 0,
+        poyaDaysWorked: 0,
+        absentDays: 0,
+        shortLeaveDays: shortLeaveDays,
+        dailyRecords: dailyRecords
+    };
+
+    if (existingIndex !== -1) {
+        currentUploadedData[existingIndex] = empObj;
+    } else {
+        currentUploadedData.push(empObj);
+    }
+
+    localStorage.setItem(CURRENT_UPLOADED_DATA_KEY, JSON.stringify(currentUploadedData));
+
+    renderMasterProfilesTable();
+    updateManualEmployeesDropdown();
+    renderSelectionList();
+    generateReport();
+
+    alert(`✅ සේවක ${empId} - ${empName} සාර්ථකව Group 2 වෙත එක් කර සියලුම Reports Update කරන ලදී!`);
+}
+
+function deleteManualEmployee(empId) {
+    let emp = masterProfiles[empId];
+    if (!emp || !emp.isManual) {
+        alert('මෙම සේවකයා Manually ඇතුළත් කළ සේවකයෙකු නොවේ.');
+        return;
+    }
+
+    let proceed = confirm(`ඔබට EMP ID: ${empId} (${emp.name}) සේවකයාගේ සියලුම දත්ත පද්ධතියෙන් සම්පූර්ණයෙන්ම Delete කර ඉවත් කිරීමට අවශ්‍යද?`);
+    if (!proceed) return;
+
+    delete masterProfiles[empId];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(masterProfiles));
+
+    currentUploadedData = currentUploadedData.filter(e => String(e.id) !== String(empId));
+    localStorage.setItem(CURRENT_UPLOADED_DATA_KEY, JSON.stringify(currentUploadedData));
+
+    p01SelectedIds = p01SelectedIds.filter(id => String(id) !== String(empId));
+    saveP01Selected();
+    p02SelectedIds = p02SelectedIds.filter(id => String(id) !== String(empId));
+    saveP02Selected();
+    p03Selected = p03Selected.filter(sel => String(sel.id) !== String(empId));
+    saveP03Selected();
+    delete slAdValues[empId];
+    saveSlAdValues();
+
+    let container = document.getElementById('manualEntryContainer');
+    if (container) container.innerHTML = '';
+
+    renderMasterProfilesTable();
+    updateManualEmployeesDropdown();
+    renderSelectionList();
+    generateReport();
+
+    alert(`🗑️ සේවක ${empId} සාර්ථකව පද්ධතියෙන් ඉවත් කරන ලදී.`);
+}
+
+function updateMasterField(id, field, value) {
+    if (field.includes('Rate') || field === 'basicSalary' || field === 'late' || field === 'epf8' || field === 'epf12' || field === 'etf3') {
+        masterProfiles[id][field] = parseFloat(value) || 0;
+    } else {
+        masterProfiles[id][field] = value;
+    }
+}
+
+function formatAccounting(num) {
+    num = parseFloat(num) || 0;
+    let formatted = Math.abs(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return num < 0 ? `(${formatted})` : formatted;
+}
+
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+
+function getReportYearMonth() {
+    let counts = {};
+    currentUploadedData.forEach(emp => {
+        (emp.dailyRecords || []).forEach(rec => {
+            if (rec.normDate && rec.normDate.length === 10) {
+                let ym = rec.normDate.substring(0, 7);
+                counts[ym] = (counts[ym] || 0) + 1;
+            }
+        });
+    });
+    let bestYm = null, bestCount = 0;
+    Object.keys(counts).forEach(ym => {
+        if (counts[ym] > bestCount) { bestCount = counts[ym]; bestYm = ym; }
+    });
+    if (!bestYm) return { year: '', monthName: '' };
+    let [y, m] = bestYm.split('-');
+    return { year: y, monthName: MONTH_NAMES[parseInt(m, 10) - 1] || '' };
+}
+
+function parseAccounting(str) {
+    str = String(str).trim();
+    let isNegative = /^\(.*\)$/.test(str);
+    let cleaned = str.replace(/[(),]/g, '').replace(/[^\d.\-]/g, '');
+    let num = parseFloat(cleaned) || 0;
+    return isNegative ? -Math.abs(num) : num;
+}
+
+function updateMasterLate(id, value) {
+    masterProfiles[id].late = parseAccounting(value);
+    renderMasterProfilesTable();
+}
+
+function renderSelectionList() {
+    let tbody = document.getElementById('employeeListBody');
+    tbody.innerHTML = "";
+
+    currentUploadedData.forEach((emp, index) => {
+        let master = masterProfiles[emp.id] || {};
+        let tr = document.createElement('tr');
+        
+        let groupSelectorHTML = "";
+        if (master.isFixed) {
+            groupSelectorHTML = `<span class="badge badge-locked">🔒 Group 1 (Fixed)</span>`;
+        } else {
+            groupSelectorHTML = `
+                <label style="margin-right: 15px; cursor: pointer;">
+                    <input type="radio" name="emp_group_${index}" value="1" ${master.group === 1 ? 'checked' : ''} onchange="masterProfiles['${emp.id}'].group = 1">
+                    <strong>Group 1</strong>
+                </label>
+                <label style="cursor: pointer;">
+                    <input type="radio" name="emp_group_${index}" value="2" ${master.group === 2 ? 'checked' : ''} onchange="masterProfiles['${emp.id}'].group = 2">
+                    <strong>Group 2</strong>
+                </label>
+            `;
+        }
+
+        tr.innerHTML = `
+            <td><strong>${emp.id}</strong></td>
+            <td>${master.name || emp.name}</td>
+            <td><span class="badge badge-dept">${emp.dept}</span></td>
+            <td style="text-align: center;">${groupSelectorHTML}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    document.getElementById('selectionArea').style.display = 'block';
+    document.getElementById('reportArea').style.display = 'none';
+}
+
+function generateReport() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(masterProfiles));
+    updatePoyaDaysUI();
+
+    currentUploadedData.forEach(emp => {
+        emp.poyaDaysWorked = 0;
+        emp.poyaDaysWorkedList = [];
+        let totalMonthDays = emp.dailyRecords.length; 
+        let totalSundays = 0; 
+        let workedDaysExcludingSunday = 0; 
+        let sundayWorkedDays = 0;
+
+        emp.dailyRecords.forEach(rec => {
+            rec.isPoya = poyaDates.includes(rec.normDate);
+            let isSunday = rec.day && rec.day.toLowerCase().includes('sun');
+            let hasPunch = (rec.rawInTime && rec.rawInTime !== '***') || (rec.rawOutTime && rec.rawOutTime !== '***');
+            let isWorked = (rec.status === 'W' || rec.status === 'ABH' || rec.status === 'SL' || hasPunch);
+
+            if (isSunday) {
+                totalSundays++;
+                if (isWorked) sundayWorkedDays++;
+            } else {
+                if (isWorked && !rec.isPoya) workedDaysExcludingSunday++;
+            }
+
+            if (rec.isPoya && isWorked) {
+                emp.poyaDaysWorked++;
+                let poyaIndex = poyaDates.indexOf(rec.normDate);
+                if (poyaIndex !== -1) emp.poyaDaysWorkedList.push(poyaIndex + 1);
+            }
+        });
+
+        let poyaCount = poyaDates.length;
+        emp.holidays = totalSundays + poyaCount;
+        emp.workDays = workedDaysExcludingSunday;
+        emp.totalMonthDays = totalMonthDays;
+        emp.requiredWorkingDays = totalMonthDays - emp.holidays;
+        emp.sundayWorkedDays = sundayWorkedDays;
+
+        let calculatedAbsents = emp.requiredWorkingDays - emp.workDays;
+        emp.absentDays = calculatedAbsents < 0 ? 0 : calculatedAbsents;
+
+        emp.hasAttendedAtLeastOnce = (workedDaysExcludingSunday > 0 || sundayWorkedDays > 0 || emp.poyaDaysWorked > 0);
+    });
+
+    currentUploadedData.forEach(emp => {
+        if (!emp.hasAttendedAtLeastOnce) return;
+
+        let master = masterProfiles[emp.id];
+        if (master && (master.isFixed || master.group === 1)) {
+            let basicSalary = master.basicSalary || 0;
+            let noPayRate = master.noPayRate || 0;
+            let absentDays = emp.absentDays || 0;
+            let noPayAmount = noPayRate * absentDays;
+            let epfSalary = Math.max(0, basicSalary - noPayAmount);
+
+            master.epf8 = parseFloat((epfSalary * 0.08).toFixed(2));
+            master.epf12 = parseFloat((epfSalary * 0.12).toFixed(2));
+            master.etf3 = parseFloat((epfSalary * 0.03).toFixed(2));
+        }
+    });
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(masterProfiles));
+    localStorage.setItem(CURRENT_UPLOADED_DATA_KEY, JSON.stringify(currentUploadedData));
+    renderMasterProfilesTable();
+
+    let activeEmployees = currentUploadedData.filter(emp => emp.hasAttendedAtLeastOnce);
+
+    let group1Data = activeEmployees.filter(emp => (masterProfiles[emp.id]?.isFixed || masterProfiles[emp.id]?.group === 1));
+    let group2Data = activeEmployees.filter(emp => (!masterProfiles[emp.id]?.isFixed && masterProfiles[emp.id]?.group === 2));
+
+    renderSummaryTable('group1', group1Data, 'Group 1 Summary');
+    renderSummaryTable('group2', group2Data, 'Group 2 Summary');
+
+    populateEmployeeFilters();
+    renderReportCenter(currentUploadedData);
+    renderAdjReportCenter(activeEmployees);
+    renderPerformance01();
+    renderPerformance02();
+    renderPerformance03();
+    renderSalaryReportCenter();
+    renderPaySheet();
+
+    document.getElementById('reportArea').style.display = 'block';
+    document.getElementById('reportArea').scrollIntoView({ behavior: 'smooth' });
+}
+
+function renderSummaryTable(elementId, data, title) {
+    let container = document.getElementById(elementId);
+    if (data.length === 0) {
+        container.innerHTML = `<p style="color: #666; padding: 15px;">මෙම Group එක සඳහා සේවකයින් ඇතුළත් කර නොමැත.</p>`;
+        return;
+    }
+
+    let html = `<div class="summary-card">
+        <strong>${title}</strong>: සේවකයින් <strong>${data.length}</strong> දෙනෙකු ඇතුළත් කර ඇත.<br>
+        <span style="font-size: 13px; color: #1c7ed6; font-weight: bold;">
+            * Absents (AB) = මාසයේ දින ගණන – ඉරිදා දින – පෝය දින – වැඩ කළ දින (ඉරිදා හැර)<br>
+            * Worked Days (W) = ඉරිදා හැර වැඩ කළ දින ගණන | Holidays (H) = ඉරිදා දින + පෝය දින
+        </span>
+    </div>`;
+    html += `<table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>FP ID</th>
+                <th>Employee Name</th>
+                <th>Department</th>
+                <th>මාසේ දින ගණන</th>
+                <th>Worked Days (W)*</th>
+                <th>Poya Worked</th>
+                <th>Holidays (H)*</th>
+                <th>Required Working Days</th>
+                <th>Absents (AB)*</th>
+                <th>Half-Day / SL</th>
+                <th>Sunday Workdays</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    data.forEach((emp, index) => {
+        let master = masterProfiles[emp.id] || {};
+        html += `<tr>
+            <td>${index + 1}</td>
+            <td><strong>${emp.id}</strong></td>
+            <td>${master.name || emp.name}</td>
+            <td><span class="badge badge-dept">${emp.dept}</span></td>
+            <td style="text-align:center; font-weight: bold; font-size: 14px; color:var(--primary);">${emp.totalMonthDays}</td>
+            <td style="color: var(--success); font-weight: bold; font-size: 14px;">${emp.workDays}</td>
+            <td>${emp.poyaDaysWorked > 0 ? `<span class="badge badge-poya">${String(emp.poyaDaysWorked).padStart(2,'0')}</span>` : '<span style="color:#999;">0</span>'}</td>
+            <td style="color: blue; font-weight: bold; font-size: 14px;">${emp.holidays}</td>
+            <td style="text-align:center; font-weight: bold; font-size: 14px; color:#6a1b9a;">${emp.requiredWorkingDays}</td>
+            <td style="color: var(--danger); font-weight: bold; font-size: 14px;">${emp.absentDays}</td>
+            <td style="color: #f59e0b;">${emp.shortLeaveDays}</td>
+            <td style="text-align:center; font-weight: bold; font-size: 14px; color:#00838f;">${emp.sundayWorkedDays}</td>
+        </tr>`;
+    });
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+}
+
+function populateEmployeeFilters() {
+    let select1 = document.getElementById('employeeFilter');
+    let select2 = document.getElementById('adjEmployeeFilter');
+    
+    let optionsHTML1 = `<option value="ALL">සියලුම සේවකයින් (All Employees - ${currentUploadedData.length})</option>`;
+    currentUploadedData.forEach(emp => {
+        let master = masterProfiles[emp.id] || {};
+        optionsHTML1 += `<option value="${emp.id}">FP ID: ${emp.id} - ${master.name || emp.name}</option>`;
+    });
+    select1.innerHTML = optionsHTML1;
+
+    let activeEmployees = currentUploadedData.filter(emp => emp.hasAttendedAtLeastOnce);
+    let optionsHTML2 = `<option value="ALL">සියලුම සේවකයින් (All Active - ${activeEmployees.length})</option>`;
+    activeEmployees.forEach(emp => {
+        let master = masterProfiles[emp.id] || {};
+        optionsHTML2 += `<option value="${emp.id}">FP ID: ${emp.id} - ${master.name || emp.name}</option>`;
+    });
+    select2.innerHTML = optionsHTML2;
+}
+
+function filterReportCenter() {
+    let val = document.getElementById('employeeFilter').value;
+    renderReportCenter(val === 'ALL' ? currentUploadedData : currentUploadedData.filter(e => String(e.id) === String(val)));
+}
+
+function filterAdjReportCenter() {
+    let val = document.getElementById('adjEmployeeFilter').value;
+    let activeEmployees = currentUploadedData.filter(emp => emp.hasAttendedAtLeastOnce);
+    renderAdjReportCenter(val === 'ALL' ? activeEmployees : activeEmployees.filter(e => String(e.id) === String(val)));
+}
+
+function renderReportCenter(employees) {
+    let container = document.getElementById('reportCenterContent');
+    container.innerHTML = "";
+
+    employees.forEach(emp => {
+        let master = masterProfiles[emp.id] || {};
+        let card = document.createElement('div');
+        card.className = "report-card";
+
+        let html = `
+            <div class="report-header">
+                <h4>👤 FP ID: <strong>${emp.id}</strong> - ${master.name || emp.name} <span class="badge badge-dept">${emp.dept}</span></h4>
+                <div><span class="badge" style="background:var(--primary);">Group ${master.isFixed ? 1 : (master.group || 2)}</span></div>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr><th>#</th><th>Date</th><th>Day</th><th>In Time</th><th>Out Time</th><th>Status</th></tr>
+                </thead>
+                <tbody>`;
+
+        emp.dailyRecords.forEach((rec, idx) => {
+            let poyaBadge = rec.isPoya ? `<span class="badge badge-poya" style="margin-left:5px;">🌕 POYA</span>` : '';
+            html += `<tr>
+                <td>${idx + 1}</td>
+                <td>${rec.date}${poyaBadge}</td>
+                <td>${rec.day}</td>
+                <td class="${rec.rawInTime === '***' ? 'time-missing' : ''}">${rec.rawInTime}</td>
+                <td class="${rec.rawOutTime === '***' ? 'time-missing' : ''}">${rec.rawOutTime}</td>
+                <td><strong>${rec.status}</strong></td>
+            </tr>`;
+        });
+
+        html += `</tbody></table>`;
+        card.innerHTML = html;
+        container.appendChild(card);
+    });
+}
+
+function renderAdjReportCenter(employees) {
+    let container = document.getElementById('adjEmployeeFilterContent');
+    container.innerHTML = "";
+
+    employees.forEach(emp => {
+        let master = masterProfiles[emp.id] || {};
+        let card = document.createElement('div');
+        card.className = "report-card";
+
+        let monthTotalMinutes = 0;
+        let sundayTotalMinutes = 0;
+        let poyaTotalMinutes = 0;
+        let lateMinutes = 0;
+        const REQUIRED_MINUTES_PER_DAY = 8 * 60;
+
+        emp.dailyRecords.forEach(rec => {
+            monthTotalMinutes += (rec.workingMinutes || 0);
+            let isSunday = rec.day && rec.day.toLowerCase().includes('sun');
+            if (isSunday) sundayTotalMinutes += (rec.workingMinutes || 0);
+            if (rec.isPoya) poyaTotalMinutes += (rec.workingMinutes || 0);
+
+            let hasWorkedTime = rec.adjInTime !== '***' && rec.adjOutTime !== '***';
+            if (!isSunday && !rec.isPoya && hasWorkedTime && (rec.workingMinutes || 0) < REQUIRED_MINUTES_PER_DAY) {
+                lateMinutes += (REQUIRED_MINUTES_PER_DAY - (rec.workingMinutes || 0));
+            }
+        });
+
+        let totalHrs = Math.floor(monthTotalMinutes / 60);
+        let totalMins = monthTotalMinutes % 60;
+        let pad = (n) => n.toString().padStart(2, '0');
+        let formattedTotalHours = `${totalHrs} Hours ${pad(totalMins)} Mins (${pad(totalHrs)}:${pad(totalMins)})`;
+
+        let sundayHrs = Math.floor(sundayTotalMinutes / 60);
+        let sundayMins = sundayTotalMinutes % 60;
+        let formattedSundayHours = `${sundayHrs} Hours ${pad(sundayMins)} Mins (${pad(sundayHrs)}:${pad(sundayMins)})`;
+
+        let otMinutes = monthTotalMinutes - sundayTotalMinutes - (180 * 60);
+        let hasOT = otMinutes > 0;
+        let otHrs = hasOT ? Math.floor(otMinutes / 60) : 0;
+        let otMins = hasOT ? otMinutes % 60 : 0;
+        let formattedOTHours = `${otHrs} Hours ${pad(otMins)} Mins (${pad(otHrs)}:${pad(otMins)})`;
+
+        let poyaHrs = Math.floor(poyaTotalMinutes / 60);
+        let poyaMins = poyaTotalMinutes % 60;
+        let formattedPoyaHours = `${poyaHrs} Hours ${pad(poyaMins)} Mins (${pad(poyaHrs)}:${pad(poyaMins)})`;
+
+        let lateHrs = Math.floor(lateMinutes / 60);
+        let lateMins = lateMinutes % 60;
+        let formattedLateHours = `${lateHrs} Hours ${pad(lateMins)} Mins (${pad(lateHrs)}:${pad(lateMins)})`;
+
+        emp.totalMinutes = monthTotalMinutes;
+        emp.sundayMinutes = sundayTotalMinutes;
+        emp.otMinutes = hasOT ? otMinutes : 0;
+        emp.poyaMinutes = poyaTotalMinutes;
+        emp.lateMinutes = lateMinutes;
+
+        let html = `
+            <div class="report-header">
+                <h4>⏱️ FP ID: <strong>${emp.id}</strong> - ${master.name || emp.name} <span class="badge badge-dept">${emp.dept}</span></h4>
+                <div>
+                    <span class="badge badge-hours">⏳ Total: ${formattedTotalHours}</span>
+                    <span class="badge badge-hours" style="background:#0891b2; margin-left:5px;">☀️ Sunday: ${formattedSundayHours}</span>
+                    ${hasOT ? `<span class="badge badge-hours" style="background:#dc2626; margin-left:5px;">🔥 OT: ${formattedOTHours}</span>` : ''}
+                    <span class="badge badge-hours" style="background:#7c3aed; margin-left:5px;">🌕 POYA: ${formattedPoyaHours}</span>
+                    <span class="badge badge-hours" style="background:#ea580c; margin-left:5px;">⏰ Late: ${formattedLateHours}</span>
+                </div>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr><th>#</th><th>Date</th><th>Day</th><th>Adjusted In</th><th>Adjusted Out</th><th>Working Hours</th><th>Status</th></tr>
+                </thead>
+                <tbody>`;
+
+        emp.dailyRecords.forEach((rec, idx) => {
+            let poyaBadge = rec.isPoya ? `<span class="badge badge-poya" style="margin-left:5px;">🌕 POYA</span>` : '';
+            html += `<tr>
+                <td>${idx + 1}</td>
+                <td>${rec.date}${poyaBadge}</td>
+                <td>${rec.day}</td>
+                <td class="${rec.adjInTime === '***' ? 'time-missing' : ''}" style="color: var(--success); font-weight: bold;">${rec.adjInTime}</td>
+                <td class="${rec.adjOutTime === '***' ? 'time-missing' : ''}" style="color: #b91c1c; font-weight: bold;">${rec.adjOutTime}</td>
+                <td class="${rec.workingHours === '***' ? 'time-missing' : ''}" style="color: var(--primary); font-weight: bold;">${rec.workingHours}</td>
+                <td><strong>${rec.status}</strong></td>
+            </tr>`;
+        });
+
+        html += `
+            <tr style="background-color: #f1f5f9; font-weight: bold; border-top: 2px solid #cbd5e1;">
+                <td colspan="5" style="text-align: right;">මුළු වැඩ කළ කාලය (Total):</td>
+                <td style="color: #1e40af; font-weight: bold;">${pad(totalHrs)}:${pad(totalMins)}</td>
+                <td>---</td>
+            </tr>
+            <tr style="background-color: #ecfeff; font-weight: bold; border-top: 1px solid #cbd5e1;">
+                <td colspan="5" style="text-align: right; color: #0e7490;">ඉරිදා වැඩ කළ කාලය (Sunday):</td>
+                <td style="color: #0891b2; font-weight: bold;">${pad(sundayHrs)}:${pad(sundayMins)}</td>
+                <td>---</td>
+            </tr>
+            ${hasOT ? `
+            <tr style="background-color: #fef2f2; font-weight: bold; border-top: 1px solid #cbd5e1;">
+                <td colspan="5" style="text-align: right; color: #b91c1c;">අතිකාල පැය (OT):</td>
+                <td style="color: #dc2626; font-weight: bold;">${pad(otHrs)}:${pad(otMins)}</td>
+                <td>---</td>
+            </tr>` : ''}
+            <tr style="background-color: #f5f3ff; font-weight: bold; border-top: 1px solid #cbd5e1;">
+                <td colspan="5" style="text-align: right; color: #6d28d9;">පෝය දින පැය (POYA):</td>
+                <td style="color: #7c3aed; font-weight: bold;">${pad(poyaHrs)}:${pad(poyaMins)}</td>
+                <td>---</td>
+            </tr>
+            <tr style="background-color: #fff7ed; font-weight: bold; border-top: 1px solid #cbd5e1;">
+                <td colspan="5" style="text-align: right; color: #c2410c;">ප්‍රමාද වූ පැය (Late):</td>
+                <td style="color: #ea580c; font-weight: bold;">${pad(lateHrs)}:${pad(lateMins)}</td>
+                <td>---</td>
+            </tr>`;
+
+        html += `</tbody></table>`;
+        card.innerHTML = html;
+        container.appendChild(card);
+    });
+}
+
+function updateP01Config() {
+    let base = parseFloat(document.getElementById('p01BaseAmount').value);
+    let perDay = parseFloat(document.getElementById('p01PerDayDeduction').value);
+    p01Config.baseAmount = isNaN(base) ? 0 : base;
+    p01Config.perDayDeduction = isNaN(perDay) ? 0 : perDay;
+    saveP01Config();
+    renderPerformance01();
+}
+
+function addP01Employee() {
+    let select = document.getElementById('p01EmployeeSelect');
+    let empId = select.value.trim();
+    if (!empId) return;
+    if (!p01SelectedIds.some(id => String(id) === String(empId))) {
+        p01SelectedIds.push(empId);
+        saveP01Selected();
+    }
+    renderPerformance01();
+}
+
+function removeP01Employee(empId) {
+    p01SelectedIds = p01SelectedIds.filter(id => String(id) !== String(empId));
+    saveP01Selected();
+    renderPerformance01();
+}
+
+function renderPerformance01() {
+    let baseInput = document.getElementById('p01BaseAmount');
+    let perDayInput = document.getElementById('p01PerDayDeduction');
+    if (!baseInput) return;
+
+    baseInput.value = p01Config.baseAmount;
+    perDayInput.value = p01Config.perDayDeduction;
+
+    let activeEmployees = currentUploadedData.filter(e => e.hasAttendedAtLeastOnce);
+
+    let select = document.getElementById('p01EmployeeSelect');
+    select.innerHTML = '<option value="">-- සේවකයා තෝරන්න --</option>';
+    activeEmployees.slice().sort((a, b) => String(a.id).localeCompare(String(b.id))).forEach(emp => {
+        if (!p01SelectedIds.some(id => String(id) === String(emp.id))) {
+            let opt = document.createElement('option');
+            opt.value = emp.id;
+            opt.textContent = `${emp.id} - ${emp.name}`;
+            select.appendChild(opt);
+        }
+    });
+
+    let container = document.getElementById('p01TableContainer');
+    if (!container) return;
+
+    let validSelectedIds = p01SelectedIds.filter(empId => activeEmployees.some(e => String(e.id) === String(empId)));
+
+    if (validSelectedIds.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#666; margin-top:20px;">තවම සේවකයන් තෝරාගෙන නැත.</p>';
+        return;
+    }
+
+    let html = `<table class="data-table">
+        <thead><tr>
+            <th>#</th>
+            <th>FP ID</th>
+            <th>Employee Name</th>
+            <th>Department</th>
+            <th>Absents (AB)*</th>
+            <th>අඩුවන මුදල (Deduction) Rs</th>
+            <th>ලැබෙන මුදල (Final Amount) Rs</th>
+            <th>ඉවත් කරන්න</th>
+        </tr></thead>
+        <tbody>`;
+
+    let rowNum = 1;
+    validSelectedIds.forEach(empId => {
+        let emp = activeEmployees.find(e => String(e.id) === String(empId));
+        let master = masterProfiles[empId] || {};
+        let name = emp ? emp.name : (master.name || `ID ${empId}`);
+        let dept = emp ? emp.dept : (master.dept || '-');
+        let absentDays = emp ? (emp.absentDays || 0) : 0;
+
+        let rawDeduction = absentDays * p01Config.perDayDeduction;
+        let deduction = Math.min(rawDeduction, p01Config.baseAmount);
+        let finalAmount = p01Config.baseAmount - deduction;
+
+        html += `<tr>
+            <td>${rowNum++}</td>
+            <td>${empId}</td>
+            <td>${name}</td>
+            <td><span class="badge badge-dept">${dept}</span></td>
+            <td style="color: var(--danger); font-weight: bold;">${absentDays}</td>
+            <td style="color: #b91c1c; font-weight: bold;">${deduction.toFixed(2)}</td>
+            <td style="color: var(--success); font-weight: bold;">${finalAmount.toFixed(2)}</td>
+            <td><button class="btn-action" style="background:#dc2626; color:white;" onclick="removeP01Employee('${empId}')">✖ ඉවත් කරන්න</button></td>
+        </tr>`;
+    });
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+}
+
+function updateP02Config() {
+    let base = parseFloat(document.getElementById('p02BaseAmount').value);
+    let perDay = parseFloat(document.getElementById('p02PerDayDeduction').value);
+    p02Config.baseAmount = isNaN(base) ? 0 : base;
+    p02Config.perDayDeduction = isNaN(perDay) ? 0 : perDay;
+    saveP02Config();
+    renderPerformance02();
+}
+
+function addP02Employee() {
+    let select = document.getElementById('p02EmployeeSelect');
+    let empId = select.value.trim();
+    if (!empId) return;
+    if (!p02SelectedIds.some(id => String(id) === String(empId))) {
+        p02SelectedIds.push(empId);
+        saveP02Selected();
+    }
+    renderPerformance02();
+}
+
+function removeP02Employee(empId) {
+    p02SelectedIds = p02SelectedIds.filter(id => String(id) !== String(empId));
+    saveP02Selected();
+    renderPerformance02();
+}
+
+function renderPerformance02() {
+    let baseInput = document.getElementById('p02BaseAmount');
+    let perDayInput = document.getElementById('p02PerDayDeduction');
+    if (!baseInput) return;
+
+    baseInput.value = p02Config.baseAmount;
+    perDayInput.value = p02Config.perDayDeduction;
+
+    let activeEmployees = currentUploadedData.filter(e => e.hasAttendedAtLeastOnce);
+
+    let select = document.getElementById('p02EmployeeSelect');
+    select.innerHTML = '<option value="">-- සේවකයා තෝරන්න --</option>';
+    activeEmployees.slice().sort((a, b) => String(a.id).localeCompare(String(b.id))).forEach(emp => {
+        if (!p02SelectedIds.some(id => String(id) === String(emp.id))) {
+            let opt = document.createElement('option');
+            opt.value = emp.id;
+            opt.textContent = `${emp.id} - ${emp.name}`;
+            select.appendChild(opt);
+        }
+    });
+
+    let container = document.getElementById('p02TableContainer');
+    if (!container) return;
+
+    let validSelectedIds = p02SelectedIds.filter(empId => activeEmployees.some(e => String(e.id) === String(empId)));
+
+    if (validSelectedIds.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#666; margin-top:20px;">තවම සේවකයන් තෝරාගෙන නැත.</p>';
+        return;
+    }
+
+    let html = `<table class="data-table">
+        <thead><tr>
+            <th>#</th>
+            <th>FP ID</th>
+            <th>Employee Name</th>
+            <th>Department</th>
+            <th>Absents (AB)*</th>
+            <th>අඩුවන මුදල (Deduction) Rs</th>
+            <th>ලැබෙන මුදල (Final Amount) Rs</th>
+            <th>ඉවත් කරන්න</th>
+        </tr></thead>
+        <tbody>`;
+
+    let rowNum = 1;
+    validSelectedIds.forEach(empId => {
+        let emp = activeEmployees.find(e => String(e.id) === String(empId));
+        let master = masterProfiles[empId] || {};
+        let name = emp ? emp.name : (master.name || `ID ${empId}`);
+        let dept = emp ? emp.dept : (master.dept || '-');
+        let absentDays = emp ? (emp.absentDays || 0) : 0;
+
+        let rawDeduction = absentDays * p02Config.perDayDeduction;
+        let deduction = Math.min(rawDeduction, p02Config.baseAmount);
+        let finalAmount = p02Config.baseAmount - deduction;
+
+        html += `<tr>
+            <td>${rowNum++}</td>
+            <td>${empId}</td>
+            <td>${name}</td>
+            <td><span class="badge badge-dept">${dept}</span></td>
+            <td style="color: var(--danger); font-weight: bold;">${absentDays}</td>
+            <td style="color: #b91c1c; font-weight: bold;">${deduction.toFixed(2)}</td>
+            <td style="color: var(--success); font-weight: bold;">${finalAmount.toFixed(2)}</td>
+            <td><button class="btn-action" style="background:#dc2626; color:white;" onclick="removeP02Employee('${empId}')">✖ ඉවත් කරන්න</button></td>
+        </tr>`;
+    });
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+}
+
+function updateP03Config() {
+    let amt1 = parseFloat(document.getElementById('p03Amount1').value);
+    let amt2 = parseFloat(document.getElementById('p03Amount2').value);
+    let perDay = parseFloat(document.getElementById('p03PerDayDeduction').value);
+    p03Config.amount1 = isNaN(amt1) ? 0 : amt1;
+    p03Config.amount2 = isNaN(amt2) ? 0 : amt2;
+    p03Config.perDayDeduction = isNaN(perDay) ? 0 : perDay;
+    saveP03Config();
+    renderPerformance03();
+}
+
+function populateP03TierSelect() {
+    let tierSelect = document.getElementById('p03TierSelect');
+    if (!tierSelect) return;
+    tierSelect.innerHTML = `
+        <option value="${p03Config.amount1}">Rs ${p03Config.amount1.toFixed(2)}</option>
+        <option value="${p03Config.amount2}">Rs ${p03Config.amount2.toFixed(2)}</option>
+    `;
+}
+
+function addP03Employee() {
+    let empSelect = document.getElementById('p03EmployeeSelect');
+    let tierSelect = document.getElementById('p03TierSelect');
+    let empId = empSelect.value.trim();
+    let baseAmount = parseFloat(tierSelect.value);
+    if (!empId || isNaN(baseAmount)) return;
+    if (!p03Selected.some(e => String(e.id) === String(empId))) {
+        p03Selected.push({ id: empId, baseAmount: baseAmount });
+        saveP03Selected();
+    }
+    renderPerformance03();
+}
+
+function removeP03Employee(empId) {
+    p03Selected = p03Selected.filter(e => String(e.id) !== String(empId));
+    saveP03Selected();
+    renderPerformance03();
+}
+
+function updateP03EmployeeTier(empId, newAmount) {
+    let entry = p03Selected.find(e => String(e.id) === String(empId));
+    if (!entry) return;
+    entry.baseAmount = parseFloat(newAmount) || 0;
+    saveP03Selected();
+    renderPerformance03();
+}
+
+function renderPerformance03() {
+    let amt1Input = document.getElementById('p03Amount1');
+    let amt2Input = document.getElementById('p03Amount2');
+    let perDayInput = document.getElementById('p03PerDayDeduction');
+    if (!amt1Input) return;
+
+    amt1Input.value = p03Config.amount1;
+    amt2Input.value = p03Config.amount2;
+    perDayInput.value = p03Config.perDayDeduction;
+
+    populateP03TierSelect();
+
+    let activeEmployees = currentUploadedData.filter(e => e.hasAttendedAtLeastOnce);
+
+    let select = document.getElementById('p03EmployeeSelect');
+    let selectedIds = p03Selected.map(e => String(e.id));
+    select.innerHTML = '<option value="">-- සේවකයා තෝරන්න --</option>';
+    activeEmployees.slice().sort((a, b) => String(a.id).localeCompare(String(b.id))).forEach(emp => {
+        if (!selectedIds.includes(String(emp.id))) {
+            let opt = document.createElement('option');
+            opt.value = emp.id;
+            opt.textContent = `${emp.id} - ${emp.name}`;
+            select.appendChild(opt);
+        }
+    });
+
+    let container = document.getElementById('p03TableContainer');
+    if (!container) return;
+
+    let validP03Selected = p03Selected.filter(sel => activeEmployees.some(e => String(e.id) === String(sel.id)));
+
+    if (validP03Selected.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#666; margin-top:20px;">තවම සේවකයන් තෝරාගෙන නැත.</p>';
+        return;
+    }
+
+    let html = `<table class="data-table">
+        <thead><tr>
+            <th>#</th>
+            <th>FP ID</th>
+            <th>Employee Name</th>
+            <th>Department</th>
+            <th>මුළු මුදල (Base Amount) Rs</th>
+            <th>Absents (AB)*</th>
+            <th>අඩුවන මුදල (Deduction) Rs</th>
+            <th>ලැබෙන මුදල (Final Amount) Rs</th>
+            <th>ඉවත් කරන්න</th>
+        </tr></thead>
+        <tbody>`;
+
+    let rowNum = 1;
+    validP03Selected.forEach(sel => {
+        let empId = sel.id;
+        let emp = activeEmployees.find(e => String(e.id) === String(empId));
+        let master = masterProfiles[empId] || {};
+        let name = emp ? emp.name : (master.name || `ID ${empId}`);
+        let dept = emp ? emp.dept : (master.dept || '-');
+        let absentDays = emp ? (emp.absentDays || 0) : 0;
+        let baseAmount = sel.baseAmount;
+
+        let rawDeduction = absentDays * p03Config.perDayDeduction;
+        let deduction = Math.min(rawDeduction, baseAmount);
+        let finalAmount = baseAmount - deduction;
+
+        html += `<tr>
+            <td>${rowNum++}</td>
+            <td>${empId}</td>
+            <td>${name}</td>
+            <td><span class="badge badge-dept">${dept}</span></td>
+            <td>
+                <select class="input-cell" onchange="updateP03EmployeeTier('${empId}', this.value)">
+                    <option value="${p03Config.amount1}" ${baseAmount === p03Config.amount1 ? 'selected' : ''}>Rs ${p03Config.amount1.toFixed(2)}</option>
+                    <option value="${p03Config.amount2}" ${baseAmount === p03Config.amount2 ? 'selected' : ''}>Rs ${p03Config.amount2.toFixed(2)}</option>
+                </select>
+            </td>
+            <td style="color: var(--danger); font-weight: bold;">${absentDays}</td>
+            <td style="color: #b91c1c; font-weight: bold;">${deduction.toFixed(2)}</td>
+            <td style="color: var(--success); font-weight: bold;">${finalAmount.toFixed(2)}</td>
+            <td><button class="btn-action" style="background:#dc2626; color:white;" onclick="removeP03Employee('${empId}')">✖ ඉවත් කරන්න</button></td>
+        </tr>`;
+    });
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+}
+
+function getSalaryReportData() {
+    let activeEmployees = currentUploadedData.filter(emp => emp.hasAttendedAtLeastOnce);
+
+    return activeEmployees.map(emp => {
+        let master = masterProfiles[emp.id] || {};
+        let group = master.isFixed ? 1 : (master.group || 2);
+        let basicSalary = master.basicSalary || 0;
+        let absentDays = emp.absentDays || 0;
+
+        let otHoursDecimal = (emp.otMinutes || 0) / 60;
+        let sundayHoursDecimal = (emp.sundayMinutes || 0) / 60;
+        let poyaHoursDecimal = (emp.poyaMinutes || 0) / 60;
+        let lateHoursDecimal = (emp.lateMinutes || 0) / 60;
+
+        let otAmount = (master.otRate || 0) * otHoursDecimal;
+        let sundayAmount = (master.sundayRate || 0) * sundayHoursDecimal;
+        let poyaAmount = (master.poyaRate || 0) * poyaHoursDecimal;
+        let noPayAmount = (master.noPayRate || 0) * absentDays;
+        let lateAmount = (master.late || 0) * lateHoursDecimal;
+
+        let p01Amount = 0;
+        if (p01SelectedIds.some(id => String(id) === String(emp.id))) {
+            let ded = Math.min(absentDays * p01Config.perDayDeduction, p01Config.baseAmount);
+            p01Amount = p01Config.baseAmount - ded;
+        }
+
+        let p02Amount = 0;
+        if (p02SelectedIds.some(id => String(id) === String(emp.id))) {
+            let ded = Math.min(absentDays * p02Config.perDayDeduction, p02Config.baseAmount);
+            p02Amount = p02Config.baseAmount - ded;
+        }
+
+        let p03Amount = 0;
+        let p03Entry = p03Selected.find(sel => String(sel.id) === String(emp.id));
+        if (p03Entry) {
+            let ded = Math.min(absentDays * p03Config.perDayDeduction, p03Entry.baseAmount);
+            p03Amount = p03Entry.baseAmount - ded;
+        }
+
+        let specialAmount = parseFloat(master.special) || 0;
+        let slAdRaw = slAdValues[emp.id] !== undefined ? slAdValues[emp.id] : '';
+        let slAdAmount = parseFloat(slAdRaw) || 0;
+        let epf8Value = master.epf8 || 0;
+
+        let netSalary = basicSalary + specialAmount + otAmount + sundayAmount + poyaAmount
+            + p01Amount + p02Amount + p03Amount + slAdAmount - noPayAmount - lateAmount;
+        if (group === 1) {
+            netSalary -= epf8Value;
+        }
+
+        return {
+            id: emp.id,
+            name: emp.name,
+            dept: emp.dept,
+            group: group,
+            basicSalary: basicSalary,
+            special: master.special || '',
+            otAmount: otAmount,
+            sundayAmount: sundayAmount,
+            poyaAmount: poyaAmount,
+            p01Amount: p01Amount,
+            p02Amount: p02Amount,
+            p03Amount: p03Amount,
+            noPayAmount: noPayAmount,
+            lateAmount: lateAmount,
+            epfSalary: Math.max(0, basicSalary - noPayAmount),
+            epf8: master.epf8 || 0,
+            epf12: master.epf12 || 0,
+            etf3: master.etf3 || 0,
+            absentDays: absentDays,
+            slAd: slAdRaw,
+            netSalary: netSalary
+        };
+    });
+}
+
+function buildSalaryTableHtml(data, includeEpfEtf) {
+    if (data.length === 0) {
+        return '<p style="color: #666; padding: 15px;">මෙම Group එක සඳහා සේවකයින් ඇතුළත් කර නොමැත.</p>';
+    }
+    let epfSalaryHeader = includeEpfEtf ? `<th>EPF Salary</th>` : '';
+    let epfEtfHeader = includeEpfEtf ? `
+            <th>EPF 8%</th>
+            <th>EPF 12%</th>
+            <th>ETF 3%</th>` : '';
+    let html = `<table class="data-table">
+        <thead><tr>
+            <th>#</th>
+            <th>FP ID</th>
+            <th>Employee Name</th>
+            <th>Basic Salary</th>
+            <th>Special</th>
+            <th>OT</th>
+            <th>Sunday</th>
+            <th>Poya Day</th>
+            <th>P01</th>
+            <th>P02</th>
+            <th>P03</th>
+            <th>No Pay</th>
+            <th>Late</th>${epfSalaryHeader}${epfEtfHeader}
+            <th>Absents (AB)</th>
+            <th>SL Ad</th>
+            <th>Net Salary</th>
+        </tr></thead>
+        <tbody>`;
+    data.forEach((e, i) => {
+        let epfSalaryCell = includeEpfEtf ? `<td>${formatAccounting(e.epfSalary)}</td>` : '';
+        let epfEtfCells = includeEpfEtf ? `
+            <td>${formatAccounting(e.epf8)}</td>
+            <td>${formatAccounting(e.epf12)}</td>
+            <td>${formatAccounting(e.etf3)}</td>` : '';
+        html += `<tr>
+            <td>${i + 1}</td>
+            <td>${e.id}</td>
+            <td>${e.name}</td>
+            <td>${formatAccounting(e.basicSalary)}</td>
+            <td>${e.special !== '' ? e.special : '-'}</td>
+            <td>${formatAccounting(e.otAmount)}</td>
+            <td>${formatAccounting(e.sundayAmount)}</td>
+            <td>${formatAccounting(e.poyaAmount)}</td>
+            <td>${formatAccounting(e.p01Amount)}</td>
+            <td>${formatAccounting(e.p02Amount)}</td>
+            <td>${formatAccounting(e.p03Amount)}</td>
+            <td>${formatAccounting(e.noPayAmount)}</td>
+            <td>${formatAccounting(e.lateAmount)}</td>${epfSalaryCell}${epfEtfCells}
+            <td style="color: var(--danger); font-weight: bold;">${e.absentDays}</td>
+            <td><input type="text" class="input-cell" style="text-align:right; width:80px;" value="${e.slAd}" placeholder="+/-" onchange="updateSlAd('${e.id}', this.value)"></td>
+            <td style="color: var(--success); font-weight: bold;">${formatAccounting(e.netSalary)}</td>
+        </tr>`;
+    });
+    html += `</tbody></table>`;
+    return html;
+}
+
+function buildSalaryReportRows(groupNum) {
+    let data = getSalaryReportData().filter(e => e.group === groupNum).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    let includeEpfEtf = groupNum === 1;
+
+    let headers = ['#', 'FP ID', 'Employee Name', 'Basic Salary', 'Special', 'OT', 'Sunday', 'Poya Day', 'P01', 'P02', 'P03', 'No Pay', 'Late'];
+    if (includeEpfEtf) headers = headers.concat(['EPF Salary', 'EPF 8%', 'EPF 12%', 'ETF 3%']);
+    headers = headers.concat(['Absents (AB)', 'SL Ad', 'Net Salary']);
+
+    let rows = data.map((e, i) => {
+        let row = [
+            i + 1, e.id, e.name,
+            formatAccounting(e.basicSalary),
+            e.special !== '' ? e.special : '-',
+            formatAccounting(e.otAmount),
+            formatAccounting(e.sundayAmount),
+            formatAccounting(e.poyaAmount),
+            formatAccounting(e.p01Amount),
+            formatAccounting(e.p02Amount),
+            formatAccounting(e.p03Amount),
+            formatAccounting(e.noPayAmount),
+            formatAccounting(e.lateAmount)
+        ];
+        if (includeEpfEtf) {
+            row = row.concat([
+                formatAccounting(e.epfSalary),
+                formatAccounting(e.epf8),
+                formatAccounting(e.epf12),
+                formatAccounting(e.etf3)
+            ]);
+        }
+        row = row.concat([e.absentDays, e.slAd !== '' ? e.slAd : '-', formatAccounting(e.netSalary)]);
+        return row;
+    });
+
+    return { headers, rows };
+}
+
+function downloadSalaryReportExcel(groupNum) {
+    let { headers, rows } = buildSalaryReportRows(groupNum);
+    if (rows.length === 0) {
+        alert('මෙම Group එක සඳහා සේවකයින් නොමැත.');
+        return;
+    }
+    let ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    let wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, `Group ${groupNum} Salary`);
+    XLSX.writeFile(wb, `Group_${groupNum}_Salary_Report.xlsx`);
+}
+
+function downloadSalaryReportPDF(groupNum) {
+    let { headers, rows } = buildSalaryReportRows(groupNum);
+    if (rows.length === 0) {
+        alert('මෙම Group එක සඳහා සේවකයින් නොමැත.');
+        return;
+    }
+
+    let pdfHeaders = [...headers, 'Signature'];
+    let pdfRows = rows.map(r => [...r, '']);
+
+    let { jsPDF } = window.jspdf;
+    let doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+    let rym = getReportYearMonth();
+    let compTitle = companyProfile.name ? `${companyProfile.name} — ` : '';
+
+    doc.setFontSize(13);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`${compTitle}Group ${groupNum} Salary Report (${rym.monthName || '-'} ${rym.year || ''})`, 40, 30);
+
+    doc.autoTable({
+        head: [pdfHeaders],
+        body: pdfRows,
+        startY: 42,
+        theme: 'grid',
+        styles: { 
+            fontSize: 6.5, 
+            cellPadding: 3, 
+            textColor: [0, 0, 0], 
+            lineColor: [0, 0, 0], 
+            lineWidth: 0.5,
+            fillColor: [255, 255, 255]
+        },
+        headStyles: { 
+            fillColor: [255, 255, 255], 
+            textColor: [0, 0, 0], 
+            fontStyle: 'bold',
+            lineColor: [0, 0, 0],
+            lineWidth: 0.8
+        },
+        alternateRowStyles: { 
+            fillColor: [255, 255, 255] 
+        },
+        columnStyles: {
+            [pdfHeaders.length - 1]: { cellWidth: 55 }
+        }
+    });
+
+    doc.save(`Group_${groupNum}_Salary_Report.pdf`);
+}
+
+function renderSalaryReportCenter() {
+    let elTotalEmp = document.getElementById('srcTotalEmployees');
+    if (!elTotalEmp) return;
+
+    let data = getSalaryReportData();
+    let group1Data = data.filter(e => e.group === 1).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    let group2Data = data.filter(e => e.group === 2).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    let totalSalary = data.reduce((sum, e) => sum + e.netSalary, 0);
+    let group1Total = group1Data.reduce((sum, e) => sum + e.netSalary, 0);
+    let group2Total = group2Data.reduce((sum, e) => sum + e.netSalary, 0);
+
+    elTotalEmp.textContent = data.length;
+    document.getElementById('srcTotalSalary').textContent = 'Rs ' + formatAccounting(totalSalary);
+    document.getElementById('srcGroup1Total').textContent = 'Rs ' + formatAccounting(group1Total);
+    document.getElementById('srcGroup2Total').textContent = 'Rs ' + formatAccounting(group2Total);
+
+    let rym = getReportYearMonth();
+    let metaHtml = `<strong>${companyProfile.name || 'Company Name'}</strong> &nbsp;|&nbsp; Year: <strong>${rym.year || '-'}</strong> &nbsp;|&nbsp; Month: <strong>${rym.monthName || '-'}</strong>`;
+    document.getElementById('srcGroup1Meta').innerHTML = metaHtml;
+    document.getElementById('srcGroup2Meta').innerHTML = metaHtml;
+
+    document.getElementById('srcGroup1TableContainer').innerHTML = buildSalaryTableHtml(group1Data, true);
+    document.getElementById('srcGroup2TableContainer').innerHTML = buildSalaryTableHtml(group2Data, false);
+
+    let select = document.getElementById('srcEmployeeSelect');
+    let prevVal = select.value;
+    select.innerHTML = '<option value="">-- සේවකයා තෝරන්න --</option>';
+    data.slice().sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    }).forEach(e => {
+        let opt = document.createElement('option');
+        opt.value = e.id;
+        opt.textContent = `${e.id} - ${e.name}`;
+        select.appendChild(opt);
+    });
+    if (prevVal && data.some(e => String(e.id) === String(prevVal))) {
+        select.value = prevVal;
+    }
+
+    renderSalaryEmployeeDetail();
+}
+
+function renderSalaryEmployeeDetail() {
+    let select = document.getElementById('srcEmployeeSelect');
+    let container = document.getElementById('srcEmployeeDetailContainer');
+    if (!select || !container) return;
+
+    let empId = select.value.trim();
+    if (!empId) {
+        container.innerHTML = '';
+        return;
+    }
+
+    let data = getSalaryReportData();
+    let e = data.find(d => String(d.id) === String(empId));
+    if (!e) {
+        container.innerHTML = '';
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="summary-card">
+            <strong>${e.id} - ${e.name}</strong> &nbsp;|&nbsp; ${e.dept} &nbsp;|&nbsp; Group ${e.group}
+        </div>
+        <table class="data-table" style="max-width:500px;">
+            <tbody>
+                <tr><td><strong>Basic Salary</strong></td><td>Rs ${formatAccounting(e.basicSalary)}</td></tr>
+                <tr><td><strong>Special</strong></td><td>${e.special !== '' ? e.special : '-'}</td></tr>
+                <tr><td><strong>OT</strong></td><td>Rs ${formatAccounting(e.otAmount)}</td></tr>
+                <tr><td><strong>Sunday</strong></td><td>Rs ${formatAccounting(e.sundayAmount)}</td></tr>
+                <tr><td><strong>Poya Day</strong></td><td>Rs ${formatAccounting(e.poyaAmount)}</td></tr>
+                <tr><td><strong>P01</strong></td><td>Rs ${formatAccounting(e.p01Amount)}</td></tr>
+                <tr><td><strong>P02</strong></td><td>Rs ${formatAccounting(e.p02Amount)}</td></tr>
+                <tr><td><strong>P03</strong></td><td>Rs ${formatAccounting(e.p03Amount)}</td></tr>
+                <tr><td><strong>No Pay</strong></td><td>Rs ${formatAccounting(e.noPayAmount)}</td></tr>
+                <tr><td><strong>Late</strong></td><td>Rs ${formatAccounting(e.lateAmount)}</td></tr>
+                ${e.group === 1 ? `
+                <tr><td><strong>EPF Salary</strong></td><td>Rs ${formatAccounting(e.epfSalary)}</td></tr>
+                <tr><td><strong>EPF 8%</strong></td><td>Rs ${formatAccounting(e.epf8)}</td></tr>
+                <tr><td><strong>EPF 12%</strong></td><td>Rs ${formatAccounting(e.epf12)}</td></tr>
+                <tr><td><strong>ETF 3%</strong></td><td>Rs ${formatAccounting(e.etf3)}</td></tr>` : ''}
+                <tr><td><strong>Absents (AB)</strong></td><td style="color:var(--danger); font-weight:bold;">${e.absentDays}</td></tr>
+                <tr><td><strong>SL Ad</strong></td><td>${e.slAd !== '' ? e.slAd : '-'}</td></tr>
+                <tr style="background:#f0fdf4;"><td><strong>Net Salary</strong></td><td style="color:var(--success); font-weight:bold; font-size:16px;">Rs ${formatAccounting(e.netSalary)}</td></tr>
+            </tbody>
+        </table>
+    `;
+}
+
+function formatSignedNumber(num) {
+    num = parseFloat(num) || 0;
+    return (num < 0 ? '-' : '') + Math.abs(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function buildPaySlipCardHtml(e, meta) {
+    return `
+    <div style="border:1px solid #cbd5e1; border-radius:var(--radius-lg); padding:20px; margin-bottom:20px; max-width:600px; background:#fff; box-shadow:var(--shadow-sm);">
+        <div style="text-align:center; border-bottom:2px solid var(--primary); padding-bottom:10px; margin-bottom:12px;">
+            <div style="font-size:18px; font-weight:bold; color:var(--primary); font-family:'Poppins', sans-serif;">${meta.companyName || 'Company Name'}</div>
+            ${meta.companyAddress ? `<div style="font-size:12px; color:var(--text-muted);">${meta.companyAddress}</div>` : ''}
+            ${meta.companyPhone ? `<div style="font-size:12px; color:var(--text-muted);">Tel: ${meta.companyPhone}</div>` : ''}
+            <div style="margin-top:8px; font-weight:bold;">PAY SHEET — ${meta.monthName || '-'} ${meta.year || ''}</div>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:14px;">
+            <div><strong>Employee:</strong> ${e.id} - ${e.name}</div>
+            <div><strong>Dept:</strong> ${e.dept}</div>
+        </div>
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <tr><td>Basic Salary</td><td style="text-align:right;">${formatAccounting(e.basicSalary)}</td></tr>
+            <tr><td>Special</td><td style="text-align:right;">${e.special !== '' ? e.special : '-'}</td></tr>
+            <tr><td>OT</td><td style="text-align:right;">${formatAccounting(e.otAmount)}</td></tr>
+            <tr><td>Sunday</td><td style="text-align:right;">${formatAccounting(e.sundayAmount)}</td></tr>
+            <tr><td>Poya Day</td><td style="text-align:right;">${formatAccounting(e.poyaAmount)}</td></tr>
+            <tr><td>P01</td><td style="text-align:right;">${formatAccounting(e.p01Amount)}</td></tr>
+            <tr><td>P02</td><td style="text-align:right;">${formatAccounting(e.p02Amount)}</td></tr>
+            <tr><td>P03</td><td style="text-align:right;">${formatAccounting(e.p03Amount)}</td></tr>
+            <tr><td>SL Ad</td><td style="text-align:right;">${e.slAd !== '' ? e.slAd : '-'}</td></tr>
+            <tr><td style="color:#b91c1c;">No Pay</td><td style="text-align:right; color:#b91c1c;">- ${formatAccounting(e.noPayAmount)}</td></tr>
+            <tr><td style="color:#b91c1c;">Late</td><td style="text-align:right; color:#b91c1c;">- ${formatAccounting(e.lateAmount)}</td></tr>
+        </table>
+        <div style="display:flex; justify-content:space-between; border-top:2px solid var(--primary); margin-top:10px; padding-top:10px; font-size:16px; font-weight:bold; color:var(--success);">
+            <span>Net Salary</span>
+            <span>Rs ${formatAccounting(e.netSalary)}</span>
+        </div>
+    </div>`;
+}
+
+// Group 2 Pay Sheet — Adjusted for High Legibility & Exact A4 6-per-page alignment
+function buildPaySlipCardHtmlForPDF(e, meta) {
+    return `
+    <div style="border:1.5px solid #334155; border-radius:4px; padding:8px 10px; width:100%; box-sizing:border-box; background:#fff; font-family: Arial, sans-serif;">
+        <div style="text-align:center; border-bottom:1.5px solid #0f172a; padding-bottom:4px; margin-bottom:5px;">
+            <div style="font-weight:800; font-size:15px; color:#0f172a; letter-spacing:0.5px;">${meta.monthName ? (meta.monthName.toUpperCase() + ' ' + meta.year) : 'PAY SHEET'}</div>
+        </div>
+        <div style="margin-bottom:6px; font-size:14px; font-weight:bold; color:#0f172a; border-bottom:1px dashed #cbd5e1; padding-bottom:3px;">
+            Employee: ${e.id}
+        </div>
+        <table style="width:100%; border-collapse:collapse; font-size:13px; line-height:1.25; font-weight:600; color:#1e293b;">
+            <tr><td style="padding:1px 0;">B S</td><td style="text-align:right;">${formatAccounting(e.basicSalary)}</td></tr>
+            <tr><td style="padding:1px 0;">Special</td><td style="text-align:right;">${e.special !== '' ? e.special : '-'}</td></tr>
+            <tr><td style="padding:1px 0;">OT</td><td style="text-align:right;">${formatAccounting(e.otAmount)}</td></tr>
+            <tr><td style="padding:1px 0;">Sunday</td><td style="text-align:right;">${formatAccounting(e.sundayAmount)}</td></tr>
+            <tr><td style="padding:1px 0;">Poya Day</td><td style="text-align:right;">${formatAccounting(e.poyaAmount)}</td></tr>
+            <tr><td style="padding:1px 0;">P01</td><td style="text-align:right;">${formatAccounting(e.p01Amount)}</td></tr>
+            <tr><td style="padding:1px 0;">P02</td><td style="text-align:right;">${formatAccounting(e.p02Amount)}</td></tr>
+            <tr><td style="padding:1px 0;">P03</td><td style="text-align:right;">${formatAccounting(e.p03Amount)}</td></tr>
+            <tr><td style="padding:1px 0;">SL Ad</td><td style="text-align:right;">${e.slAd !== '' ? e.slAd : '-'}</td></tr>
+            <tr><td style="padding:1px 0; color:#b91c1c;">No Pay</td><td style="text-align:right; color:#b91c1c;">- ${formatAccounting(e.noPayAmount)}</td></tr>
+            <tr><td style="padding:1px 0; color:#b91c1c;">Late</td><td style="text-align:right; color:#b91c1c;">- ${formatAccounting(e.lateAmount)}</td></tr>
+        </table>
+        <div style="display:flex; justify-content:space-between; border-top:1.5px solid #0f172a; margin-top:5px; padding-top:4px; font-size:14.5px; font-weight:800; color:#0f172a;">
+            <span>Net Salary</span>
+            <span>Rs ${formatAccounting(e.netSalary)}</span>
+        </div>
+    </div>`;
+}
+
+// Group 1 Pay Sheet — Adjusted for High Legibility & Exact A4 4-per-page alignment
+function buildPaySlipGroup1Html(e, meta) {
+    let allowance = 0;
+    let specialNum = parseFloat(e.special) || 0;
+
+    let totalGross = e.basicSalary + specialNum + e.otAmount + allowance
+        + e.sundayAmount + e.poyaAmount + e.p01Amount + e.p02Amount + e.p03Amount;
+
+    let totalDeduction = totalGross - e.netSalary;
+    let slAdAmount = parseFloat(e.slAd) || 0;
+    let slAdDeductionRow = -slAdAmount;
+
+    let r = (val) => formatAccounting(val);
+
+    return `
+    <div style="border:2px solid #000; width:100%; box-sizing:border-box; margin:0 auto; font-family: Arial, sans-serif; background:#fff; padding:6px 10px;">
+        <div style="text-align:center; border-bottom:2px solid #000; padding:4px 0 6px;">
+            <div style="font-size:18px; font-weight:bold; letter-spacing:0.3px;">${meta.companyName || 'Company Name'}</div>
+            <div style="font-size:13px;">${meta.companyAddress || ''}${meta.companyAddress && meta.companyPhone ? ' / ' : ''}${meta.companyPhone || ''}</div>
+            <div style="font-weight:bold; font-size:15px; margin-top:3px;">${e.name}</div>
+            <div style="font-weight:bold; font-size:14px;">${(meta.monthName || '-') + ' ' + (meta.year || '')}</div>
+            <div style="font-weight:bold; font-size:14px;">FP ID: ${e.id}</div>
+        </div>
+        <table style="width:100%; border-collapse:collapse; font-size:14px; line-height:1.25; font-weight:600;">
+            <tr>
+                <td style="padding:4px 0 2px;"></td>
+                <td style="padding:4px 0 2px;"></td>
+                <td style="padding:4px 0 2px; text-align:right; font-weight:bold; border-bottom:1.5px solid #000;">Rs.</td>
+            </tr>
+            <tr><td style="padding:1.5px 0; font-weight:bold;">BASIC SALARY</td><td></td><td style="padding:1.5px 0; text-align:right;">${r(e.basicSalary)}</td></tr>
+            <tr><td style="padding:1.5px 0;">Special</td><td></td><td style="padding:1.5px 0; text-align:right;">${r(specialNum)}</td></tr>
+            <tr><td style="padding:1.5px 0;">OT</td><td></td><td style="padding:1.5px 0; text-align:right;">${r(e.otAmount)}</td></tr>
+            <tr><td style="padding:1.5px 0;">ALLOWANCE</td><td></td><td style="padding:1.5px 0; text-align:right;">${r(allowance)}</td></tr>
+            <tr><td style="padding:1.5px 0;">NO PAY DEDUCTIONS</td><td></td><td style="padding:1.5px 0; text-align:right;">${r(e.noPayAmount)}</td></tr>
+            <tr><td style="padding:1.5px 0;">Sunday</td><td></td><td style="padding:1.5px 0; text-align:right;">${r(e.sundayAmount)}</td></tr>
+            <tr><td style="padding:1.5px 0;">Poya Day</td><td></td><td style="padding:1.5px 0; text-align:right;">${r(e.poyaAmount)}</td></tr>
+            <tr><td style="padding:1.5px 0;">P01</td><td></td><td style="padding:1.5px 0; text-align:right;">${r(e.p01Amount)}</td></tr>
+            <tr><td style="padding:1.5px 0;">P02</td><td></td><td style="padding:1.5px 0; text-align:right;">${r(e.p02Amount)}</td></tr>
+            <tr><td style="padding:1.5px 0;">P03</td><td></td><td style="padding:1.5px 0; text-align:right;">${r(e.p03Amount)}</td></tr>
+            <tr>
+                <td style="padding:4px 0; font-weight:bold; border-top:1.5px solid #000;">TOTAL GROSS SALARY</td>
+                <td style="border-top:1.5px solid #000;"></td>
+                <td style="padding:4px 0; text-align:right; font-weight:bold; border-top:1.5px solid #000;">${r(totalGross)}</td>
+            </tr>
+            <tr><td colspan="3" style="padding:3px;"></td></tr>
+            <tr><td style="padding:2px 0; font-weight:bold; text-decoration:underline;" colspan="3">Deductions</td></tr>
+            <tr><td style="padding:1.5px 0;">EPF- 8%</td><td style="padding:1.5px 0; text-align:right;">${r(e.epf8)}</td><td></td></tr>
+            <tr><td style="padding:1.5px 0;">SL Ad</td><td style="padding:1.5px 0; text-align:right;">${formatSignedNumber(slAdDeductionRow)}</td><td></td></tr>
+            <tr><td style="padding:1.5px 0;">No Pay</td><td style="padding:1.5px 0; text-align:right;">${r(e.noPayAmount)}</td><td></td></tr>
+            <tr><td style="padding:1.5px 0;">Late</td><td style="padding:1.5px 0; text-align:right;">${r(e.lateAmount)}</td><td></td></tr>
+            <tr>
+                <td style="padding:3px 0; font-weight:bold; border-top:1.5px solid #000;">Total Deduction</td>
+                <td style="border-top:1.5px solid #000;"></td>
+                <td style="padding:3px 0; text-align:right; font-weight:bold; border-top:1.5px solid #000;">${r(totalDeduction)}</td>
+            </tr>
+            <tr><td colspan="3" style="padding:4px;"></td></tr>
+            <tr>
+                <td style="padding:5px 0; font-weight:bold; font-size:16px; border-top:3px double #000;">TOTAL NET SALARY</td>
+                <td style="border-top:3px double #000;"></td>
+                <td style="padding:5px 0; text-align:right; font-weight:bold; font-size:16px; border-top:3px double #000;">${r(e.netSalary)}</td>
+            </tr>
+            <tr><td colspan="3" style="padding:5px;"></td></tr>
+            <tr><td style="padding:2px 0; font-weight:bold; text-decoration:underline; border-top:1.5px solid #000;" colspan="3">EMPLOYER'S CONTRIBUTION</td></tr>
+            <tr><td style="padding:1.5px 0; font-weight:bold;">EPF -12%</td><td></td><td style="padding:1.5px 0; text-align:right;">${r(e.epf12)}</td></tr>
+            <tr><td style="padding:1.5px 0 4px; font-weight:bold;">ETF - 3%</td><td></td><td style="padding:1.5px 0 4px; text-align:right;">${r(e.etf3)}</td></tr>
+        </table>
+    </div>`;
+}
+
+function getPaySheetMeta() {
+    let rym = getReportYearMonth();
+    return {
+        companyName: companyProfile.name,
+        companyAddress: companyProfile.address,
+        companyPhone: companyProfile.phone,
+        companyEpf: companyProfile.epfNumber,
+        year: rym.year,
+        monthName: rym.monthName
+    };
+}
+
+function renderPaySheetGroup1Selected() {
+    let select = document.getElementById('paySheetG1Select');
+    let container = document.getElementById('paySheetGroup1Container');
+    if (!select || !container) return;
+
+    let val = select.value.trim();
+    if (!val) {
+        container.innerHTML = '<p style="color:#666; padding:15px;">සේවකයෙක් තෝරන්න.</p>';
+        return;
+    }
+
+    let data = getSalaryReportData().filter(d => d.group === 1).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    let meta = getPaySheetMeta();
+
+    if (val === 'ALL') {
+        container.innerHTML = data.length === 0
+            ? '<p style="color:#666; padding:15px;">Group 1 සේවකයින් නොමැත.</p>'
+            : data.map(e => buildPaySlipGroup1Html(e, meta)).join('<div style="height:30px;"></div>');
+        return;
+    }
+
+    let e = data.find(d => String(d.id) === String(val));
+    if (!e) { container.innerHTML = ''; return; }
+
+    container.innerHTML = buildPaySlipGroup1Html(e, meta);
+}
+
+function renderPaySheetGroup2Selected() {
+    let select = document.getElementById('paySheetG2Select');
+    let container = document.getElementById('paySheetGroup2Container');
+    if (!select || !container) return;
+
+    let val = select.value.trim();
+    if (!val) {
+        container.innerHTML = '<p style="color:#666; padding:15px;">සේවකයෙක් තෝරන්න.</p>';
+        return;
+    }
+
+    let data = getSalaryReportData().filter(d => d.group === 2).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    let meta = getPaySheetMeta();
+
+    if (val === 'ALL') {
+        container.innerHTML = data.length === 0
+            ? '<p style="color:#666; padding:15px;">Group 2 සේවකයින් නොමැත.</p>'
+            : data.map(e => buildPaySlipCardHtml(e, meta)).join('');
+        return;
+    }
+
+    let e = data.find(d => String(d.id) === String(val));
+    if (!e) { container.innerHTML = ''; return; }
+
+    container.innerHTML = buildPaySlipCardHtml(e, meta);
+}
+
+function renderPaySheet() {
+    let g1Select = document.getElementById('paySheetG1Select');
+    let g2Select = document.getElementById('paySheetG2Select');
+    if (!g1Select) return;
+
+    let data = getSalaryReportData();
+    let group1Data = data.filter(e => e.group === 1).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    let group2Data = data.filter(e => e.group === 2).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    let prevG1 = g1Select.value;
+    g1Select.innerHTML = '<option value="">-- සේවකයා තෝරන්න --</option><option value="ALL">🔽 සියලුම සේවකයන් (All Employees)</option>';
+    group1Data.forEach(e => {
+        let opt = document.createElement('option');
+        opt.value = e.id;
+        opt.textContent = `${e.id} - ${e.name}`;
+        g1Select.appendChild(opt);
+    });
+    if (prevG1 && (prevG1 === 'ALL' || group1Data.some(e => String(e.id) === String(prevG1)))) g1Select.value = prevG1;
+
+    let prevG2 = g2Select.value;
+    g2Select.innerHTML = '<option value="">-- සේවකයා තෝරන්න --</option><option value="ALL">🔽 සියලුම සේවකයන් (All Employees)</option>';
+    group2Data.forEach(e => {
+        let opt = document.createElement('option');
+        opt.value = e.id;
+        opt.textContent = `${e.id} - ${e.name}`;
+        g2Select.appendChild(opt);
+    });
+    if (prevG2 && (prevG2 === 'ALL' || group2Data.some(e => String(e.id) === String(prevG2)))) g2Select.value = prevG2;
+
+    renderPaySheetGroup1Selected();
+    renderPaySheetGroup2Selected();
+}
+
+async function renderPaySlipToCanvas(htmlString, widthPx) {
+    let staging = document.createElement('div');
+    staging.style.position = 'fixed';
+    staging.style.left = '-9999px';
+    staging.style.top = '0';
+    staging.style.width = widthPx + 'px';
+    staging.style.background = '#fff';
+    staging.innerHTML = htmlString;
+    document.body.appendChild(staging);
+
+    await new Promise(resolve => setTimeout(resolve, 60));
+    // High scale (2.5) ensures crisp typography upon printing
+    let canvas = await html2canvas(staging, { scale: 2.5, backgroundColor: '#ffffff' });
+    document.body.removeChild(staging);
+    return canvas;
+}
+
+async function downloadPaySheetPDF(groupNum) {
+    let selectId = groupNum === 1 ? 'paySheetG1Select' : 'paySheetG2Select';
+    let btnId = groupNum === 1 ? 'paySheetG1PdfBtn' : 'paySheetG2PdfBtn';
+    let select = document.getElementById(selectId);
+    let btn = document.getElementById(btnId);
+    let val = select.value.trim();
+
+    if (!val) {
+        alert('කරුණාකර පළමුව සේවකයෙක් හෝ "සියලුම සේවකයන්" තෝරන්න.');
+        return;
+    }
+
+    let data = getSalaryReportData().filter(d => d.group === groupNum).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    if (data.length === 0) {
+        alert(`Group ${groupNum} සඳහා සේවකයින් නොමැත.`);
+        return;
+    }
+
+    let meta = getPaySheetMeta();
+    let buildFn = groupNum === 1 ? buildPaySlipGroup1Html : buildPaySlipCardHtmlForPDF;
+    let perPage = groupNum === 2 ? 6 : 4; 
+    let columns = 2;
+    let rows = perPage / columns;
+
+    let originalBtnText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Generating PDF...';
+
+    try {
+        let { jsPDF } = window.jspdf;
+        let doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        let pageWidth = 210, pageHeight = 297;
+        let margin = 4; // Minimized margin for maximum print space
+
+        let renderWidthPx = groupNum === 1 ? 580 : 450;
+
+        if (val === 'ALL') {
+            let colGap = 3;
+            let rowGap = 3;
+            let cellWidth = (pageWidth - (margin * 2) - colGap) / columns;
+            let cellHeight = (pageHeight - (margin * 2) - (rowGap * (rows - 1))) / rows;
+
+            for (let i = 0; i < data.length; i++) {
+                let e = data[i];
+                let canvas = await renderPaySlipToCanvas(buildFn(e, meta), renderWidthPx);
+                let imgData = canvas.toDataURL('image/png');
+
+                let posInPage = i % perPage;
+                if (posInPage === 0 && i !== 0) doc.addPage();
+
+                let col = posInPage % columns;
+                let row = Math.floor(posInPage / columns);
+                let x = margin + col * (cellWidth + colGap);
+                let y = margin + row * (cellHeight + rowGap);
+
+                let imgRatio = canvas.width / canvas.height;
+                let cellRatio = cellWidth / cellHeight;
+                let drawWidth, drawHeight;
+                if (imgRatio > cellRatio) {
+                    drawWidth = cellWidth;
+                    drawHeight = cellWidth / imgRatio;
+                } else {
+                    drawHeight = cellHeight;
+                    drawWidth = cellHeight * imgRatio;
+                }
+                let offsetX = x + (cellWidth - drawWidth) / 2;
+                let offsetY = y + (cellHeight - drawHeight) / 2;
+
+                doc.addImage(imgData, 'PNG', offsetX, offsetY, drawWidth, drawHeight);
+            }
+
+            doc.save(`Group_${groupNum}_PaySheet_All_Employees.pdf`);
+        } else {
+            let e = data.find(d => String(d.id) === String(val));
+            if (!e) { alert('සේවකයා හමු නොවුනි.'); return; }
+
+            let canvas = await renderPaySlipToCanvas(buildFn(e, meta), renderWidthPx);
+            let imgData = canvas.toDataURL('image/png');
+
+            let imgRatio = canvas.width / canvas.height;
+            let availWidth = pageWidth - margin * 2;
+            let availHeight = pageHeight - margin * 2;
+            let drawWidth = availWidth;
+            let drawHeight = availWidth / imgRatio;
+            if (drawHeight > availHeight) {
+                drawHeight = availHeight;
+                drawWidth = availHeight * imgRatio;
+            }
+            let x = margin + (availWidth - drawWidth) / 2;
+            let y = margin + (availHeight - drawHeight) / 2;
+
+            doc.addImage(imgData, 'PNG', x, y, drawWidth, drawHeight);
+            doc.save(`Group_${groupNum}_PaySheet_${e.id}_${e.name}.pdf`);
+        }
+    } catch (err) {
+        alert('❌ PDF Generate කිරීමේදී දෝෂයක් ඇති විය: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalBtnText;
+    }
+}
+
+function switchMainTab(tabId, btn) {
+    document.querySelectorAll('.tab-container > .tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.container > .tab-content').forEach(c => c.classList.remove('active'));
+    
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+
+    if (tabId === 'masterProfiles') renderMasterProfilesTable();
+    if (tabId === 'salaryReportCenter') renderSalaryReportCenter();
+    if (tabId === 'paySheet') renderPaySheet();
+}
+
+function switchSubTab(tabId, btn) {
+    document.querySelectorAll('#reportArea .tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('#tabHeader .sub-tab-btn').forEach(b => b.classList.remove('active'));
+    
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+
+    if (tabId === 'manualEntryTab') {
+        updateManualEmployeesDropdown();
+    }
+}
+</script>
+
+</body>
+</html>
