@@ -246,12 +246,12 @@
 
         .upload-area { 
             border: 2px dashed #a5b4fc; 
-            padding: 34px 22px; 
+            padding: 30px 22px; 
             text-align: center; 
             border-radius: var(--radius-lg); 
             background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%); 
             cursor: pointer; 
-            margin-bottom: 28px; 
+            margin-bottom: 10px; 
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .upload-area:hover { 
@@ -752,11 +752,18 @@
         </div>
     </div>
 
-    <!-- Upload Area -->
-    <div class="upload-area" onclick="document.getElementById('excelFile').click()">
-        <h3>📁 Fingerprint Excel File එක මෙතැනට Upload කරන්න</h3>
-        <p>Book1 - Copy.xlsx හෝ එම Format එකේ Excel File එකක් Click කර තෝරන්න</p>
-        <input type="file" id="excelFile" accept=".xlsx, .xls" style="display:none;" onchange="processExcel(event)">
+    <!-- Upload Area with Sample Template Download -->
+    <div style="margin-bottom: 28px;">
+        <div class="upload-area" onclick="document.getElementById('excelFile').click()">
+            <h3>📁 Fingerprint Excel File එක මෙතැනට Upload කරන්න</h3>
+            <p>Book1 - Copy.xlsx හෝ එම Format එකේ Excel File එකක් Click කර තෝරන්න</p>
+            <input type="file" id="excelFile" accept=".xlsx, .xls" style="display:none;" onchange="processExcel(event)">
+        </div>
+        <div style="text-align: right;">
+            <button type="button" class="btn-action" style="background:#0284c7; color:white; font-size:12px; padding:7px 16px;" onclick="downloadSampleExcelTemplate()">
+                📥 Sample Fingerprint Excel Template එක Download කරන්න
+            </button>
+        </div>
     </div>
 
     <!-- Main Navigation Tabs -->
@@ -771,7 +778,7 @@
     <!-- TAB 1: MASTER EMPLOYEE PROFILES -->
     <div id="masterProfiles" class="tab-content active">
         <div class="summary-card">
-            <strong>💡 Master Employee Database (Local Storage):</strong> මෙහි ඇති සේවක විස්තර ස්ථිරව Save වී පවතී. අලුත් Excel එකක් Upload කළ විට දැනට නැති අලුත් FP ID පමණක් Auto-Add වේ. Group 1 සේවකයින්ගේ EPF 8%, 12%, ETF 3% අගයන් Salary Report Generate වන විට Auto-Calculate වන අතර අවශ්‍ය නම් Edit කර Save කළ හැක. <strong>Manually එක් කළ Group 2 සේවකයින් පමණක් අවශ්‍ය විට Delete කර සම්පූර්ණයෙන්ම ඉවත් කළ හැක.</strong>
+            <strong>💡 Master Employee Database (Local Storage):</strong> මෙහි ඇති සේවක විස්තර ස්ථිරව Save වී පවතී. අලුත් Excel එකක් Upload කළ විට දැනට නැති අලුත් FP ID පමණක් Auto-Add වේ[cite: 1]. Group 1 සේවකයින්ගේ EPF 8%, 12%, ETF 3% අගයන් Salary Report Generate වන විට Auto-Calculate වන අතර අවශ්‍ය නම් Edit කර Save කළ හැක[cite: 1]. <strong>Manually එක් කළ Group 2 සේවකයින් පමණක් අවශ්‍ය විට Delete කර සම්පූර්ණයෙන්ම ඉවත් කළ හැක[cite: 1].</strong>
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:28px; margin-bottom:12px;">
@@ -837,7 +844,7 @@
         <div id="selectionArea" class="selection-box">
             <div class="poya-box">
                 <h4 style="margin:0 0 8px 0; color:#b45309; font-size:15px; font-weight:800;">🌕 අදාළ මාසයේ පොහෝ දින තෝරන්න (Poya Days Configuration):</h4>
-                <p style="margin:0; font-size:13px; color:#78350f;">මෙම මාසයේ පෝය දිනයන් 1ක් හෝ 2ක් ඇත්නම් Calendar එකෙන් තෝරන්න. <strong>(ඉරිදා දින පෝය ලෙස තෝරාගත නොහැක)</strong></p>
+                <p style="margin:0; font-size:13px; color:#78350f;">මෙම මාසයේ පෝය දිනයන් 1ක් හෝ 2ක් ඇත්නම් Calendar එකෙන් තෝරන්න. <strong>(ඉරිදා දින පෝය ලෙස තෝරාගත නොහැක)</strong>[cite: 1]</p>
                 <div class="poya-inputs" style="display:flex; gap:15px; align-items:center; flex-wrap:wrap; margin-top:12px;">
                     <label><strong>පෝය දිනය 1:</strong> <input type="date" id="poyaDate1" onchange="validatePoyaSunday(this)"></label>
                     <label><strong>පෝය දිනය 2 (තිබේ නම්):</strong> <input type="date" id="poyaDate2" onchange="validatePoyaSunday(this)"></label>
@@ -848,7 +855,7 @@
 
             <h3 style="text-align:center; color:#0f172a; margin-top:10px; font-weight:800;">⚙️ සේවකයින් Group වලට වෙන් කිරීම තවුරු කරන්න</h3>
             <p style="text-align: center; color: var(--text-muted); font-size: 13.5px; margin-bottom:18px;">
-                🔒 <strong>FP ID 1 - 29</strong> Group 1 හි ස්ථිරයි. | ➕ Group 2 සේවකයින් අවශ්‍ය නම් Group 1 ට මාරු කළ හැක.
+                🔒 <strong>FP ID 1 - 29</strong> Group 1 හි ස්ථිරයි[cite: 1]. | ➕ Group 2 සේවකයින් අවශ්‍ය නම් Group 1 ට මාරු කළ හැක[cite: 1].
             </p>
             <table class="data-table">
                 <thead>
@@ -889,7 +896,7 @@
 
             <div id="manualEntryTab" class="tab-content">
                 <div class="summary-card" style="background:linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border-left:5px solid var(--success); color:#065f46;">
-                    <strong>✍️ Manually Add / Edit Group 2 Employee:</strong> Fingerprint සටහන් නොවන සේවකයින්ගේ විස්තර එක් කරන්න. In/Out Time Drop-down එකෙන් පැය (Hour) සහ මිනිත්තු (Minute) තෝරන්න. <strong>In Time සහ Out Time දෙකම ඇතුළත් කළ පසු එම පේළිය Light Green පැහැයෙන් ස්වයංක්‍රීයව වෙනස් වේ.</strong>
+                    <strong>✍️ Manually Add / Edit Group 2 Employee:</strong> Fingerprint සටහන් නොවන සේවකයින්ගේ විස්තර එක් කරන්න[cite: 1]. In/Out Time Drop-down එකෙන් පැය (Hour) සහ මිනිත්තු (Minute) තෝරන්න[cite: 1]. <strong>In Time සහ Out Time දෙකම ඇතුළත් කළ පසු එම පේළිය Light Green පැහැයෙන් ස්වයංක්‍රීයව වෙනස් වේ[cite: 1].</strong>
                 </div>
 
                 <div class="filter-box" style="background:#ffffff; border:1px solid var(--border); box-shadow:var(--shadow-xs); gap:16px; align-items:flex-end;">
@@ -998,7 +1005,7 @@
     <!-- TAB 3: SALARY REPORT CENTER -->
     <div id="salaryReportCenter" class="tab-content">
         <div class="summary-card">
-            <strong>💡 Salary Report Center:</strong> මෙම Report එක Excel එකක් Upload කර Report Generate කළ පසු Auto-Update වේ. (අදාළ මාසයේ එක දිනක් හෝ පැමිණි සේවකයින් පමණක් මෙහි ඇතුළත් වේ)
+            <strong>💡 Salary Report Center:</strong> මෙම Report එක Excel එකක් Upload කර Report Generate කළ පසු Auto-Update වේ[cite: 1]. (අදාළ මාසයේ එක දිනක් හෝ පැමිණි සේවකයින් පමණක් මෙහි ඇතුළත් වේ)[cite: 1]
         </div>
 
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:18px; margin: 26px 0;">
@@ -1279,6 +1286,38 @@ const APP_BACKUP_KEYS = [
     P02_SELECTED_KEY, P02_CONFIG_KEY, P03_SELECTED_KEY, P03_CONFIG_KEY, SL_AD_KEY,
     COMPANY_PROFILE_KEY, EPF_NIC_DATA_KEY, EPF_OVERRIDES_KEY
 ];
+
+function downloadSampleExcelTemplate() {
+    const sampleData = [
+        ["Department: Head Office"],
+        ["Fingerprint ID : 1 - Anushka Nawarathna"],
+        ["Date", "Day", "In Time", "Out Time", "Status"],
+        ["2026-03-01", "Sun", "08:30:00", "17:00:00", "W"],
+        ["2026-03-02", "Mon", "08:15:00", "17:05:00", "W"],
+        ["2026-03-03", "Tue", "08:25:00", "17:00:00", "W"],
+        ["2026-03-04", "Wed", "***", "***", "AB"],
+        ["2026-03-05", "Thu", "08:30:00", "13:00:00", "SL"],
+        [],
+        ["Fingerprint ID : 2 - Kasun Perera"],
+        ["Date", "Day", "In Time", "Out Time", "Status"],
+        ["2026-03-01", "Sun", "***", "***", "AB"],
+        ["2026-03-02", "Mon", "08:20:00", "17:10:00", "W"],
+        ["2026-03-03", "Tue", "08:10:00", "17:00:00", "W"]
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(sampleData);
+    ws['!cols'] = [
+        { wch: 15 },
+        { wch: 10 },
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 10 }
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Attendance_Sample");
+    XLSX.writeFile(wb, "Sample_Fingerprint_Format.xlsx");
+}
 
 function loadEpfStorageData() {
     let savedNic = localStorage.getItem(EPF_NIC_DATA_KEY);
