@@ -17,6 +17,7 @@
     <!-- Firebase SDK (v9 compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <style>
         :root {
@@ -58,7 +59,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Authentication Overlay Styling */
         #authOverlay {
             position: fixed;
             top: 0;
@@ -71,26 +71,30 @@
             justify-content: center;
             align-items: center;
             z-index: 99999;
+            overflow-y: auto;
+            padding: 20px 10px;
+            box-sizing: border-box;
         }
         .auth-card {
             background: var(--surface);
             border-radius: var(--radius-xl);
-            padding: 36px 32px;
+            padding: 32px 28px;
             width: 100%;
-            max-width: 400px;
+            max-width: 440px;
             box-shadow: var(--shadow-lg);
             border: 1px solid var(--border);
             text-align: center;
             box-sizing: border-box;
+            margin: auto;
         }
         .auth-card h3 {
-            margin: 0 0 8px 0;
+            margin: 0 0 6px 0;
             font-size: 22px;
             font-weight: 800;
             color: var(--text-main);
         }
         .auth-card p {
-            margin: 0 0 24px 0;
+            margin: 0 0 20px 0;
             color: var(--text-muted);
             font-size: 13px;
         }
@@ -100,7 +104,7 @@
             background: #f1f5f9;
             padding: 4px;
             border-radius: var(--radius-md);
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
         .auth-tab-btn {
             flex: 1;
@@ -121,26 +125,30 @@
         }
         .auth-field {
             text-align: left;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
         .auth-field label {
             display: block;
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 700;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             color: #334155;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
-        .auth-field input {
+        .auth-field input, .auth-field select {
             width: 100%;
-            padding: 10px 12px;
+            padding: 9px 12px;
             border-radius: var(--radius-sm);
             border: 1px solid var(--border-strong);
-            font-size: 14px;
+            font-size: 13.5px;
             box-sizing: border-box;
             outline: none;
+            background: #fff;
             transition: border-color 0.2s;
+            font-family: inherit;
         }
-        .auth-field input:focus {
+        .auth-field input:focus, .auth-field select:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px var(--primary-focus);
         }
@@ -650,8 +658,9 @@
         <p>ආරක්ෂිතව පද්ධතියට පිවිසීමට Log In හෝ Sign Up වන්න</p>
         <div class="auth-tabs">
             <button class="auth-tab-btn active" id="tabLogin" onclick="switchAuthTab('login')">Log In</button>
-            <button class="auth-tab-btn" id="tabSignUp" onclick="switchAuthTab('signup')">Sign Up</button>
+            <button class="auth-tab-btn" id="tabSignUp" onclick="switchAuthTab('signup')">Sign Up (Register)</button>
         </div>
+
         <div class="auth-field">
             <label>Email Address</label>
             <input type="email" id="authEmail" placeholder="name@company.com">
@@ -660,6 +669,32 @@
             <label>Password</label>
             <input type="password" id="authPassword" placeholder="••••••••">
         </div>
+
+        <!-- Additional Registration Fields (Visible ONLY in Sign Up) -->
+        <div id="signupExtraFields" style="display:none;">
+            <div class="auth-field">
+                <label>User Full Name</label>
+                <input type="text" id="authFullName" placeholder="e.g. Anushka Nawarathna">
+            </div>
+            <div class="auth-field">
+                <label>Mobile Phone Number</label>
+                <input type="tel" id="authPhone" placeholder="07X XXXXXXX">
+            </div>
+            <div class="auth-field">
+                <label>Company / Business Name</label>
+                <input type="text" id="authCompanyName" placeholder="e.g. Apex Holdings">
+            </div>
+            <div class="auth-field">
+                <label>Business Type</label>
+                <select id="authBusinessType">
+                    <option value="Sole Proprietorship">Sole Proprietorship (තනි පුද්ගල)</option>
+                    <option value="Partnership">Partnership (හවුල් ව්‍යාපාර)</option>
+                    <option value="Private Limited (Pvt Ltd)">Private Limited (Pvt Ltd)</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+        </div>
+
         <button class="auth-btn" id="authSubmitBtn" onclick="handleAuthSubmit()">Log In</button>
         <div class="auth-error" id="authErrorMsg"></div>
     </div>
@@ -1033,7 +1068,7 @@
     <!-- TAB 5: EPF / ETF REPORT -->
     <div id="epfEtfReportTab" class="tab-content">
         <div class="summary-card" style="background:linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); border-left:5px solid #3b82f6; color:#1e3a8a;">
-            <strong>🏛️ EPF / ETF Official Compliance Center:</strong> මෙම Report එක Group 1 සේවකයින්ගේ වැටුප් දත්ත මත පදනම්ව ස්වයංක්‍රීයව ජනනය වේ. කිසිදු බාහිර අන්තර්ජාල script එකක් මත රඳා නොපවතින පරිදි, <strong>"🚀 Generate & Download Official Form C"</strong> බොත්තමෙන් නිල C-Form පෝරමය සෘජුවම බාගත (Direct Download) කරගත හැක.
+            <strong>🏛️ EPF / ETF Official Compliance Center:</strong> මෙම Report එක Group 1 සේවකයින්ගේ වැටුප් දත්ත මත පදනම්ව ස්වයංක්‍රීයව ජනනය වේ[cite: 1]. කිසිදු බාහිර අන්තර්ජාල script එකක් මත රඳා නොපවතින පරිදි, <strong>"🚀 Generate & Download Official Form C"</strong> බොත්තමෙන් නිල C-Form පෝරමය සෘජුවම බාගත (Direct Download) කරගත හැක[cite: 1].
         </div>
 
         <div class="filter-box" style="justify-content: space-between;">
@@ -1058,7 +1093,6 @@
 
 <script>
 // ===================== FIREBASE CONFIGURATION & AUTH =====================
-// ඔබේ සැබෑ Firebase Project Keys නිවැරදිව ඇතුළත් කර ඇත
 const firebaseConfig = {
   apiKey: "AIzaSyC2r07AdImo5qbi58EyHJdtl_z5gWWM9Nk",
   authDomain: "payroll-management-syste-10b69.firebaseapp.com",
@@ -1074,14 +1108,17 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 const auth = firebase.auth();
+const db = firebase.firestore();
 
 let currentAuthMode = 'login';
+let currentCompanyProfileData = null;
 
 function switchAuthTab(mode) {
     currentAuthMode = mode;
     let tabLogin = document.getElementById('tabLogin');
     let tabSignUp = document.getElementById('tabSignUp');
     let submitBtn = document.getElementById('authSubmitBtn');
+    let extraFields = document.getElementById('signupExtraFields');
     let errDiv = document.getElementById('authErrorMsg');
     errDiv.style.display = 'none';
 
@@ -1089,14 +1126,16 @@ function switchAuthTab(mode) {
         tabLogin.classList.add('active');
         tabSignUp.classList.remove('active');
         submitBtn.textContent = 'Log In';
+        extraFields.style.display = 'none';
     } else {
         tabSignUp.classList.add('active');
         tabLogin.classList.remove('active');
-        submitBtn.textContent = 'Sign Up';
+        submitBtn.textContent = 'Sign Up & Register Company';
+        extraFields.style.display = 'block';
     }
 }
 
-function handleAuthSubmit() {
+async function handleAuthSubmit() {
     let email = document.getElementById('authEmail').value.trim();
     let pass = document.getElementById('authPassword').value.trim();
     let errDiv = document.getElementById('authErrorMsg');
@@ -1106,6 +1145,18 @@ function handleAuthSubmit() {
         errDiv.textContent = 'කරුණාකර Email සහ Password ඇතුළත් කරන්න.';
         errDiv.style.display = 'block';
         return;
+    }
+
+    if (currentAuthMode === 'signup') {
+        let fullName = document.getElementById('authFullName').value.trim();
+        let phone = document.getElementById('authPhone').value.trim();
+        let companyName = document.getElementById('authCompanyName').value.trim();
+
+        if (!fullName || !phone || !companyName) {
+            errDiv.textContent = 'කරුණාකර සම්පූර්ණ නම, දුරකථන අංකය සහ Company Name ඇතුළත් කරන්න.';
+            errDiv.style.display = 'block';
+            return;
+        }
     }
 
     submitBtn.disabled = true;
@@ -1121,13 +1172,36 @@ function handleAuthSubmit() {
                 errDiv.style.display = 'block';
             });
     } else {
-        auth.createUserWithEmailAndPassword(email, pass)
-            .catch(err => {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Sign Up';
-                errDiv.textContent = 'දෝෂයකි: ' + err.message;
-                errDiv.style.display = 'block';
+        let fullName = document.getElementById('authFullName').value.trim();
+        let phone = document.getElementById('authPhone').value.trim();
+        let companyName = document.getElementById('authCompanyName').value.trim();
+        let businessType = document.getElementById('authBusinessType').value;
+
+        try {
+            let userCredential = await auth.createUserWithEmailAndPassword(email, pass);
+            let user = userCredential.user;
+
+            await db.collection("companies").doc(user.uid).set({
+                uid: user.uid,
+                email: email,
+                fullName: fullName,
+                phone: phone,
+                companyName: companyName,
+                businessType: businessType,
+                role: 'client',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
+
+            companyProfile.name = companyName;
+            companyProfile.phone = phone;
+            localStorage.setItem(COMPANY_PROFILE_KEY, JSON.stringify(companyProfile));
+
+        } catch (err) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Sign Up & Register Company';
+            errDiv.textContent = 'දෝෂයකි: ' + err.message;
+            errDiv.style.display = 'block';
+        }
     }
 }
 
@@ -1140,8 +1214,8 @@ function firebaseSignOut() {
     }
 }
 
-// Session Observer (Auto Login)
-auth.onAuthStateChanged(user => {
+// Session Observer (Auto Login & Profile Sync)
+auth.onAuthStateChanged(async user => {
     let overlay = document.getElementById('authOverlay');
     let container = document.getElementById('mainContainer');
     let userDisplay = document.getElementById('currentUserDisplay');
@@ -1150,14 +1224,34 @@ auth.onAuthStateChanged(user => {
     if (user) {
         overlay.style.display = 'none';
         container.style.display = 'block';
-        if (userDisplay) userDisplay.textContent = '👤 ' + user.email;
+
+        try {
+            let doc = await db.collection("companies").doc(user.uid).get();
+            if (doc.exists) {
+                currentCompanyProfileData = doc.data();
+                if (userDisplay) {
+                    userDisplay.innerHTML = `🏢 <strong>${currentCompanyProfileData.companyName}</strong> (${currentCompanyProfileData.businessType}) | 👤 ${currentCompanyProfileData.fullName}`;
+                }
+                if (!companyProfile.name && currentCompanyProfileData.companyName) {
+                    companyProfile.name = currentCompanyProfileData.companyName;
+                    companyProfile.phone = currentCompanyProfileData.phone || '';
+                    localStorage.setItem(COMPANY_PROFILE_KEY, JSON.stringify(companyProfile));
+                }
+            } else {
+                if (userDisplay) userDisplay.textContent = '👤 ' + user.email;
+            }
+        } catch (e) {
+            console.error("Firestore error:", e);
+            if (userDisplay) userDisplay.textContent = '👤 ' + user.email;
+        }
+
         initPayrollApp();
     } else {
         overlay.style.display = 'flex';
         container.style.display = 'none';
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.textContent = currentAuthMode === 'login' ? 'Log In' : 'Sign Up';
+            submitBtn.textContent = currentAuthMode === 'login' ? 'Log In' : 'Sign Up & Register Company';
         }
     }
 });
@@ -1327,7 +1421,7 @@ function gatherBackupData() {
 }
 
 async function saveEncryptedBackup() {
-    let proceed = confirm('ඔබට මෙම System එකේ ඒ මොහොතේ තිබෙන සියලුම දත්ත (Attendance records, EPF දත්ත ඇතුළුව) Encrypted File එකක් ලෙස Save කිරීමට අවශ්‍යද?');
+    let proceed = confirm('ඔබට මෙම System එකේ ඒ මොහොතේ තිබෙන සියලුම දත්ත Encrypted File එකක් ලෙස Save කිරීමට අවශ්‍යද?');
     if (!proceed) return;
 
     let password = prompt('File එක Encrypt කිරීමට Password එකක් ඇතුළත් කරන්න:');
