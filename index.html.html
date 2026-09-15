@@ -1,0 +1,4132 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <title>Fingerprint Attendance & Payroll Master System</title>
+    <!-- Google Fonts for Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SheetJS Library for reading Excel files -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- Firebase SDK (v9 compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #eef2ff;
+            --primary-focus: rgba(79, 70, 229, 0.18);
+            --surface: #ffffff;
+            --surface-subtle: #f8fafc;
+            --bg: #f1f5f9;
+            --border: #e2e8f0;
+            --border-strong: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --success: #059669;
+            --success-hover: #047857;
+            --success-light: #ecfdf5;
+            --danger: #e11d48;
+            --danger-hover: #be123c;
+            --warning: #d97706;
+            --warning-light: #fffbeb;
+            --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+            --shadow-sm: 0 2px 4px -1px rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+            --shadow-md: 0 8px 16px -4px rgba(15, 23, 42, 0.08), 0 3px 6px -2px rgba(15, 23, 42, 0.04);
+            --shadow-lg: 0 20px 25px -5px rgba(15, 23, 42, 0.07), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif; 
+            background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
+            min-height: 100vh;
+            color: var(--text-main);
+            margin: 0;
+            padding: 28px 16px; 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Authentication Overlay Styling */
+        #authOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+        }
+        .auth-card {
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            padding: 36px 32px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .auth-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+        .auth-card p {
+            margin: 0 0 24px 0;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        .auth-tabs {
+            display: flex;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: var(--radius-md);
+            margin-bottom: 20px;
+        }
+        .auth-tab-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            background: transparent;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text-muted);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .auth-tab-btn.active {
+            background: var(--surface);
+            color: var(--primary);
+            box-shadow: var(--shadow-xs);
+        }
+        .auth-field {
+            text-align: left;
+            margin-bottom: 14px;
+        }
+        .auth-field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #334155;
+        }
+        .auth-field input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-strong);
+            font-size: 14px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .auth-field input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-focus);
+        }
+        .auth-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        .auth-btn:hover {
+            background: var(--primary-hover);
+        }
+        .auth-error {
+            color: var(--danger);
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 12px;
+            display: none;
+            line-height: 1.4;
+        }
+
+        .container { 
+            max-width: 1420px; 
+            margin: auto; 
+            background: var(--surface); 
+            padding: 34px; 
+            border-radius: var(--radius-xl); 
+            box-shadow: var(--shadow-lg); 
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            display: none;
+        }
+
+        .header-title-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 26px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 22px;
+        }
+        .header-title-wrapper h2 {
+            margin: 0;
+            font-size: 27px;
+            font-weight: 800;
+            letter-spacing: -0.6px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #0f172a 0%, #3730a3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .developer-badge {
+            font-size: 13px;
+            font-weight: 600;
+            color: #3730a3;
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+            border: 1px solid #c7d2fe;
+            padding: 8px 18px;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: var(--shadow-xs);
+        }
+
+        .system-bar {
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 12px; 
+            align-items: center; 
+            justify-content: space-between; 
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid var(--border); 
+            border-radius: var(--radius-md); 
+            padding: 14px 20px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-xs);
+        }
+        .system-bar-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .upload-area { 
+            border: 2px dashed #a5b4fc; 
+            padding: 34px 22px; 
+            text-align: center; 
+            border-radius: var(--radius-lg); 
+            background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%); 
+            cursor: pointer; 
+            margin-bottom: 28px; 
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .upload-area:hover { 
+            background: #e0e7ff; 
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .upload-area h3 { margin: 0 0 6px 0; color: #3730a3; font-size: 18.5px; font-weight: 700; letter-spacing: -0.3px; }
+        .upload-area p { margin: 0; color: var(--text-muted); font-size: 13.5px; font-weight: 500; }
+
+        .tab-container { 
+            display: flex; 
+            gap: 8px; 
+            background: #f1f5f9; 
+            padding: 6px; 
+            border-radius: var(--radius-lg); 
+            margin-bottom: 26px; 
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        .tab-btn { 
+            padding: 11px 20px; 
+            font-size: 14px; 
+            font-weight: 700; 
+            border: none; 
+            background: transparent; 
+            cursor: pointer; 
+            border-radius: var(--radius-md); 
+            color: var(--text-muted); 
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .tab-btn:hover:not(.active) { 
+            color: var(--text-main); 
+            background: rgba(255, 255, 255, 0.7); 
+        }
+        .tab-btn.active { 
+            background: var(--surface); 
+            color: var(--primary); 
+            box-shadow: var(--shadow-sm); 
+        }
+
+        .sub-tab-container {
+            display: flex;
+            gap: 6px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+            margin-bottom: 22px;
+            overflow-x: auto;
+        }
+        .sub-tab-btn {
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid transparent;
+            background: #f1f5f9;
+            color: #475569;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .sub-tab-btn:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+        .sub-tab-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.25s ease-out; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .data-table { 
+            width: 100%; 
+            border-collapse: separate; 
+            border-spacing: 0; 
+            background: white; 
+            margin-top: 15px; 
+            font-size: 13px; 
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-xs);
+        }
+        .data-table th, .data-table td { 
+            padding: 10px 12px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--border);
+            border-right: 1px solid #f1f5f9;
+        }
+        .data-table th:last-child, .data-table td:last-child { border-right: none; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table th { 
+            background: #f8fafc; 
+            color: #334155; 
+            font-weight: 700; 
+            border-bottom: 2px solid var(--border);
+        }
+        .data-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .master-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        }
+        .master-table th {
+            background: #f8fafc;
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 12.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 12px 10px;
+            border-bottom: 2px solid var(--border-strong);
+            border-right: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+        .master-table td {
+            padding: 8px 8px;
+            vertical-align: middle;
+            border-bottom: 1px solid #e2e8f0;
+            border-right: 1px solid #f1f5f9;
+        }
+        .master-table tbody tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+        .master-table tbody tr:hover {
+            background-color: #eef2ff !important;
+        }
+
+        .btn-action { 
+            padding: 8px 16px; 
+            border: none; 
+            border-radius: var(--radius-sm); 
+            font-weight: 700; 
+            cursor: pointer; 
+            font-size: 12.5px; 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: var(--shadow-xs);
+        }
+        .btn-action:hover { 
+            transform: translateY(-1.5px); 
+            box-shadow: var(--shadow-sm);
+            filter: brightness(1.05);
+        }
+        .btn-action:active {
+            transform: translateY(0);
+        }
+        .btn-save { background: var(--success); color: white; }
+        .btn-save:hover { background: var(--success-hover); }
+        .btn-submit { 
+            display: block; 
+            width: 100%; 
+            padding: 14px; 
+            background: linear-gradient(135deg, #059669 0%, #047857 100%); 
+            color: white; 
+            border: none; 
+            border-radius: var(--radius-md); 
+            font-size: 15px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            margin-top: 20px; 
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-md);
+            letter-spacing: 0.3px;
+        }
+        .btn-submit:hover { 
+            filter: brightness(1.08); 
+            transform: translateY(-2px); 
+            box-shadow: var(--shadow-lg);
+        }
+
+        .badge { 
+            padding: 4px 8px; 
+            border-radius: 6px; 
+            font-weight: 700; 
+            color: white; 
+            display: inline-block; 
+            font-size: 11px; 
+            box-shadow: var(--shadow-xs);
+        }
+        .badge-dept { background-color: #64748b; }
+        .badge-active { background-color: var(--success); }
+        .badge-inactive { background-color: var(--danger); }
+        .badge-locked { background-color: #059669; padding: 4px 10px; border-radius: 20px; font-size: 11px; }
+        .badge-poya { background-color: #d97706; }
+        .badge-hours { background-color: #3730a3; font-size: 12px; padding: 5px 10px; }
+
+        .summary-card { 
+            background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%); 
+            border-left: 5px solid var(--primary); 
+            padding: 16px 20px; 
+            margin-bottom: 22px; 
+            font-size: 13.5px; 
+            border-radius: var(--radius-md); 
+            line-height: 1.6; 
+            color: #1e1b4b;
+            box-shadow: var(--shadow-xs);
+            border-top: 1px solid rgba(226, 232, 240, 0.6);
+            border-right: 1px solid rgba(226, 232, 240, 0.6);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+        }
+        .selection-box { 
+            background: #ffffff; 
+            border: 1px solid var(--border); 
+            padding: 24px; 
+            border-radius: var(--radius-lg); 
+            margin-bottom: 25px; 
+            box-shadow: var(--shadow-sm); 
+            display: none; 
+        }
+        .poya-box { 
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); 
+            border: 1px solid #fde68a; 
+            padding: 16px 20px; 
+            border-radius: var(--radius-md); 
+            margin-bottom: 22px; 
+            box-shadow: var(--shadow-xs);
+        }
+        .report-card { 
+            background: #ffffff; 
+            border: 1px solid var(--border); 
+            border-radius: var(--radius-lg); 
+            margin-bottom: 22px; 
+            padding: 20px; 
+            box-shadow: var(--shadow-sm); 
+        }
+        .report-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 12px; 
+            margin-bottom: 15px; 
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .report-header h4 { margin: 0; color: #1e293b; font-size: 15px; font-weight: 700; }
+        .filter-box { 
+            margin-bottom: 20px; 
+            padding: 14px 18px; 
+            background: #f8fafc; 
+            border: 1px solid var(--border); 
+            border-radius: var(--radius-md); 
+            display: flex; 
+            align-items: center; 
+            gap: 14px; 
+            flex-wrap: wrap;
+            box-shadow: var(--shadow-xs);
+        }
+        .filter-box select, .filter-box input { 
+            padding: 8px 14px; 
+            border-radius: var(--radius-sm); 
+            border: 1px solid #cbd5e1; 
+            font-size: 13px; 
+            font-weight: 500;
+            background: #ffffff;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .filter-box select:focus, .filter-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-focus);
+        }
+        .time-missing { color: var(--danger); font-weight: bold; background-color: #fff1f2; }
+        
+        .input-cell { 
+            width: 92%; 
+            padding: 7px 9px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: var(--radius-sm); 
+            font-size: 13px; 
+            font-weight: 600;
+            color: #0f172a;
+            background-color: #ffffff;
+            outline: none;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+        .input-cell:focus {
+            border-color: var(--primary);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px var(--primary-focus);
+        }
+        .input-num-cell {
+            text-align: right;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: -0.2px;
+        }
+        .input-stat-cell {
+            background-color: #f8fafc;
+            color: #3730a3;
+            border-color: #c7d2fe;
+        }
+        .time-picker-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #f8fafc;
+            padding: 4px 6px;
+            border-radius: var(--radius-sm);
+            border: 1px solid #cbd5e1;
+            transition: all 0.2s ease;
+        }
+        .time-select {
+            padding: 4px 6px;
+            border-radius: 4px;
+            border: 1px solid #cbd5e1;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #1e293b;
+            background: #fff;
+            outline: none;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .time-select:focus {
+            border-color: var(--primary);
+        }
+        .time-clear-btn {
+            background: #fee2e2;
+            color: #be123c;
+            border: 1px solid #fca5a5;
+            border-radius: 4px;
+            padding: 3px 7px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .time-clear-btn:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .manual-row-completed {
+            background-color: #ecfdf5 !important;
+            transition: background-color 0.2s ease;
+        }
+        .manual-row-completed td {
+            border-bottom: 1px solid #a7f3d0 !important;
+        }
+        .manual-row-completed:hover {
+            background-color: #d1fae5 !important;
+        }
+        .manual-row-completed .time-picker-wrapper {
+            background: #ffffff;
+            border-color: #6ee7b7;
+        }
+
+        .metric-card {
+            background: #ffffff; 
+            border: 1px solid var(--border); 
+            padding: 22px; 
+            border-radius: var(--radius-lg); 
+            text-align: center; 
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .metric-card-title {
+            font-size: 12px; 
+            color: var(--text-muted); 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 0.6px;
+            margin-bottom: 8px;
+        }
+        .metric-card-value {
+            font-size: 27px; 
+            font-weight: 800; 
+            letter-spacing: -0.5px;
+            font-family: 'JetBrains Mono', sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Firebase Login & Sign-up Overlay Modal -->
+<div id="authOverlay">
+    <div class="auth-card">
+        <h3>🔐 Payroll System Access</h3>
+        <p>ආරක්ෂිතව පද්ධතියට පිවිසීමට Log In හෝ Sign Up වන්න</p>
+        <div class="auth-tabs">
+            <button class="auth-tab-btn active" id="tabLogin" onclick="switchAuthTab('login')">Log In</button>
+            <button class="auth-tab-btn" id="tabSignUp" onclick="switchAuthTab('signup')">Sign Up</button>
+        </div>
+        <div class="auth-field">
+            <label>Email Address</label>
+            <input type="email" id="authEmail" placeholder="name@company.com">
+        </div>
+        <div class="auth-field">
+            <label>Password</label>
+            <input type="password" id="authPassword" placeholder="••••••••">
+        </div>
+        <button class="auth-btn" id="authSubmitBtn" onclick="handleAuthSubmit()">Log In</button>
+        <div class="auth-error" id="authErrorMsg"></div>
+    </div>
+</div>
+
+<div class="container" id="mainContainer">
+    <div class="header-title-wrapper">
+        <h2>📊 Attendance & Payroll Management System</h2>
+        <div class="developer-badge">
+            <span>💻 Developed By</span> <strong>Anushka Nawarathna</strong>
+        </div>
+    </div>
+
+    <!-- Modern System Bar with User Status and Log Out -->
+    <div class="system-bar">
+        <div style="font-weight:700; font-size:13.5px; color:#1e293b; display:flex; align-items:center; gap:8px;">
+            <span style="font-size:16px;">🔐</span> <span>System Backup & Security Vault</span>
+        </div>
+        <div class="system-bar-actions">
+            <span id="currentUserDisplay" style="font-size:12.5px; font-weight:700; color:#3730a3; background:#eef2ff; padding:6px 12px; border-radius:6px; border:1px solid #c7d2fe;"></span>
+            <button class="btn-action" style="background:#dc2626; color:white;" onclick="firebaseSignOut()">🚪 Log Out</button>
+            <button class="btn-action" style="background:#4f46e5; color:white;" onclick="saveEncryptedBackup()">💾 Save Full System (Encrypted)</button>
+            <button class="btn-action" style="background:#7c3aed; color:white;" onclick="document.getElementById('restoreFileInput').click()">📂 Load Backup File (Decrypt)</button>
+            <input type="file" id="restoreFileInput" accept=".enc" style="display:none;" onchange="handleRestoreFileSelect(event)">
+        </div>
+    </div>
+
+    <!-- Company Profile Box -->
+    <div class="summary-card" id="companyProfileSection" style="background:linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-left:5px solid #f59e0b; color:#78350f;">
+        <div id="companyProfileView"></div>
+        <div id="companyProfileEditForm" style="display:none;">
+            <strong style="color:#b45309; font-size:15px; font-weight:800;">🏢 Company Profile — Edit</strong>
+            <div style="display:flex; flex-wrap:wrap; gap:15px; margin-top:14px;">
+                <div>
+                    <label style="font-size:12px; color:#64748b; font-weight:700;">NAME OF COMPANY</label><br>
+                    <input type="text" id="cpName" style="padding:8px; width:250px; border-radius:6px; border:1px solid #cbd5e1;">
+                </div>
+                <div>
+                    <label style="font-size:12px; color:#64748b; font-weight:700;">ADDRESS</label><br>
+                    <input type="text" id="cpAddress" style="padding:8px; width:300px; border-radius:6px; border:1px solid #cbd5e1;">
+                </div>
+                <div>
+                    <label style="font-size:12px; color:#64748b; font-weight:700;">TELEPHONE NUMBER</label><br>
+                    <input type="text" id="cpPhone" style="padding:8px; width:180px; border-radius:6px; border:1px solid #cbd5e1;">
+                </div>
+                <div>
+                    <label style="font-size:12px; color:#64748b; font-weight:700;">EPF NUMBER (OPTIONAL)</label><br>
+                    <input type="text" id="cpEpfNumber" style="padding:8px; width:180px; border-radius:6px; border:1px solid #cbd5e1;">
+                </div>
+            </div>
+            <div style="margin-top:16px;">
+                <button class="btn-action" style="background:#15803d; color:white;" onclick="saveCompanyProfile()">💾 Save Profile</button>
+                <button class="btn-action" style="background:#64748b; color:white;" onclick="cancelCompanyProfileEdit()">✖ Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Area -->
+    <div class="upload-area" onclick="document.getElementById('excelFile').click()">
+        <h3>📁 Fingerprint Excel File එක මෙතැනට Upload කරන්න</h3>
+        <p>Book1 - Copy.xlsx හෝ එම Format එකේ Excel File එකක් Click කර තෝරන්න</p>
+        <input type="file" id="excelFile" accept=".xlsx, .xls" style="display:none;" onchange="processExcel(event)">
+    </div>
+
+    <!-- Main Navigation Tabs -->
+    <div class="tab-container">
+        <button class="tab-btn active" onclick="switchMainTab('masterProfiles', this)">👤 Employee Master Profiles</button>
+        <button class="tab-btn" onclick="switchMainTab('attendanceReports', this)">⏱️ Attendance Reports & Summaries</button>
+        <button class="tab-btn" onclick="switchMainTab('salaryReportCenter', this)">💰 Salary Report Center</button>
+        <button class="tab-btn" onclick="switchMainTab('paySheet', this)">🧾 Pay Sheet</button>
+        <button class="tab-btn" onclick="switchMainTab('epfEtfReportTab', this)">🏛️ EPF / ETF Report</button>
+    </div>
+
+    <!-- TAB 1: MASTER EMPLOYEE PROFILES -->
+    <div id="masterProfiles" class="tab-content active">
+        <div class="summary-card">
+            <strong>💡 Master Employee Database (Local Storage):</strong> මෙහි ඇති සේවක විස්තර ස්ථිරව Save වී පවතී. අලුත් Excel එකක් Upload කළ විට දැනට නැති අලුත් FP ID පමණක් Auto-Add වේ. Group 1 සේවකයින්ගේ EPF 8%, 12%, ETF 3% අගයන් Salary Report Generate වන විට Auto-Calculate වන අතර අවශ්‍ය නම් Edit කර Save කළ හැක. <strong>Manually එක් කළ Group 2 සේවකයින් පමණක් අවශ්‍ය විට Delete කර සම්පූර්ණයෙන්ම ඉවත් කළ හැක.</strong>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:28px; margin-bottom:12px;">
+            <h3 style="color:#0f172a; margin:0; font-size:19px; font-weight:800;">🔒 Group 1 Employees</h3>
+            <button class="btn-action btn-save" style="padding:9px 20px;" onclick="saveMasterProfiles()">💾 All Changes Save කරන්න</button>
+        </div>
+        <div style="overflow-x: auto;">
+            <table class="data-table master-table">
+                <thead>
+                    <tr>
+                        <th style="width:60px; text-align:center;">FP ID</th>
+                        <th style="min-width:200px;">Employee Name</th>
+                        <th>Dept</th>
+                        <th style="text-align:center;">Group</th>
+                        <th style="min-width:115px; text-align:right;">Basic Salary</th>
+                        <th style="min-width:90px; text-align:right;">OT Rate</th>
+                        <th style="min-width:95px; text-align:right;">Sunday Rate</th>
+                        <th style="min-width:95px; text-align:right;">Poya Rate</th>
+                        <th style="min-width:95px; text-align:right;">No Pay Rate</th>
+                        <th style="min-width:95px; text-align:right;">Late</th>
+                        <th style="min-width:140px;">Special</th>
+                        <th style="min-width:90px; text-align:right;">EPF 8%</th>
+                        <th style="min-width:90px; text-align:right;">EPF 12%</th>
+                        <th style="min-width:90px; text-align:right;">ETF 3%</th>
+                        <th style="min-width:105px; text-align:center;">Status</th>
+                        <th style="text-align:center;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="masterProfileTbodyG1"></tbody>
+            </table>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:38px; margin-bottom:12px;">
+            <h3 style="color:#0f172a; margin:0; font-size:19px; font-weight:800;">📋 Group 2 Employees</h3>
+            <button class="btn-action btn-save" style="padding:9px 20px;" onclick="saveMasterProfiles()">💾 All Changes Save කරන්න</button>
+        </div>
+        <div style="overflow-x: auto;">
+            <table class="data-table master-table">
+                <thead>
+                    <tr>
+                        <th style="width:60px; text-align:center;">FP ID</th>
+                        <th style="min-width:200px;">Employee Name</th>
+                        <th>Dept</th>
+                        <th style="text-align:center;">Group</th>
+                        <th style="min-width:115px; text-align:right;">Basic Salary</th>
+                        <th style="min-width:90px; text-align:right;">OT Rate</th>
+                        <th style="min-width:95px; text-align:right;">Sunday Rate</th>
+                        <th style="min-width:95px; text-align:right;">Poya Rate</th>
+                        <th style="min-width:95px; text-align:right;">No Pay Rate</th>
+                        <th style="min-width:95px; text-align:right;">Late</th>
+                        <th style="min-width:140px;">Special</th>
+                        <th style="min-width:105px; text-align:center;">Status</th>
+                        <th style="text-align:center;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="masterProfileTbodyG2"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 2: ATTENDANCE REPORTS -->
+    <div id="attendanceReports" class="tab-content">
+        <div id="selectionArea" class="selection-box">
+            <div class="poya-box">
+                <h4 style="margin:0 0 8px 0; color:#b45309; font-size:15px; font-weight:800;">🌕 අදාළ මාසයේ පොහෝ දින තෝරන්න (Poya Days Configuration):</h4>
+                <p style="margin:0; font-size:13px; color:#78350f;">මෙම මාසයේ පෝය දිනයන් 1ක් හෝ 2ක් ඇත්නම් Calendar එකෙන් තෝරන්න. <strong>(ඉරිදා දින පෝය ලෙස තෝරාගත නොහැක)</strong></p>
+                <div class="poya-inputs" style="display:flex; gap:15px; align-items:center; flex-wrap:wrap; margin-top:12px;">
+                    <label><strong>පෝය දිනය 1:</strong> <input type="date" id="poyaDate1" onchange="validatePoyaSunday(this)"></label>
+                    <label><strong>පෝය දිනය 2 (තිබේ නම්):</strong> <input type="date" id="poyaDate2" onchange="validatePoyaSunday(this)"></label>
+                    <button class="btn-action" style="background:#f59e0b; color:white; padding: 8px 16px;" onclick="updatePoyaDaysUI()">🌕 Poya Days Update කරන්න</button>
+                    <span id="poyaStatus" style="font-size:13px; font-weight:bold; color:#b45309; margin-left: 10px;"></span>
+                </div>
+            </div>
+
+            <h3 style="text-align:center; color:#0f172a; margin-top:10px; font-weight:800;">⚙️ සේවකයින් Group වලට වෙන් කිරීම තවුරු කරන්න</h3>
+            <p style="text-align: center; color: var(--text-muted); font-size: 13.5px; margin-bottom:18px;">
+                🔒 <strong>FP ID 1 - 29</strong> Group 1 හි ස්ථිරයි. | ➕ Group 2 සේවකයින් අවශ්‍ය නම් Group 1 ට මාරු කළ හැක.
+            </p>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width:70px; text-align:center;">FP ID</th>
+                        <th>Employee Name</th>
+                        <th>Department</th>
+                        <th style="text-align: center;">Group Assignment</th>
+                    </tr>
+                </thead>
+                <tbody id="employeeListBody"></tbody>
+            </table>
+            <button class="btn-submit" onclick="generateReport()">✅ දත්ත සැකසීම තවුරු කරන්න (Generate Report)</button>
+        </div>
+
+        <div id="reportArea" style="display: none;">
+            <div id="tabHeader" class="sub-tab-container">
+                <button class="sub-tab-btn active" onclick="switchSubTab('group1', this)">Group 1 Summary</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('group2', this)">Group 2 Summary</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('reportCenter', this)">📋 Report Center (Raw Log)</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('manualEntryTab', this)">✍️ Manual Entry (Group 2)</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('adjReportCenter', this)">⏱️ Adjusted Attendance Report</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('performance01', this)">P 01</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('performance02', this)">P 02</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('performance03', this)">P 03</button>
+            </div>
+
+            <div id="group1" class="tab-content active"></div>
+            <div id="group2" class="tab-content"></div>
+            
+            <div id="reportCenter" class="tab-content">
+                <div class="filter-box">
+                    <label><strong>🔍 සේවකයා තෝරන්න:</strong></label>
+                    <select id="employeeFilter" onchange="filterReportCenter()"></select>
+                </div>
+                <div id="reportCenterContent"></div>
+            </div>
+
+            <div id="manualEntryTab" class="tab-content">
+                <div class="summary-card" style="background:linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border-left:5px solid var(--success); color:#065f46;">
+                    <strong>✍️ Manually Add / Edit Group 2 Employee:</strong> Fingerprint සටහන් නොවන සේවකයින්ගේ විස්තර එක් කරන්න. In/Out Time Drop-down එකෙන් පැය (Hour) සහ මිනිත්තු (Minute) තෝරන්න. <strong>In Time සහ Out Time දෙකම ඇතුළත් කළ පසු එම පේළිය Light Green පැහැයෙන් ස්වයංක්‍රීයව වෙනස් වේ.</strong>
+                </div>
+
+                <div class="filter-box" style="background:#ffffff; border:1px solid var(--border); box-shadow:var(--shadow-xs); gap:16px; align-items:flex-end;">
+                    <div>
+                        <label style="font-size:12px; font-weight:700; color:#475569;">TEMPORARY EMP ID:</label><br>
+                        <input type="text" id="manualEmpId" placeholder="e.g. TMP-01, M501" style="width:150px; font-weight:700;">
+                    </div>
+                    <div>
+                        <label style="font-size:12px; font-weight:700; color:#475569;">EMPLOYEE NAME:</label><br>
+                        <input type="text" id="manualEmpName" placeholder="Full Name" style="width:230px;">
+                    </div>
+                    <div>
+                        <label style="font-size:12px; font-weight:700; color:#475569;">DEPARTMENT:</label><br>
+                        <input type="text" id="manualEmpDept" value="Manual" style="width:150px;">
+                    </div>
+                    <div>
+                        <button class="btn-action" style="background:var(--primary); color:white; padding:9px 18px;" onclick="loadManualAttendanceTable()">📋 Create / Open Attendance Table</button>
+                    </div>
+                    <div style="border-left:2px solid var(--border); padding-left:16px;">
+                        <label style="font-size:12px; font-weight:700; color:#b45309;">👤 SELECT SAVED MANUAL EMPLOYEE:</label><br>
+                        <select id="manualExistingSelect" style="min-width:240px; font-weight:700; border-color:#f59e0b;" onchange="selectExistingManualEmployee(this.value)">
+                            <option value="">-- තෝරන්න (Select Employee) --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="manualEntryContainer" style="margin-top:20px;"></div>
+            </div>
+
+            <div id="adjReportCenter" class="tab-content">
+                <div class="filter-box">
+                    <label><strong>🔍 සේවකයා තෝරන්න:</strong></label>
+                    <select id="adjEmployeeFilter" onchange="filterAdjReportCenter()"></select>
+                </div>
+                <div id="adjEmployeeFilterContent"></div>
+            </div>
+
+            <div id="performance01" class="tab-content">
+                <h3 style="color:#0f172a; margin:15px 0 20px 0; font-size:18px; font-weight:800;">Performance 01</h3>
+                <div class="filter-box">
+                    <div>
+                        <label><strong>💰 මුළු මුදල (Base Amount) Rs:</strong></label>
+                        <input type="number" id="p01BaseAmount" value="4000" style="width:110px;" onchange="updateP01Config()">
+                    </div>
+                    <div>
+                        <label><strong>➖ නිවාඩුවකට අඩුවන මුදල (Per Absent Day) Rs:</strong></label>
+                        <input type="number" id="p01PerDayDeduction" value="500" style="width:110px;" onchange="updateP01Config()">
+                    </div>
+                </div>
+                <div class="filter-box">
+                    <label><strong>➕ සේවකයෙක් තෝරන්න:</strong></label>
+                    <select id="p01EmployeeSelect" style="min-width:250px;"></select>
+                    <button class="btn-action" style="background:var(--primary); color:white; padding:8px 18px;" onclick="addP01Employee()">Add</button>
+                </div>
+                <div id="p01TableContainer" style="margin-top:20px; overflow-x:auto;"></div>
+            </div>
+
+            <div id="performance02" class="tab-content">
+                <h3 style="color:#0f172a; margin:15px 0 20px 0; font-size:18px; font-weight:800;">Performance 02</h3>
+                <div class="filter-box">
+                    <div>
+                        <label><strong>💰 මුළු මුදල (Base Amount) Rs:</strong></label>
+                        <input type="number" id="p02BaseAmount" value="2000" style="width:110px;" onchange="updateP02Config()">
+                    </div>
+                    <div>
+                        <label><strong>➖ නිවාඩුවකට අඩුවන මුදල (Per Absent Day) Rs:</strong></label>
+                        <input type="number" id="p02PerDayDeduction" value="500" style="width:110px;" onchange="updateP02Config()">
+                    </div>
+                </div>
+                <div class="filter-box">
+                    <label><strong>➕ සේවකයෙක් තෝරන්න:</strong></label>
+                    <select id="p02EmployeeSelect" style="min-width:250px;"></select>
+                    <button class="btn-action" style="background:var(--primary); color:white; padding:8px 18px;" onclick="addP02Employee()">Add</button>
+                </div>
+                <div id="p02TableContainer" style="margin-top:20px; overflow-x:auto;"></div>
+            </div>
+
+            <div id="performance03" class="tab-content">
+                <h3 style="color:#0f172a; margin:15px 0 20px 0; font-size:18px; font-weight:800;">Performance 03</h3>
+                <div class="filter-box">
+                    <div>
+                        <label><strong>💰 මුදල 1 (Amount 1) Rs:</strong></label>
+                        <input type="number" id="p03Amount1" value="5000" style="width:110px;" onchange="updateP03Config()">
+                    </div>
+                    <div>
+                        <label><strong>💰 මුදල 2 (Amount 2) Rs:</strong></label>
+                        <input type="number" id="p03Amount2" value="3000" style="width:110px;" onchange="updateP03Config()">
+                    </div>
+                    <div>
+                        <label><strong>➖ නිවාඩුවකට අඩුවන මුදල (Per Absent Day) Rs:</strong></label>
+                        <input type="number" id="p03PerDayDeduction" value="1000" style="width:110px;" onchange="updateP03Config()">
+                    </div>
+                </div>
+                <div class="filter-box">
+                    <label><strong>➕ සේවකයෙක් තෝරන්න:</strong></label>
+                    <select id="p03EmployeeSelect" style="min-width:250px;"></select>
+                    <label><strong>මුදල තෝරන්න:</strong></label>
+                    <select id="p03TierSelect"></select>
+                    <button class="btn-action" style="background:var(--primary); color:white; padding:8px 18px;" onclick="addP03Employee()">Add</button>
+                </div>
+                <div id="p03TableContainer" style="margin-top:20px; overflow-x:auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: SALARY REPORT CENTER -->
+    <div id="salaryReportCenter" class="tab-content">
+        <div class="summary-card">
+            <strong>💡 Salary Report Center:</strong> මෙම Report එක Excel එකක් Upload කර Report Generate කළ පසු Auto-Update වේ. (අදාළ මාසයේ එක දිනක් හෝ පැමිණි සේවකයින් පමණක් මෙහි ඇතුළත් වේ)
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:18px; margin: 26px 0;">
+            <div class="metric-card">
+                <div class="metric-card-title">Total Active Employees</div>
+                <div id="srcTotalEmployees" class="metric-card-value" style="color:var(--primary);">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-card-title">Total Salary (All Groups)</div>
+                <div id="srcTotalSalary" class="metric-card-value" style="color:#059669;">Rs 0.00</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-card-title">Group 1 Total Salary</div>
+                <div id="srcGroup1Total" class="metric-card-value" style="color:#4338ca;">Rs 0.00</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-card-title">Group 2 Total Salary</div>
+                <div id="srcGroup2Total" class="metric-card-value" style="color:#d97706;">Rs 0.00</div>
+            </div>
+        </div>
+
+        <h3 style="color:#0f172a; margin-top:35px; font-size:19px; font-weight:800;">🔒 Group 1 Salary Report</h3>
+        <div id="srcGroup1Meta" style="color:var(--text-muted); font-size:13.5px; margin-bottom:12px;"></div>
+        <div style="display:flex; gap:10px; margin-bottom:14px;">
+            <button class="btn-action" style="background:#dc2626; color:white;" onclick="downloadSalaryReportPDF(1)">📄 PDF Download</button>
+            <button class="btn-action" style="background:#059669; color:white;" onclick="downloadSalaryReportExcel(1)">📊 Excel Download</button>
+        </div>
+        <div id="srcGroup1TableContainer" style="overflow-x:auto;"></div>
+
+        <h3 style="color:#0f172a; margin-top:35px; font-size:19px; font-weight:800;">📋 Group 2 Salary Report</h3>
+        <div id="srcGroup2Meta" style="color:var(--text-muted); font-size:13.5px; margin-bottom:12px;"></div>
+        <div style="display:flex; gap:10px; margin-bottom:14px;">
+            <button class="btn-action" style="background:#dc2626; color:white;" onclick="downloadSalaryReportPDF(2)">📄 PDF Download</button>
+            <button class="btn-action" style="background:#059669; color:white;" onclick="downloadSalaryReportExcel(2)">📊 Excel Download</button>
+        </div>
+        <div id="srcGroup2TableContainer" style="overflow-x:auto;"></div>
+
+        <h3 style="color:#0f172a; margin-top:35px; font-size:19px; font-weight:800;">🔍 Employee Salary Search</h3>
+        <div class="filter-box">
+            <label><strong>සේවකයා තෝරන්න:</strong></label>
+            <select id="srcEmployeeSelect" style="min-width:250px;" onchange="renderSalaryEmployeeDetail()"></select>
+        </div>
+        <div id="srcEmployeeDetailContainer" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- TAB 4: PAY SHEET -->
+    <div id="paySheet" class="tab-content">
+        <h3 style="color:#0f172a; margin:15px 0 20px 0; font-size:19px; font-weight:800;">🧾 Pay Sheet</h3>
+
+        <h4 style="color:#0f172a; margin-top:25px; font-size:16px; font-weight:800;">🔒 Group 1 Pay Sheet</h4>
+        <div class="filter-box">
+            <label><strong>සේවකයා තෝරන්න:</strong></label>
+            <select id="paySheetG1Select" style="min-width:250px;" onchange="renderPaySheetGroup1Selected()"></select>
+            <button class="btn-action" id="paySheetG1PdfBtn" style="background:#dc2626; color:white;" onclick="downloadPaySheetPDF(1)">📄 PDF Download</button>
+        </div>
+        <div id="paySheetGroup1Container" style="margin-top:15px;"></div>
+
+        <h4 style="color:#0f172a; margin-top:35px; font-size:16px; font-weight:800;">📋 Group 2 Pay Sheet</h4>
+        <div class="filter-box">
+            <label><strong>සේවකයා තෝරන්න:</strong></label>
+            <select id="paySheetG2Select" style="min-width:250px;" onchange="renderPaySheetGroup2Selected()"></select>
+            <button class="btn-action" id="paySheetG2PdfBtn" style="background:#dc2626; color:white;" onclick="downloadPaySheetPDF(2)">📄 PDF Download</button>
+        </div>
+        <div id="paySheetGroup2Container" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- TAB 5: EPF / ETF REPORT -->
+    <div id="epfEtfReportTab" class="tab-content">
+        <div class="summary-card" style="background:linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); border-left:5px solid #3b82f6; color:#1e3a8a;">
+            <strong>🏛️ EPF / ETF Official Compliance Center:</strong> මෙම Report එක Group 1 සේවකයින්ගේ වැටුප් දත්ත මත පදනම්ව ස්වයංක්‍රීයව ජනනය වේ. කිසිදු බාහිර අන්තර්ජාල script එකක් මත රඳා නොපවතින පරිදි, <strong>"🚀 Generate & Download Official Form C"</strong> බොත්තමෙන් නිල C-Form පෝරමය සෘජුවම බාගත (Direct Download) කරගත හැක.
+        </div>
+
+        <div class="filter-box" style="justify-content: space-between;">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <label style="font-size:14px; font-weight:800; color:#1e293b;">📋 වාර්තාව තෝරන්න:</label>
+                <select id="epfEtfTypeSelect" style="min-width:200px; font-weight:700; border-color:var(--primary);" onchange="renderEpfEtfReport()">
+                    <option value="EPF">🏛️ EPF Report (Employee 8% + Employer 12%)</option>
+                    <option value="ETF">🏢 ETF Report (Employer 3%)</option>
+                </select>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <button id="generateCFormBtn" class="btn-action" style="background:#7c3aed; color:white;" onclick="generateOfficialCFormViaJsPDF()">
+                    🚀 Generate & Download Official Form C
+                </button>
+                <button class="btn-action btn-save" onclick="saveEpfEtfOverrides()">💾 Changes Save කරන්න</button>
+            </div>
+        </div>
+
+        <div id="epfEtfTableContainer" style="overflow-x:auto;"></div>
+    </div>
+</div>
+
+<script>
+// ===================== FIREBASE CONFIGURATION & AUTH =====================
+// ඔබේ සැබෑ Firebase Project Keys නිවැරදිව ඇතුළත් කර ඇත
+const firebaseConfig = {
+  apiKey: "AIzaSyC2r07AdImo5qbi58EyHJdtl_z5gWWM9Nk",
+  authDomain: "payroll-management-syste-10b69.firebaseapp.com",
+  projectId: "payroll-management-syste-10b69",
+  storageBucket: "payroll-management-syste-10b69.firebasestorage.app",
+  messagingSenderId: "309946137352",
+  appId: "1:309946137352:web:de32b083f27b7782b74abd",
+  measurementId: "G-R51K6TT677"
+};
+
+// Initialize Firebase
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const auth = firebase.auth();
+
+let currentAuthMode = 'login';
+
+function switchAuthTab(mode) {
+    currentAuthMode = mode;
+    let tabLogin = document.getElementById('tabLogin');
+    let tabSignUp = document.getElementById('tabSignUp');
+    let submitBtn = document.getElementById('authSubmitBtn');
+    let errDiv = document.getElementById('authErrorMsg');
+    errDiv.style.display = 'none';
+
+    if (mode === 'login') {
+        tabLogin.classList.add('active');
+        tabSignUp.classList.remove('active');
+        submitBtn.textContent = 'Log In';
+    } else {
+        tabSignUp.classList.add('active');
+        tabLogin.classList.remove('active');
+        submitBtn.textContent = 'Sign Up';
+    }
+}
+
+function handleAuthSubmit() {
+    let email = document.getElementById('authEmail').value.trim();
+    let pass = document.getElementById('authPassword').value.trim();
+    let errDiv = document.getElementById('authErrorMsg');
+    let submitBtn = document.getElementById('authSubmitBtn');
+
+    if (!email || !pass) {
+        errDiv.textContent = 'කරුණාකර Email සහ Password ඇතුළත් කරන්න.';
+        errDiv.style.display = 'block';
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'කරුණාකර රැඳී සිටින්න...';
+    errDiv.style.display = 'none';
+
+    if (currentAuthMode === 'login') {
+        auth.signInWithEmailAndPassword(email, pass)
+            .catch(err => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Log In';
+                errDiv.textContent = 'දෝෂයකි: ' + err.message;
+                errDiv.style.display = 'block';
+            });
+    } else {
+        auth.createUserWithEmailAndPassword(email, pass)
+            .catch(err => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign Up';
+                errDiv.textContent = 'දෝෂයකි: ' + err.message;
+                errDiv.style.display = 'block';
+            });
+    }
+}
+
+function firebaseSignOut() {
+    let proceed = confirm('ඔබට පද්ධතියෙන් Log Out වීමට අවශ්‍යද?');
+    if (proceed) {
+        auth.signOut().then(() => {
+            window.location.reload();
+        });
+    }
+}
+
+// Session Observer (Auto Login)
+auth.onAuthStateChanged(user => {
+    let overlay = document.getElementById('authOverlay');
+    let container = document.getElementById('mainContainer');
+    let userDisplay = document.getElementById('currentUserDisplay');
+    let submitBtn = document.getElementById('authSubmitBtn');
+
+    if (user) {
+        overlay.style.display = 'none';
+        container.style.display = 'block';
+        if (userDisplay) userDisplay.textContent = '👤 ' + user.email;
+        initPayrollApp();
+    } else {
+        overlay.style.display = 'flex';
+        container.style.display = 'none';
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = currentAuthMode === 'login' ? 'Log In' : 'Sign Up';
+        }
+    }
+});
+
+// ===================== PAYROLL APPLICATION LOGIC =====================
+const STORAGE_KEY = 'MASTER_EMPLOYEE_PROFILES';
+const P01_SELECTED_KEY = 'P01_SELECTED_EMPLOYEES';
+const P01_CONFIG_KEY = 'P01_CONFIG';
+const P02_SELECTED_KEY = 'P02_SELECTED_EMPLOYEES';
+const P02_CONFIG_KEY = 'P02_CONFIG';
+const P03_SELECTED_KEY = 'P03_SELECTED_EMPLOYEES';
+const P03_CONFIG_KEY = 'P03_CONFIG';
+const SL_AD_KEY = 'SL_AD_VALUES';
+const COMPANY_PROFILE_KEY = 'COMPANY_PROFILE';
+const SESSION_RESTORE_KEY = 'SESSION_MONTH_DATA';
+const EPF_NIC_DATA_KEY = 'EPF_NIC_DATA';
+const EPF_OVERRIDES_KEY = 'EPF_OVERRIDES_DATA';
+
+let companyProfile = { name: '', address: '', phone: '', epfNumber: '' };
+let epfNicData = {};
+let epfOverrides = {};
+
+const APP_BACKUP_KEYS = [
+    STORAGE_KEY, P01_SELECTED_KEY, P01_CONFIG_KEY,
+    P02_SELECTED_KEY, P02_CONFIG_KEY, P03_SELECTED_KEY, P03_CONFIG_KEY, SL_AD_KEY,
+    COMPANY_PROFILE_KEY, EPF_NIC_DATA_KEY, EPF_OVERRIDES_KEY
+];
+
+function loadEpfStorageData() {
+    let savedNic = localStorage.getItem(EPF_NIC_DATA_KEY);
+    epfNicData = savedNic ? JSON.parse(savedNic) : {};
+    let savedOverrides = localStorage.getItem(EPF_OVERRIDES_KEY);
+    epfOverrides = savedOverrides ? JSON.parse(savedOverrides) : {};
+}
+
+function saveEpfEtfOverrides() {
+    localStorage.setItem(EPF_NIC_DATA_KEY, JSON.stringify(epfNicData));
+    localStorage.setItem(EPF_OVERRIDES_KEY, JSON.stringify(epfOverrides));
+    alert('✅ EPF/ETF දත්ත සාර්ථකව Save විය!');
+    renderEpfEtfReport();
+}
+
+function loadCompanyProfile() {
+    let saved = localStorage.getItem(COMPANY_PROFILE_KEY);
+    companyProfile = saved ? JSON.parse(saved) : { name: '', address: '', phone: '', epfNumber: '' };
+}
+
+function renderCompanyProfileView() {
+    let view = document.getElementById('companyProfileView');
+    if (!view) return;
+    let hasData = companyProfile.name || companyProfile.address || companyProfile.phone || companyProfile.epfNumber;
+
+    if (!hasData) {
+        view.innerHTML = `
+            <strong style="color:#b45309;">🏢 Company Profile:</strong> තවම සකසා නොමැත.
+            <button class="btn-action" style="background:#f59e0b; color:white; margin-left:10px;" onclick="showCompanyProfileEditForm()">➕ Add Company Profile</button>
+        `;
+        return;
+    }
+
+    view.innerHTML = `
+        <strong style="color:#b45309; font-size:14.5px;">🏢 Company Profile:</strong>
+        <div style="margin-top:8px; line-height:1.8;">
+            <div><strong>Name Of Company:</strong> ${companyProfile.name || '-'}</div>
+            <div><strong>Address:</strong> ${companyProfile.address || '-'}</div>
+            <div><strong>Telephone Number:</strong> ${companyProfile.phone || '-'}</div>
+            <div><strong>EPF Number:</strong> ${companyProfile.epfNumber || '-'}</div>
+        </div>
+        <button class="btn-action" style="background:#f59e0b; color:white; margin-top:8px;" onclick="showCompanyProfileEditForm()">✏️ Edit Company Profile</button>
+    `;
+}
+
+function showCompanyProfileEditForm() {
+    document.getElementById('companyProfileView').style.display = 'none';
+    document.getElementById('companyProfileEditForm').style.display = 'block';
+    document.getElementById('cpName').value = companyProfile.name || '';
+    document.getElementById('cpAddress').value = companyProfile.address || '';
+    document.getElementById('cpPhone').value = companyProfile.phone || '';
+    document.getElementById('cpEpfNumber').value = companyProfile.epfNumber || '';
+}
+
+function cancelCompanyProfileEdit() {
+    document.getElementById('companyProfileEditForm').style.display = 'none';
+    document.getElementById('companyProfileView').style.display = 'block';
+}
+
+function saveCompanyProfile() {
+    companyProfile = {
+        name: document.getElementById('cpName').value.trim(),
+        address: document.getElementById('cpAddress').value.trim(),
+        phone: document.getElementById('cpPhone').value.trim(),
+        epfNumber: document.getElementById('cpEpfNumber').value.trim()
+    };
+    localStorage.setItem(COMPANY_PROFILE_KEY, JSON.stringify(companyProfile));
+
+    document.getElementById('companyProfileEditForm').style.display = 'none';
+    document.getElementById('companyProfileView').style.display = 'block';
+    renderCompanyProfileView();
+}
+
+async function deriveEncryptionKey(password, salt) {
+    let enc = new TextEncoder();
+    let keyMaterial = await crypto.subtle.importKey(
+        'raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveKey']
+    );
+    return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: salt, iterations: 150000, hash: 'SHA-256' },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+    );
+}
+
+async function encryptText(plaintext, password) {
+    let salt = crypto.getRandomValues(new Uint8Array(16));
+    let iv = crypto.getRandomValues(new Uint8Array(12));
+    let key = await deriveEncryptionKey(password, salt);
+    let enc = new TextEncoder();
+    let ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, enc.encode(plaintext));
+
+    let combined = new Uint8Array(salt.length + iv.length + ciphertext.byteLength);
+    combined.set(salt, 0);
+    combined.set(iv, salt.length);
+    combined.set(new Uint8Array(ciphertext), salt.length + iv.length);
+
+    let binary = '';
+    combined.forEach(b => binary += String.fromCharCode(b));
+    return btoa(binary);
+}
+
+async function decryptText(base64Data, password) {
+    let binary = atob(base64Data);
+    let combined = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) combined[i] = binary.charCodeAt(i);
+
+    let salt = combined.slice(0, 16);
+    let iv = combined.slice(16, 28);
+    let ciphertext = combined.slice(28);
+
+    let key = await deriveEncryptionKey(password, salt);
+    let decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ciphertext);
+    return new TextDecoder().decode(decrypted);
+}
+
+function gatherBackupData() {
+    let data = {};
+    APP_BACKUP_KEYS.forEach(k => {
+        let v = localStorage.getItem(k);
+        if (v !== null) data[k] = v;
+    });
+
+    let currentMonthData = {
+        currentUploadedData: currentUploadedData,
+        poyaDates: poyaDates,
+        poyaDate1: document.getElementById('poyaDate1') ? document.getElementById('poyaDate1').value : '',
+        poyaDate2: document.getElementById('poyaDate2') ? document.getElementById('poyaDate2').value : ''
+    };
+
+    return JSON.stringify({ 
+        app: 'Attendance & Payroll Management System', 
+        version: 3, 
+        savedAt: new Date().toISOString(), 
+        data: data,
+        currentMonthData: currentMonthData
+    });
+}
+
+async function saveEncryptedBackup() {
+    let proceed = confirm('ඔබට මෙම System එකේ ඒ මොහොතේ තිබෙන සියලුම දත්ත (Attendance records, EPF දත්ත ඇතුළුව) Encrypted File එකක් ලෙස Save කිරීමට අවශ්‍යද?');
+    if (!proceed) return;
+
+    let password = prompt('File එක Encrypt කිරීමට Password එකක් ඇතුළත් කරන්න:');
+    if (!password) { alert('Password ලබා නොදුන් නිසා Save කිරීම නවත්වන ලදී.'); return; }
+
+    let confirmPassword = prompt('තහවුරු කිරීම සඳහා Password එක නැවත Type කරන්න:');
+    if (password !== confirmPassword) { alert('❌ Password දෙක නොගැලපේ.'); return; }
+
+    try {
+        let plaintext = gatherBackupData();
+        let encrypted = await encryptText(plaintext, password);
+
+        let blob = new Blob([encrypted], { type: 'text/plain' });
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        let dateStr = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = `Attendance_System_Backup_${dateStr}.enc`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        alert('✅ ඒ මොහොතේ තිබූ සම්පූර්ණ දත්ත Backup File එකක් ලෙස සාර්ථකව Encrypt කර Save කරන ලදී.');
+    } catch (e) {
+        alert('❌ දෝෂයක් ඇති විය: ' + e.message);
+    }
+}
+
+function handleRestoreFileSelect(event) {
+    let file = event.target.files[0];
+    event.target.value = '';
+    if (!file) return;
+    restoreEncryptedBackup(file);
+}
+
+async function restoreEncryptedBackup(file) {
+    let password = prompt('මෙම Backup File එක Decrypt කිරීමට Password එක ඇතුළත් කරන්න:');
+    if (!password) return;
+
+    try {
+        let cipherText = (await file.text()).trim();
+        let decryptedJson = await decryptText(cipherText, password);
+        let parsed = JSON.parse(decryptedJson);
+
+        if (!parsed || !parsed.data) throw new Error('Invalid backup file format');
+
+        let proceed = confirm('Decryption සාර්ථකයි. මෙම Backup එකේ තිබූ සියලුම Data සහ Reports නැවත Load කිරීමට අවශ්‍යද?');
+        if (!proceed) return;
+
+        Object.keys(parsed.data).forEach(k => {
+            localStorage.setItem(k, parsed.data[k]);
+        });
+
+        if (parsed.currentMonthData) {
+            sessionStorage.setItem(SESSION_RESTORE_KEY, JSON.stringify(parsed.currentMonthData));
+        } else {
+            sessionStorage.removeItem(SESSION_RESTORE_KEY);
+        }
+
+        alert('✅ Backup File එක සාර්ථකව Restore කරන ලදී! Page එක Reload වේ.');
+        window.location.reload();
+    } catch (e) {
+        alert('❌ Decrypt කිරීමට නොහැකි විය. Password එක වැරදිදැයි බලන්න.');
+    }
+}
+
+let masterProfiles = {}; 
+let currentUploadedData = []; 
+let p01SelectedIds = []; 
+let slAdValues = {}; 
+let p01Config = { baseAmount: 4000, perDayDeduction: 500 }; 
+let p02SelectedIds = []; 
+let p02Config = { baseAmount: 2000, perDayDeduction: 500 }; 
+let p03Selected = []; 
+let p03Config = { amount1: 5000, amount2: 3000, perDayDeduction: 1000 }; 
+
+function loadP01Data() {
+    let savedSelected = localStorage.getItem(P01_SELECTED_KEY);
+    p01SelectedIds = savedSelected ? JSON.parse(savedSelected) : [];
+    let savedConfig = localStorage.getItem(P01_CONFIG_KEY);
+    p01Config = savedConfig ? JSON.parse(savedConfig) : { baseAmount: 4000, perDayDeduction: 500 };
+}
+
+function saveP01Selected() { localStorage.setItem(P01_SELECTED_KEY, JSON.stringify(p01SelectedIds)); }
+function saveP01Config() { localStorage.setItem(P01_CONFIG_KEY, JSON.stringify(p01Config)); }
+
+function loadP02Data() {
+    let savedSelected = localStorage.getItem(P02_SELECTED_KEY);
+    p02SelectedIds = savedSelected ? JSON.parse(savedSelected) : [];
+    let savedConfig = localStorage.getItem(P02_CONFIG_KEY);
+    p02Config = savedConfig ? JSON.parse(savedConfig) : { baseAmount: 2000, perDayDeduction: 500 };
+}
+
+function saveP02Selected() { localStorage.setItem(P02_SELECTED_KEY, JSON.stringify(p02SelectedIds)); }
+function saveP02Config() { localStorage.setItem(P02_CONFIG_KEY, JSON.stringify(p02Config)); }
+
+function loadP03Data() {
+    let savedSelected = localStorage.getItem(P03_SELECTED_KEY);
+    p03Selected = savedSelected ? JSON.parse(savedSelected) : [];
+    let savedConfig = localStorage.getItem(P03_CONFIG_KEY);
+    p03Config = savedConfig ? JSON.parse(savedConfig) : { amount1: 5000, amount2: 3000, perDayDeduction: 1000 };
+}
+
+function saveP03Selected() { localStorage.setItem(P03_SELECTED_KEY, JSON.stringify(p03Selected)); }
+function saveP03Config() { localStorage.setItem(P03_CONFIG_KEY, JSON.stringify(p03Config)); }
+
+function loadSlAdValues() {
+    let saved = localStorage.getItem(SL_AD_KEY);
+    slAdValues = saved ? JSON.parse(saved) : {};
+}
+
+function saveSlAdValues() { localStorage.setItem(SL_AD_KEY, JSON.stringify(slAdValues)); }
+
+function updateSlAd(empId, value) {
+    value = String(value).trim();
+    if (value === '') delete slAdValues[empId];
+    else slAdValues[empId] = value;
+    saveSlAdValues();
+    renderSalaryReportCenter();
+}
+
+let poyaDates = [];
+
+function initPayrollApp() {
+    loadMasterProfiles();
+    renderMasterProfilesTable();
+    loadP01Data();
+    loadP02Data();
+    loadP03Data();
+    loadSlAdValues();
+    loadCompanyProfile();
+    loadEpfStorageData();
+    renderCompanyProfileView();
+    updateManualEmployeesDropdown();
+
+    let sessionData = sessionStorage.getItem(SESSION_RESTORE_KEY);
+    if (sessionData) {
+        try {
+            let parsed = JSON.parse(sessionData);
+            if (parsed.currentUploadedData && parsed.currentUploadedData.length > 0) {
+                currentUploadedData = parsed.currentUploadedData;
+                poyaDates = parsed.poyaDates || [];
+                if (document.getElementById('poyaDate1')) document.getElementById('poyaDate1').value = parsed.poyaDate1 || '';
+                if (document.getElementById('poyaDate2')) document.getElementById('poyaDate2').value = parsed.poyaDate2 || '';
+                
+                renderSelectionList();
+                generateReport();
+                switchMainTab('attendanceReports', document.querySelectorAll('.tab-btn')[1]);
+            }
+        } catch (e) {
+            console.error('Session data parsing error:', e);
+        }
+    }
+}
+
+function loadMasterProfiles() {
+    let saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) masterProfiles = JSON.parse(saved);
+}
+
+function saveMasterProfiles() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(masterProfiles));
+    alert('✅ සේවක Profiles සාර්ථකව Save විය!');
+    renderMasterProfilesTable();
+    updateManualEmployeesDropdown();
+}
+
+function normalizeDateStr(dateStr) {
+    if (!dateStr) return "";
+    let clean = String(dateStr).trim().split(' ')[0];
+    let parts = clean.split(/[-/.]/);
+    if (parts.length === 3) {
+        if (parts[0].length === 4) {
+            return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+        } else if (parts[2].length === 4) {
+            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        } else if (parts[2].length === 2 || parts[2].length === 1) {
+            let yearNum = parseInt(parts[2], 10);
+            let fullYear = yearNum <= 69 ? 2000 + yearNum : 1900 + yearNum;
+            return `${fullYear}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+        }
+    }
+    return clean;
+}
+
+function validatePoyaSunday(inputElem) {
+    if (!inputElem.value) return;
+    let selectedDate = new Date(inputElem.value + "T00:00:00");
+    if (selectedDate.getDay() === 0) {
+        alert("⚠️ ඔබ තෝරාගත් දිනය ඉරිදා දිනයකි!\n\nඉරිදා දින Holidays ලෙස ගණනය වන බැවින්, පෝය දිනය ලෙස ඉරිදා නොවන දිනයක් තෝරන්න.");
+        inputElem.value = "";
+    }
+}
+
+function syncPoyaDatesArray() {
+    poyaDates = [];
+    let d1 = document.getElementById('poyaDate1').value;
+    let d2 = document.getElementById('poyaDate2').value;
+    if (d1) poyaDates.push(normalizeDateStr(d1));
+    if (d2) poyaDates.push(normalizeDateStr(d2));
+}
+
+function updatePoyaDaysUI() {
+    syncPoyaDatesArray();
+    let count = poyaDates.length;
+    let statusText = count > 0 
+        ? `✅ පිහිටුවන ලද පෝය දින: ${poyaDates.join(', ')} (දින ${count} යි)` 
+        : '⚠️ පෝය දින තෝරා නොමැත.';
+    document.getElementById('poyaStatus').innerText = statusText;
+}
+
+function rawTimeToMinutes(val) {
+    if (val === undefined || val === null || val === "" || String(val).trim() === "***") return null;
+    let strVal = String(val).trim();
+    if (strVal.includes(":")) {
+        let parts = strVal.split(":");
+        return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+    }
+    let numVal = parseFloat(strVal);
+    if (!isNaN(numVal) && numVal >= 0 && numVal < 1) {
+        let totalSeconds = Math.round(numVal * 86400);
+        return Math.floor(totalSeconds / 3600) * 60 + Math.floor((totalSeconds % 3600) / 60);
+    }
+    return null;
+}
+
+function minutesToFormattedTime(totalMinutes) {
+    if (totalMinutes === null) return "***";
+    let hours = Math.floor(totalMinutes / 60);
+    let minutes = totalMinutes % 60;
+    let ampm = hours >= 12 ? 'PM' : 'AM';
+    let displayHours = hours % 12 ? hours % 12 : 12;
+    let pad = (n) => n.toString().padStart(2, '0');
+    return `${pad(displayHours)}:${pad(minutes)} ${ampm}`;
+}
+
+function minutesToRaw24Hour(totalMinutes) {
+    if (totalMinutes === null) return "***";
+    let hours = Math.floor(totalMinutes / 60);
+    let minutes = totalMinutes % 60;
+    let pad = (n) => n.toString().padStart(2, '0');
+    return `${pad(hours)}:${pad(minutes)}:00`;
+}
+
+function getAdjInMinutes(rawMinutes) {
+    if (rawMinutes === null) return null;
+    if (rawMinutes <= 450) return 450; 
+    let remainder = rawMinutes % 15;
+    return (remainder === 0) ? rawMinutes + 15 : rawMinutes + (15 - remainder);
+}
+
+function adjustInTime(rawMinutes) { return minutesToFormattedTime(getAdjInMinutes(rawMinutes)); }
+
+function getAdjOutMinutes(rawMinutes) {
+    if (rawMinutes === null) return null;
+    return rawMinutes - (rawMinutes % 15);
+}
+
+function adjustOutTime(rawMinutes) { return minutesToFormattedTime(getAdjOutMinutes(rawMinutes)); }
+
+function getWorkingMinutes(inMinutes, outMinutes) {
+    let adjIn = getAdjInMinutes(inMinutes);
+    let adjOut = getAdjOutMinutes(outMinutes);
+    if (adjIn === null || adjOut === null) return 0;
+    let diffMins = adjOut - adjIn;
+    if (diffMins <= 0) return 0;
+    if (diffMins > 240) diffMins -= 45; 
+    return diffMins;
+}
+
+function calculateWorkingHours(inMinutes, outMinutes) {
+    let diffMins = getWorkingMinutes(inMinutes, outMinutes);
+    if (diffMins === 0 && (inMinutes === null || outMinutes === null)) return "***";
+    let hrs = Math.floor(diffMins / 60);
+    let mins = diffMins % 60;
+    let pad = (n) => n.toString().padStart(2, '0');
+    return `${pad(hrs)}:${pad(mins)}`;
+}
+
+function processExcel(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    sessionStorage.removeItem(SESSION_RESTORE_KEY);
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array', raw: false, cellDates: true, cellText: true});
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(worksheet, {header: 1, raw: false});
+        
+        let currentDept = "Unknown";
+        currentUploadedData = [];
+        let currentEmp = null;
+
+        for (let i = 0; i < rows.length; i++) {
+            let row = rows[i];
+            if (!row || row.length === 0) continue;
+            let col0 = row[0] ? String(row[0]).trim() : "";
+
+            if (col0.startsWith("Department:")) {
+                currentDept = col0.replace("Department:", "").trim();
+                continue;
+            }
+
+            if (col0.includes("Fingerprint ID :")) {
+                if (currentEmp) currentUploadedData.push(currentEmp);
+
+                let idMatch = col0.match(/Fingerprint ID :\s*(\d+)\s*-\s*([^/]+)/);
+                let empId = idMatch ? parseInt(idMatch[1].trim(), 10) : 0;
+                let empName = idMatch ? idMatch[2].trim() : col0;
+
+                let isFixed = (empId >= 1 && empId <= 29);
+                if (!masterProfiles[empId]) {
+                    masterProfiles[empId] = {
+                        id: empId,
+                        name: empName,
+                        dept: currentDept,
+                        group: isFixed ? 1 : 2,
+                        isFixed: isFixed,
+                        basicSalary: 0,
+                        otRate: 0,
+                        sundayRate: 0,
+                        poyaRate: 0,
+                        noPayRate: 0,
+                        late: 0,
+                        phone: '',
+                        special: '',
+                        performance01: '',
+                        epf8: 0,
+                        epf12: 0,
+                        etf3: 0,
+                        status: 'Active'
+                    };
+                } else {
+                    if (isFixed) {
+                        masterProfiles[empId].isFixed = true;
+                        masterProfiles[empId].group = 1;
+                    }
+                }
+
+                currentEmp = {
+                    id: empId,
+                    name: masterProfiles[empId].name,
+                    dept: currentDept,
+                    workDays: 0, 
+                    holidays: 0,
+                    poyaDaysWorked: 0,
+                    absentDays: 0,
+                    shortLeaveDays: 0,
+                    dailyRecords: []
+                };
+                continue;
+            }
+
+            if (currentEmp && row[4] !== undefined) {
+                let status = String(row[4]).trim();
+                let dateVal = row[0] ? String(row[0]).trim().split(' ')[0] : "";
+                let dayVal = row[1] ? String(row[1]).trim() : "";
+                let inMinutes = rawTimeToMinutes(row[2]);
+                let outMinutes = rawTimeToMinutes(row[3]);
+
+                currentEmp.dailyRecords.push({
+                    date: dateVal,
+                    normDate: normalizeDateStr(dateVal),
+                    day: dayVal,
+                    rawInTime: minutesToRaw24Hour(inMinutes),
+                    rawOutTime: minutesToRaw24Hour(outMinutes),
+                    adjInTime: adjustInTime(inMinutes),
+                    adjOutTime: adjustOutTime(outMinutes),
+                    workingMinutes: getWorkingMinutes(inMinutes, outMinutes),
+                    workingHours: calculateWorkingHours(inMinutes, outMinutes),
+                    status: status,
+                    isPoya: false
+                });
+
+                if (status === 'ABH' || status === 'SL') currentEmp.shortLeaveDays++;
+            }
+        }
+
+        if (currentEmp) currentUploadedData.push(currentEmp);
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(masterProfiles));
+        renderMasterProfilesTable();
+        updateManualEmployeesDropdown();
+        renderSelectionList();
+        switchMainTab('attendanceReports', document.querySelectorAll('.tab-btn')[1]);
+    };
+
+    reader.readAsBuffer ? reader.readAsArrayBuffer(file) : reader.readAsArrayBuffer(file);
+}
+
+function buildMasterRowHtml(emp, includeEpfEtf) {
+    let epfEtfCells = includeEpfEtf ? `
+            <td><input type="number" step="0.01" class="input-cell input-num-cell input-stat-cell" value="${emp.epf8 || 0}" onchange="updateMasterField('${emp.id}', 'epf8', this.value)"></td>
+            <td><input type="number" step="0.01" class="input-cell input-num-cell input-stat-cell" value="${emp.epf12 || 0}" onchange="updateMasterField('${emp.id}', 'epf12', this.value)"></td>
+            <td><input type="number" step="0.01" class="input-cell input-num-cell input-stat-cell" value="${emp.etf3 || 0}" onchange="updateMasterField('${emp.id}', 'etf3', this.value)"></td>` : '';
+
+    let deleteBtn = emp.isManual ? `<button class="btn-action" style="background:var(--danger); color:white; margin-left:4px;" onclick="deleteManualEmployee('${emp.id}')">🗑️</button>` : '';
+
+    return `
+            <td style="text-align:center; font-weight:800; color:var(--primary); font-size:13.5px; font-family:'JetBrains Mono', monospace;">${emp.id}</td>
+            <td><input type="text" class="input-cell" style="font-weight:600;" value="${emp.name}" onchange="updateMasterField('${emp.id}', 'name', this.value)"></td>
+            <td><span class="badge badge-dept" style="font-size:11px;">${emp.dept}</span></td>
+            <td style="text-align:center; font-weight:800; font-size:12px;">${emp.isFixed ? '🔒 G1' : `G${emp.group}`}</td>
+            <td><input type="number" class="input-cell input-num-cell" style="color:#059669; font-weight:700;" value="${emp.basicSalary}" onchange="updateMasterField('${emp.id}', 'basicSalary', this.value)"></td>
+            <td><input type="number" class="input-cell input-num-cell" value="${emp.otRate}" onchange="updateMasterField('${emp.id}', 'otRate', this.value)"></td>
+            <td><input type="number" class="input-cell input-num-cell" value="${emp.sundayRate}" onchange="updateMasterField('${emp.id}', 'sundayRate', this.value)"></td>
+            <td><input type="number" class="input-cell input-num-cell" value="${emp.poyaRate}" onchange="updateMasterField('${emp.id}', 'poyaRate', this.value)"></td>
+            <td><input type="number" class="input-cell input-num-cell" style="color:var(--danger);" value="${emp.noPayRate}" onchange="updateMasterField('${emp.id}', 'noPayRate', this.value)"></td>
+            <td><input type="text" class="input-cell input-num-cell" style="color:#d97706;" value="${formatAccounting(emp.late)}" onchange="updateMasterLate('${emp.id}', this.value)"></td>
+            <td><input type="text" class="input-cell" value="${emp.special || ''}" placeholder="Notes..." onchange="updateMasterField('${emp.id}', 'special', this.value)"></td>${epfEtfCells}
+            <td style="text-align:center;">
+                <select class="input-cell" style="width:100%; font-weight:700; color:${emp.status==='Active'?'#059669':'#e11d48'};" onchange="updateMasterField('${emp.id}', 'status', this.value); this.style.color=(this.value==='Active'?'#059669':'#e11d48');">
+                    <option value="Active" ${emp.status === 'Active' ? 'selected' : ''}>Active</option>
+                    <option value="Inactive" ${emp.status === 'Inactive' ? 'selected' : ''}>Inactive</option>
+                </select>
+            </td>
+            <td style="white-space:nowrap; text-align:center;">
+                <button class="btn-action btn-save" title="Save this row" onclick="saveMasterProfiles()">💾 Save</button>${deleteBtn}
+            </td>
+        `;
+}
+
+function renderMasterProfilesTable() {
+    let tbodyG1 = document.getElementById('masterProfileTbodyG1');
+    let tbodyG2 = document.getElementById('masterProfileTbodyG2');
+    tbodyG1.innerHTML = "";
+    tbodyG2.innerHTML = "";
+
+    let sortedIds = Object.keys(masterProfiles).sort((a, b) => {
+        let numA = parseInt(a, 10), numB = parseInt(b, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    let g1Ids = sortedIds.filter(id => masterProfiles[id].isFixed || masterProfiles[id].group === 1);
+    let g2Ids = sortedIds.filter(id => !masterProfiles[id].isFixed && masterProfiles[id].group === 2);
+
+    if (g1Ids.length === 0) {
+        tbodyG1.innerHTML = `<tr><td colspan="16" style="text-align:center; color:#777; padding:20px;">තවම Group 1 සේවකයින් ඇතුළත් කර නොමැත.</td></tr>`;
+    } else {
+        g1Ids.forEach(id => {
+            let emp = masterProfiles[id];
+            let tr = document.createElement('tr');
+            tr.innerHTML = buildMasterRowHtml(emp, true);
+            tbodyG1.appendChild(tr);
+        });
+    }
+
+    if (g2Ids.length === 0) {
+        tbodyG2.innerHTML = `<tr><td colspan="13" style="text-align:center; color:#777; padding:20px;">තවම Group 2 සේවකයින් ඇතුළත් කර නොමැත.</td></tr>`;
+    } else {
+        g2Ids.forEach(id => {
+            let emp = masterProfiles[id];
+            let tr = document.createElement('tr');
+            tr.innerHTML = buildMasterRowHtml(emp, false);
+            tbodyG2.appendChild(tr);
+        });
+    }
+}
+
+function updateManualEmployeesDropdown() {
+    let select = document.getElementById('manualExistingSelect');
+    if (!select) return;
+
+    let manualEmps = Object.values(masterProfiles).filter(e => e.isManual);
+    let html = `<option value="">-- තෝරන්න (${manualEmps.length} Employees) --</option>`;
+
+    manualEmps.sort((a, b) => String(a.id).localeCompare(String(b.id))).forEach(emp => {
+        html += `<option value="${emp.id}">EMP ID: ${emp.id} - ${emp.name}</option>`;
+    });
+
+    select.innerHTML = html;
+}
+
+function selectExistingManualEmployee(empId) {
+    if (!empId) return;
+    let emp = masterProfiles[empId];
+    if (!emp) return;
+
+    document.getElementById('manualEmpId').value = emp.id;
+    document.getElementById('manualEmpName').value = emp.name;
+    document.getElementById('manualEmpDept').value = emp.dept || 'Manual';
+
+    loadManualAttendanceTable();
+}
+
+function getMonthDateBlueprint() {
+    let foundEmp = currentUploadedData.find(e => e.dailyRecords && e.dailyRecords.length > 0);
+    if (foundEmp) {
+        return foundEmp.dailyRecords.map(r => ({
+            date: r.date,
+            normDate: r.normDate,
+            day: r.day
+        }));
+    }
+
+    let now = new Date();
+    let year = now.getFullYear();
+    let month = now.getMonth();
+    let daysInMonth = new Date(year, month + 1, 0).getDate();
+    let daysArr = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    let blueprint = [];
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        let dt = new Date(year, month, d);
+        let padM = String(month + 1).padStart(2, '0');
+        let padD = String(d).padStart(2, '0');
+        let dateStr = `${padM}-${padD}-${String(year).slice(-2)}`;
+        let normStr = `${year}-${padM}-${padD}`;
+        blueprint.push({
+            date: dateStr,
+            normDate: normStr,
+            day: daysArr[dt.getDay()]
+        });
+    }
+    return blueprint;
+}
+
+function buildHourOptions(selectedHour) {
+    let html = `<option value="">HH</option>`;
+    for (let h = 0; h < 24; h++) {
+        let val = String(h).padStart(2, '0');
+        html += `<option value="${val}" ${val === selectedHour ? 'selected' : ''}>${val}</option>`;
+    }
+    return html;
+}
+
+function buildMinuteOptions(selectedMinute) {
+    let html = `<option value="">MM</option>`;
+    for (let m = 0; m < 60; m++) {
+        let val = String(m).padStart(2, '0');
+        html += `<option value="${val}" ${val === selectedMinute ? 'selected' : ''}>${val}</option>`;
+    }
+    return html;
+}
+
+function splitTimeToHAndM(timeStr) {
+    if (!timeStr || timeStr === '***') return { h: '', m: '' };
+    let parts = String(timeStr).trim().split(':');
+    return {
+        h: parts[0] ? parts[0].padStart(2, '0') : '',
+        m: parts[1] ? parts[1].padStart(2, '0') : ''
+    };
+}
+
+function loadManualAttendanceTable() {
+    let idInput = document.getElementById('manualEmpId');
+    let nameInput = document.getElementById('manualEmpName');
+    let deptInput = document.getElementById('manualEmpDept');
+    let container = document.getElementById('manualEntryContainer');
+
+    let empId = idInput.value.trim();
+    let empName = nameInput.value.trim();
+    let empDept = deptInput.value.trim() || 'Manual';
+
+    if (!empId) {
+        alert('කරුණාකර වලංගු Temporary EMP ID (Letters හෝ Numbers) එකක් ඇතුළත් කරන්න.');
+        return;
+    }
+    if (!empName) {
+        alert('කරුණාකර සේවකයාගේ නම ඇතුළත් කරන්න.');
+        return;
+    }
+
+    let numCheck = parseInt(empId, 10);
+    if (!isNaN(numCheck) && String(numCheck) === empId && numCheck >= 1 && numCheck <= 29) {
+        alert('FP ID 1 - 29 Group 1 ස්ථිර සේවකයින් සඳහා වෙන් කර ඇත. වෙනත් ID එකක් යොදන්න.');
+        return;
+    }
+
+    if (!masterProfiles[empId]) {
+        masterProfiles[empId] = {
+            id: empId,
+            name: empName,
+            dept: empDept,
+            group: 2,
+            isFixed: false,
+            isManual: true,
+            basicSalary: 0,
+            otRate: 0,
+            sundayRate: 0,
+            poyaRate: 0,
+            noPayRate: 0,
+            late: 0,
+            phone: '',
+            special: '',
+            performance01: '',
+            epf8: 0,
+            epf12: 0,
+            etf3: 0,
+            status: 'Active'
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(masterProfiles));
+        renderMasterProfilesTable();
+        updateManualEmployeesDropdown();
+    }
+
+    let existingInUploaded = currentUploadedData.find(e => String(e.id) === String(empId));
+    let blueprint = getMonthDateBlueprint();
+    let dailyRecords = [];
+
+    if (existingInUploaded && existingInUploaded.dailyRecords && existingInUploaded.dailyRecords.length > 0) {
+        dailyRecords = existingInUploaded.dailyRecords;
+    } else {
+        dailyRecords = blueprint.map(b => ({
+            date: b.date,
+            normDate: b.normDate,
+            day: b.day,
+            rawInTime: '***',
+            rawOutTime: '***',
+            adjInTime: '***',
+            adjOutTime: '***',
+            workingMinutes: 0,
+            workingHours: '***',
+            status: 'AB',
+            isPoya: false
+        }));
+    }
+
+    let escapedId = encodeURIComponent(empId);
+    let html = `
+        <div class="report-card" style="border: 2px solid var(--primary); background:#fff;">
+            <div class="report-header">
+                <h4>✍️ Attendance Entry Table — EMP ID: <strong>${empId}</strong> | ${empName} (${empDept})</h4>
+                <button class="btn-action btn-save" style="padding:9px 20px; font-size:13px;" onclick="saveManualEmployeeAttendance('${escapedId}', '${encodeURIComponent(empName)}', '${encodeURIComponent(empDept)}')">💾 Save Attendance Records</button>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="data-table" id="manualTable_${escapedId}">
+                    <thead>
+                        <tr>
+                            <th style="width:40px; text-align:center;">#</th>
+                            <th style="min-width:100px;">Date</th>
+                            <th style="width:60px;">Day</th>
+                            <th style="min-width:210px;">In Time (Drop-down: HH : MM)</th>
+                            <th style="min-width:210px;">Out Time (Drop-down: HH : MM)</th>
+                            <th style="width:110px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+    dailyRecords.forEach((rec, idx) => {
+        let inSplit = splitTimeToHAndM(rec.rawInTime);
+        let outSplit = splitTimeToHAndM(rec.rawOutTime);
+        let statusVal = rec.status || 'AB';
+        let bothFilled = (inSplit.h !== '' || inSplit.m !== '') && (outSplit.h !== '' || outSplit.m !== '');
+
+        html += `
+            <tr data-row="${idx}" class="${bothFilled ? 'manual-row-completed' : ''}">
+                <td style="text-align:center; font-weight:bold; color:var(--text-muted); font-family:'JetBrains Mono', monospace;">${idx + 1}</td>
+                <td><strong>${rec.date}</strong></td>
+                <td><span style="font-weight:700; color:${rec.day && rec.day.toLowerCase().includes('sun') ? 'var(--danger)' : '#334155'};">${rec.day}</span></td>
+                <td>
+                    <div class="time-picker-wrapper">
+                        <select class="time-select manual-in-h" onchange="handleManualDropdownChange('${escapedId}', ${idx})">
+                            ${buildHourOptions(inSplit.h)}
+                        </select>
+                        <strong style="color:#64748b;">:</strong>
+                        <select class="time-select manual-in-m" onchange="handleManualDropdownChange('${escapedId}', ${idx})">
+                            ${buildMinuteOptions(inSplit.m)}
+                        </select>
+                        <button type="button" class="time-clear-btn" title="Clear In Time" onclick="clearManualTimeInput('${escapedId}', ${idx}, 'in')">✕</button>
+                    </div>
+                </td>
+                <td>
+                    <div class="time-picker-wrapper">
+                        <select class="time-select manual-out-h" onchange="handleManualDropdownChange('${escapedId}', ${idx})">
+                            ${buildHourOptions(outSplit.h)}
+                        </select>
+                        <strong style="color:#64748b;">:</strong>
+                        <select class="time-select manual-out-m" onchange="handleManualDropdownChange('${escapedId}', ${idx})">
+                            ${buildMinuteOptions(outSplit.m)}
+                        </select>
+                        <button type="button" class="time-clear-btn" title="Clear Out Time" onclick="clearManualTimeInput('${escapedId}', ${idx}, 'out')">✕</button>
+                    </div>
+                </td>
+                <td>
+                    <select class="input-cell" style="font-weight:700; width:95px; color:${statusVal==='W'?'#059669':'#e11d48'};" onchange="this.style.color=(this.value==='W'?'#059669':'#e11d48')">
+                        <option value="W" ${statusVal==='W'?'selected':''}>W</option>
+                        <option value="AB" ${statusVal==='AB'?'selected':''}>AB</option>
+                        <option value="ABH" ${statusVal==='ABH'?'selected':''}>ABH</option>
+                        <option value="SL" ${statusVal==='SL'?'selected':''}>SL</option>
+                    </select>
+                </td>
+            </tr>`;
+    });
+
+    html += `
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn-submit" style="margin-top:18px;" onclick="saveManualEmployeeAttendance('${escapedId}', '${encodeURIComponent(empName)}', '${encodeURIComponent(empDept)}')">💾 Save Attendance & Sync to Group 2</button>
+        </div>`;
+
+    container.innerHTML = html;
+}
+
+function handleManualDropdownChange(escapedId, rowIndex) {
+    let table = document.getElementById(`manualTable_${escapedId}`);
+    if (!table) return;
+    let tr = table.querySelector(`tr[data-row="${rowIndex}"]`);
+    if (!tr) return;
+
+    let inH = tr.querySelector('.manual-in-h').value;
+    let inM = tr.querySelector('.manual-in-m').value;
+    let outH = tr.querySelector('.manual-out-h').value;
+    let outM = tr.querySelector('.manual-out-m').value;
+    let statusSelect = tr.querySelector('td:last-child select');
+
+    let hasInTime = inH !== '' || inM !== '';
+    let hasOutTime = outH !== '' || outM !== '';
+
+    if (hasInTime && hasOutTime) {
+        tr.classList.add('manual-row-completed');
+    } else {
+        tr.classList.remove('manual-row-completed');
+    }
+
+    if (hasInTime || hasOutTime) {
+        statusSelect.value = 'W';
+        statusSelect.style.color = '#059669';
+    } else {
+        statusSelect.value = 'AB';
+        statusSelect.style.color = '#e11d48';
+    }
+}
+
+function clearManualTimeInput(escapedId, rowIndex, type) {
+    let table = document.getElementById(`manualTable_${escapedId}`);
+    if (!table) return;
+    let tr = table.querySelector(`tr[data-row="${rowIndex}"]`);
+    if (!tr) return;
+
+    if (type === 'in') {
+        tr.querySelector('.manual-in-h').value = '';
+        tr.querySelector('.manual-in-m').value = '';
+    } else {
+        tr.querySelector('.manual-out-h').value = '';
+        tr.querySelector('.manual-out-m').value = '';
+    }
+
+    handleManualDropdownChange(escapedId, rowIndex);
+}
+
+function saveManualEmployeeAttendance(escapedId, encName, encDept) {
+    let empId = decodeURIComponent(escapedId);
+    let empName = decodeURIComponent(encName);
+    let empDept = decodeURIComponent(encDept);
+    let table = document.getElementById(`manualTable_${escapedId}`);
+    if (!table) return;
+
+    let blueprint = getMonthDateBlueprint();
+    let rows = table.querySelectorAll('tbody tr');
+    let dailyRecords = [];
+    let shortLeaveDays = 0;
+
+    rows.forEach((tr, idx) => {
+        let b = blueprint[idx] || {};
+        let inH = tr.querySelector('.manual-in-h').value;
+        let inM = tr.querySelector('.manual-in-m').value;
+        let outH = tr.querySelector('.manual-out-h').value;
+        let outM = tr.querySelector('.manual-out-m').value;
+        let statusSelect = tr.querySelector('td:last-child select');
+        let status = statusSelect ? statusSelect.value : 'AB';
+
+        let rawIn = (inH !== '' && inM !== '') ? `${inH}:${inM}` : (inH !== '' ? `${inH}:00` : (inM !== '' ? `00:${inM}` : ''));
+        let rawOut = (outH !== '' && outM !== '') ? `${outH}:${outM}` : (outH !== '' ? `${outH}:00` : (outM !== '' ? `00:${outM}` : ''));
+
+        let inMinutes = rawTimeToMinutes(rawIn);
+        let outMinutes = rawTimeToMinutes(rawOut);
+
+        dailyRecords.push({
+            date: b.date,
+            normDate: b.normDate,
+            day: b.day,
+            rawInTime: minutesToRaw24Hour(inMinutes),
+            rawOutTime: minutesToRaw24Hour(outMinutes),
+            adjInTime: adjustInTime(inMinutes),
+            adjOutTime: adjustOutTime(outMinutes),
+            workingMinutes: getWorkingMinutes(inMinutes, outMinutes),
+            workingHours: calculateWorkingHours(inMinutes, outMinutes),
+            status: status,
+            isPoya: false
+        });
+
+        if (status === 'ABH' || status === 'SL') shortLeaveDays++;
+    });
+
+    if (!masterProfiles[empId]) {
+        masterProfiles[empId] = {
+            id: empId,
+            name: empName,
+            dept: empDept,
+            group: 2,
+            isFixed: false,
+            isManual: true,
+            basicSalary: 0,
+            otRate: 0,
+            sundayRate: 0,
+            poyaRate: 0,
+            noPayRate: 0,
+            late: 0,
+            phone: '',
+            special: '',
+            performance01: '',
+            epf8: 0,
+            epf12: 0,
+            etf3: 0,
+            status: 'Active'
+        };
+    } else {
+        masterProfiles[empId].isManual = true;
+        masterProfiles[empId].name = empName;
+        masterProfiles[empId].dept = empDept;
+        masterProfiles[empId].group = 2;
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(masterProfiles));
+
+    let existingIndex = currentUploadedData.findIndex(e => String(e.id) === String(empId));
+    let empObj = {
+        id: empId,
+        name: empName,
+        dept: empDept,
+        workDays: 0,
+        holidays: 0,
+        poyaDaysWorked: 0,
+        absentDays: 0,
+        shortLeaveDays: shortLeaveDays,
+        dailyRecords: dailyRecords
+    };
+
+    if (existingIndex !== -1) {
+        currentUploadedData[existingIndex] = empObj;
+    } else {
+        currentUploadedData.push(empObj);
+    }
+
+    renderMasterProfilesTable();
+    updateManualEmployeesDropdown();
+    renderSelectionList();
+    generateReport();
+
+    alert(`✅ සේවක ${empId} - ${empName} සාර්ථකව Group 2 වෙත එක් කර සියලුම Reports Update කරන ලදී!`);
+}
+
+function deleteManualEmployee(empId) {
+    let emp = masterProfiles[empId];
+    if (!emp || !emp.isManual) {
+        alert('මෙම සේවකයා Manually ඇතුළත් කළ සේවකයෙකු නොවේ.');
+        return;
+    }
+
+    let proceed = confirm(`ඔබට EMP ID: ${empId} (${emp.name}) සේවකයාගේ සියලුම දත්ත පද්ධතියෙන් සම්පූර්ණයෙන්ම Delete කර ඉවත් කිරීමට අවශ්‍යද?`);
+    if (!proceed) return;
+
+    delete masterProfiles[empId];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(masterProfiles));
+
+    currentUploadedData = currentUploadedData.filter(e => String(e.id) !== String(empId));
+
+    p01SelectedIds = p01SelectedIds.filter(id => String(id) !== String(empId));
+    saveP01Selected();
+    p02SelectedIds = p02SelectedIds.filter(id => String(id) !== String(empId));
+    saveP02Selected();
+    p03Selected = p03Selected.filter(sel => String(sel.id) !== String(empId));
+    saveP03Selected();
+    delete slAdValues[empId];
+    saveSlAdValues();
+
+    let container = document.getElementById('manualEntryContainer');
+    if (container) container.innerHTML = '';
+
+    renderMasterProfilesTable();
+    updateManualEmployeesDropdown();
+    renderSelectionList();
+    generateReport();
+
+    alert(`🗑️ සේවක ${empId} සාර්ථකව පද්ධතියෙන් ඉවත් කරන ලදී.`);
+}
+
+function updateMasterField(id, field, value) {
+    if (field.includes('Rate') || field === 'basicSalary' || field === 'late' || field === 'epf8' || field === 'epf12' || field === 'etf3') {
+        masterProfiles[id][field] = parseFloat(value) || 0;
+    } else {
+        masterProfiles[id][field] = value;
+    }
+}
+
+function formatAccounting(num) {
+    num = parseFloat(num) || 0;
+    let formatted = Math.abs(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return num < 0 ? `(${formatted})` : formatted;
+}
+
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+
+function getReportYearMonth() {
+    let counts = {};
+    currentUploadedData.forEach(emp => {
+        (emp.dailyRecords || []).forEach(rec => {
+            if (rec.normDate && rec.normDate.length === 10) {
+                let ym = rec.normDate.substring(0, 7);
+                counts[ym] = (counts[ym] || 0) + 1;
+            }
+        });
+    });
+    let bestYm = null, bestCount = 0;
+    Object.keys(counts).forEach(ym => {
+        if (counts[ym] > bestCount) { bestCount = counts[ym]; bestYm = ym; }
+    });
+    if (!bestYm) return { year: '', monthName: '', numericMonth: '' };
+    let [y, m] = bestYm.split('-');
+    return { year: y, monthName: MONTH_NAMES[parseInt(m, 10) - 1] || '', numericMonth: m };
+}
+
+function parseAccounting(str) {
+    str = String(str).trim();
+    let isNegative = /^\(.*\)$/.test(str);
+    let cleaned = str.replace(/[(),]/g, '').replace(/[^\d.\-]/g, '');
+    let num = parseFloat(cleaned) || 0;
+    return isNegative ? -Math.abs(num) : num;
+}
+
+function updateMasterLate(id, value) {
+    masterProfiles[id].late = parseAccounting(value);
+    renderMasterProfilesTable();
+}
+
+function renderSelectionList() {
+    let tbody = document.getElementById('employeeListBody');
+    tbody.innerHTML = "";
+
+    currentUploadedData.forEach((emp, index) => {
+        let master = masterProfiles[emp.id] || {};
+        let tr = document.createElement('tr');
+        
+        let groupSelectorHTML = "";
+        if (master.isFixed) {
+            groupSelectorHTML = `<span class="badge badge-locked">🔒 Group 1 (Fixed)</span>`;
+        } else {
+            groupSelectorHTML = `
+                <label style="margin-right: 15px; cursor: pointer;">
+                    <input type="radio" name="emp_group_${index}" value="1" ${master.group === 1 ? 'checked' : ''} onchange="masterProfiles['${emp.id}'].group = 1">
+                    <strong>Group 1</strong>
+                </label>
+                <label style="cursor: pointer;">
+                    <input type="radio" name="emp_group_${index}" value="2" ${master.group === 2 ? 'checked' : ''} onchange="masterProfiles['${emp.id}'].group = 2">
+                    <strong>Group 2</strong>
+                </label>
+            `;
+        }
+
+        tr.innerHTML = `
+            <td style="text-align:center; font-weight:800; font-family:'JetBrains Mono', monospace;">${emp.id}</td>
+            <td style="font-weight:600;">${master.name || emp.name}</td>
+            <td><span class="badge badge-dept">${emp.dept}</span></td>
+            <td style="text-align: center;">${groupSelectorHTML}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    document.getElementById('selectionArea').style.display = 'block';
+    document.getElementById('reportArea').style.display = 'none';
+}
+
+function generateReport() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(masterProfiles));
+    updatePoyaDaysUI();
+
+    currentUploadedData.forEach(emp => {
+        emp.poyaDaysWorked = 0;
+        emp.poyaDaysWorkedList = [];
+        let totalMonthDays = emp.dailyRecords.length; 
+        let totalSundays = 0; 
+        let workedDaysExcludingSunday = 0; 
+        let sundayWorkedDays = 0;
+
+        emp.dailyRecords.forEach(rec => {
+            rec.isPoya = poyaDates.includes(rec.normDate);
+            let isSunday = rec.day && rec.day.toLowerCase().includes('sun');
+            let hasPunch = (rec.rawInTime && rec.rawInTime !== '***') || (rec.rawOutTime && rec.rawOutTime !== '***');
+            let isWorked = (rec.status === 'W' || rec.status === 'ABH' || rec.status === 'SL' || hasPunch);
+
+            if (isSunday) {
+                totalSundays++;
+                if (isWorked) sundayWorkedDays++;
+            } else {
+                if (isWorked && !rec.isPoya) workedDaysExcludingSunday++;
+            }
+
+            if (rec.isPoya && isWorked) {
+                emp.poyaDaysWorked++;
+                let poyaIndex = poyaDates.indexOf(rec.normDate);
+                if (poyaIndex !== -1) emp.poyaDaysWorkedList.push(poyaIndex + 1);
+            }
+        });
+
+        let poyaCount = poyaDates.length;
+        emp.holidays = totalSundays + poyaCount;
+        emp.workDays = workedDaysExcludingSunday;
+        emp.totalMonthDays = totalMonthDays;
+        emp.requiredWorkingDays = totalMonthDays - emp.holidays;
+        emp.sundayWorkedDays = sundayWorkedDays;
+
+        let calculatedAbsents = emp.requiredWorkingDays - emp.workDays;
+        emp.absentDays = calculatedAbsents < 0 ? 0 : calculatedAbsents;
+
+        emp.hasAttendedAtLeastOnce = (workedDaysExcludingSunday > 0 || sundayWorkedDays > 0 || emp.poyaDaysWorked > 0);
+    });
+
+    currentUploadedData.forEach(emp => {
+        if (!emp.hasAttendedAtLeastOnce) return;
+
+        let master = masterProfiles[emp.id];
+        if (master && (master.isFixed || master.group === 1)) {
+            let basicSalary = master.basicSalary || 0;
+            let noPayRate = master.noPayRate || 0;
+            let absentDays = emp.absentDays || 0;
+            let noPayAmount = noPayRate * absentDays;
+            let epfSalary = Math.max(0, basicSalary - noPayAmount);
+
+            master.epf8 = parseFloat((epfSalary * 0.08).toFixed(2));
+            master.epf12 = parseFloat((epfSalary * 0.12).toFixed(2));
+            master.etf3 = parseFloat((epfSalary * 0.03).toFixed(2));
+        }
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(masterProfiles));
+    renderMasterProfilesTable();
+
+    let activeEmployees = currentUploadedData.filter(emp => emp.hasAttendedAtLeastOnce);
+
+    let group1Data = activeEmployees.filter(emp => (masterProfiles[emp.id]?.isFixed || masterProfiles[emp.id]?.group === 1));
+    let group2Data = activeEmployees.filter(emp => (!masterProfiles[emp.id]?.isFixed && masterProfiles[emp.id]?.group === 2));
+
+    renderSummaryTable('group1', group1Data, 'Group 1 Summary');
+    renderSummaryTable('group2', group2Data, 'Group 2 Summary');
+
+    populateEmployeeFilters();
+    renderReportCenter(currentUploadedData);
+    renderAdjReportCenter(activeEmployees);
+    renderPerformance01();
+    renderPerformance02();
+    renderPerformance03();
+    renderSalaryReportCenter();
+    renderPaySheet();
+    renderEpfEtfReport();
+
+    document.getElementById('reportArea').style.display = 'block';
+    document.getElementById('reportArea').scrollIntoView({ behavior: 'smooth' });
+}
+
+function renderSummaryTable(elementId, data, title) {
+    let container = document.getElementById(elementId);
+    if (data.length === 0) {
+        container.innerHTML = `<p style="color: #666; padding: 15px;">මෙම Group එක සඳහා සේවකයින් ඇතුළත් කර නොමැත.</p>`;
+        return;
+    }
+
+    let html = `<div class="summary-card">
+        <strong>${title}</strong>: සේවකයින් <strong>${data.length}</strong> දෙනෙකු ඇතුළත් කර ඇත.<br>
+        <span style="font-size: 13px; color: #4338ca; font-weight: bold;">
+            * Absents (AB) = මාසයේ දින ගණන – ඉරිදා දින – පෝය දින – වැඩ කළ දින (ඉරිදා හැර)<br>
+            * Worked Days (W) = ඉරිදා හැර වැඩ කළ දින ගණන | Holidays (H) = ඉරිදා දින + පෝය දින
+        </span>
+    </div>`;
+    html += `<table class="data-table">
+        <thead>
+            <tr>
+                <th style="width:40px; text-align:center;">#</th>
+                <th style="width:60px; text-align:center;">FP ID</th>
+                <th>Employee Name</th>
+                <th>Department</th>
+                <th style="text-align:center;">මාසේ දින ගණන</th>
+                <th style="text-align:center;">Worked Days (W)*</th>
+                <th style="text-align:center;">Poya Worked</th>
+                <th style="text-align:center;">Holidays (H)*</th>
+                <th style="text-align:center;">Required Working Days</th>
+                <th style="text-align:center;">Absents (AB)*</th>
+                <th style="text-align:center;">Half-Day / SL</th>
+                <th style="text-align:center;">Sunday Workdays</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    data.forEach((emp, index) => {
+        let master = masterProfiles[emp.id] || {};
+        html += `<tr>
+            <td style="text-align:center; color:var(--text-muted); font-family:'JetBrains Mono', monospace;">${index + 1}</td>
+            <td style="text-align:center; font-weight:800; font-family:'JetBrains Mono', monospace;">${emp.id}</td>
+            <td style="font-weight:600;">${master.name || emp.name}</td>
+            <td><span class="badge badge-dept">${emp.dept}</span></td>
+            <td style="text-align:center; font-weight: 800; font-size: 14px; color:var(--primary);">${emp.totalMonthDays}</td>
+            <td style="text-align:center; color: var(--success); font-weight: 800; font-size: 14px;">${emp.workDays}</td>
+            <td style="text-align:center;">${emp.poyaDaysWorked > 0 ? `<span class="badge badge-poya">${String(emp.poyaDaysWorked).padStart(2,'0')}</span>` : '<span style="color:#999;">0</span>'}</td>
+            <td style="text-align:center; color: #2563eb; font-weight: 800; font-size: 14px;">${emp.holidays}</td>
+            <td style="text-align:center; font-weight: 800; font-size: 14px; color:#7c3aed;">${emp.requiredWorkingDays}</td>
+            <td style="text-align:center; color: var(--danger); font-weight: 800; font-size: 14px;">${emp.absentDays}</td>
+            <td style="text-align:center; color: #d97706; font-weight: 700;">${emp.shortLeaveDays}</td>
+            <td style="text-align:center; font-weight: 800; font-size: 14px; color:#0891b2;">${emp.sundayWorkedDays}</td>
+        </tr>`;
+    });
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+}
+
+function populateEmployeeFilters() {
+    let select1 = document.getElementById('employeeFilter');
+    let select2 = document.getElementById('adjEmployeeFilter');
+    
+    let optionsHTML1 = `<option value="ALL">සියලුම සේවකයින් (All Employees - ${currentUploadedData.length})</option>`;
+    currentUploadedData.forEach(emp => {
+        let master = masterProfiles[emp.id] || {};
+        optionsHTML1 += `<option value="${emp.id}">FP ID: ${emp.id} - ${master.name || emp.name}</option>`;
+    });
+    select1.innerHTML = optionsHTML1;
+
+    let activeEmployees = currentUploadedData.filter(emp => emp.hasAttendedAtLeastOnce);
+    let optionsHTML2 = `<option value="ALL">සියලුම සේවකයින් (All Active - ${activeEmployees.length})</option>`;
+    activeEmployees.forEach(emp => {
+        let master = masterProfiles[emp.id] || {};
+        optionsHTML2 += `<option value="${emp.id}">FP ID: ${emp.id} - ${master.name || emp.name}</option>`;
+    });
+    select2.innerHTML = optionsHTML2;
+}
+
+function filterReportCenter() {
+    let val = document.getElementById('employeeFilter').value;
+    renderReportCenter(val === 'ALL' ? currentUploadedData : currentUploadedData.filter(e => String(e.id) === String(val)));
+}
+
+function filterAdjReportCenter() {
+    let val = document.getElementById('adjEmployeeFilter').value;
+    let activeEmployees = currentUploadedData.filter(emp => emp.hasAttendedAtLeastOnce);
+    renderAdjReportCenter(val === 'ALL' ? activeEmployees : activeEmployees.filter(e => String(e.id) === String(val)));
+}
+
+function renderReportCenter(employees) {
+    let container = document.getElementById('reportCenterContent');
+    container.innerHTML = "";
+
+    employees.forEach(emp => {
+        let master = masterProfiles[emp.id] || {};
+        let card = document.createElement('div');
+        card.className = "report-card";
+
+        let html = `
+            <div class="report-header">
+                <h4>👤 FP ID: <strong>${emp.id}</strong> - ${master.name || emp.name} <span class="badge badge-dept">${emp.dept}</span></h4>
+                <div><span class="badge" style="background:var(--primary);">Group ${master.isFixed ? 1 : (master.group || 2)}</span></div>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr><th style="width:40px; text-align:center;">#</th><th>Date</th><th>Day</th><th>In Time</th><th>Out Time</th><th>Status</th></tr>
+                </thead>
+                <tbody>`;
+
+        emp.dailyRecords.forEach((rec, idx) => {
+            let poyaBadge = rec.isPoya ? `<span class="badge badge-poya" style="margin-left:5px;">🌕 POYA</span>` : '';
+            html += `<tr>
+                <td style="text-align:center; color:var(--text-muted); font-family:'JetBrains Mono', monospace;">${idx + 1}</td>
+                <td>${rec.date}${poyaBadge}</td>
+                <td>${rec.day}</td>
+                <td class="${rec.rawInTime === '***' ? 'time-missing' : ''}" style="font-family:'JetBrains Mono', monospace;">${rec.rawInTime}</td>
+                <td class="${rec.rawOutTime === '***' ? 'time-missing' : ''}" style="font-family:'JetBrains Mono', monospace;">${rec.rawOutTime}</td>
+                <td><strong>${rec.status}</strong></td>
+            </tr>`;
+        });
+
+        html += `</tbody></table>`;
+        card.innerHTML = html;
+        container.appendChild(card);
+    });
+}
+
+function renderAdjReportCenter(employees) {
+    let container = document.getElementById('adjEmployeeFilterContent');
+    container.innerHTML = "";
+
+    employees.forEach(emp => {
+        let master = masterProfiles[emp.id] || {};
+        let card = document.createElement('div');
+        card.className = "report-card";
+
+        let monthTotalMinutes = 0;
+        let sundayTotalMinutes = 0;
+        let poyaTotalMinutes = 0;
+        let lateMinutes = 0;
+        const REQUIRED_MINUTES_PER_DAY = 8 * 60;
+
+        emp.dailyRecords.forEach(rec => {
+            monthTotalMinutes += (rec.workingMinutes || 0);
+            let isSunday = rec.day && rec.day.toLowerCase().includes('sun');
+            if (isSunday) sundayTotalMinutes += (rec.workingMinutes || 0);
+            if (rec.isPoya) poyaTotalMinutes += (rec.workingMinutes || 0);
+
+            let hasWorkedTime = rec.adjInTime !== '***' && rec.adjOutTime !== '***';
+            if (!isSunday && !rec.isPoya && hasWorkedTime && (rec.workingMinutes || 0) < REQUIRED_MINUTES_PER_DAY) {
+                lateMinutes += (REQUIRED_MINUTES_PER_DAY - (rec.workingMinutes || 0));
+            }
+        });
+
+        let totalHrs = Math.floor(monthTotalMinutes / 60);
+        let totalMins = monthTotalMinutes % 60;
+        let pad = (n) => n.toString().padStart(2, '0');
+        let formattedTotalHours = `${totalHrs} Hours ${pad(totalMins)} Mins (${pad(totalHrs)}:${pad(totalMins)})`;
+
+        let sundayHrs = Math.floor(sundayTotalMinutes / 60);
+        let sundayMins = sundayTotalMinutes % 60;
+        let formattedSundayHours = `${sundayHrs} Hours ${pad(sundayMins)} Mins (${pad(sundayHrs)}:${pad(sundayMins)})`;
+
+        let otMinutes = monthTotalMinutes - sundayTotalMinutes - (180 * 60);
+        let hasOT = otMinutes > 0;
+        let otHrs = hasOT ? Math.floor(otMinutes / 60) : 0;
+        let otMins = hasOT ? otMinutes % 60 : 0;
+        let formattedOTHours = `${otHrs} Hours ${pad(otMins)} Mins (${pad(otHrs)}:${pad(otMins)})`;
+
+        let poyaHrs = Math.floor(poyaTotalMinutes / 60);
+        let poyaMins = poyaTotalMinutes % 60;
+        let formattedPoyaHours = `${poyaHrs} Hours ${pad(poyaMins)} Mins (${pad(poyaHrs)}:${pad(poyaMins)})`;
+
+        let lateHrs = Math.floor(lateMinutes / 60);
+        let lateMins = lateMinutes % 60;
+        let formattedLateHours = `${lateHrs} Hours ${pad(lateMins)} Mins (${pad(lateHrs)}:${pad(lateMins)})`;
+
+        emp.totalMinutes = monthTotalMinutes;
+        emp.sundayMinutes = sundayTotalMinutes;
+        emp.otMinutes = hasOT ? otMinutes : 0;
+        emp.poyaMinutes = poyaTotalMinutes;
+        emp.lateMinutes = lateMinutes;
+
+        let html = `
+            <div class="report-header">
+                <h4>⏱️ FP ID: <strong>${emp.id}</strong> - ${master.name || emp.name} <span class="badge badge-dept">${emp.dept}</span></h4>
+                <div>
+                    <span class="badge badge-hours">⏳ Total: ${formattedTotalHours}</span>
+                    <span class="badge badge-hours" style="background:#0891b2; margin-left:5px;">☀️ Sunday: ${formattedSundayHours}</span>
+                    ${hasOT ? `<span class="badge badge-hours" style="background:#dc2626; margin-left:5px;">🔥 OT: ${formattedOTHours}</span>` : ''}
+                    <span class="badge badge-hours" style="background:#7c3aed; margin-left:5px;">🌕 POYA: ${formattedPoyaHours}</span>
+                    <span class="badge badge-hours" style="background:#d97706; margin-left:5px;">⏰ Late: ${formattedLateHours}</span>
+                </div>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr><th style="width:40px; text-align:center;">#</th><th>Date</th><th>Day</th><th>Adjusted In</th><th>Adjusted Out</th><th>Working Hours</th><th>Status</th></tr>
+                </thead>
+                <tbody>`;
+
+        emp.dailyRecords.forEach((rec, idx) => {
+            let poyaBadge = rec.isPoya ? `<span class="badge badge-poya" style="margin-left:5px;">🌕 POYA</span>` : '';
+            html += `<tr>
+                <td style="text-align:center; color:var(--text-muted); font-family:'JetBrains Mono', monospace;">${idx + 1}</td>
+                <td>${rec.date}${poyaBadge}</td>
+                <td>${rec.day}</td>
+                <td class="${rec.adjInTime === '***' ? 'time-missing' : ''}" style="color: var(--success); font-weight: 700; font-family:'JetBrains Mono', monospace;">${rec.adjInTime}</td>
+                <td class="${rec.adjOutTime === '***' ? 'time-missing' : ''}" style="color: var(--danger); font-weight: 700; font-family:'JetBrains Mono', monospace;">${rec.adjOutTime}</td>
+                <td class="${rec.workingHours === '***' ? 'time-missing' : ''}" style="color: var(--primary); font-weight: 700; font-family:'JetBrains Mono', monospace;">${rec.workingHours}</td>
+                <td><strong>${rec.status}</strong></td>
+            </tr>`;
+        });
+
+        html += `
+            <tr style="background-color: #f1f5f9; font-weight: 800; border-top: 2px solid #cbd5e1;">
+                <td colspan="5" style="text-align: right;">මුළු වැඩ කළ කාලය (Total):</td>
+                <td style="color: #3730a3; font-weight: 800; font-family:'JetBrains Mono', monospace;">${pad(totalHrs)}:${pad(totalMins)}</td>
+                <td>---</td>
+            </tr>
+            <tr style="background-color: #ecfeff; font-weight: 800; border-top: 1px solid #cbd5e1;">
+                <td colspan="5" style="text-align: right; color: #0e7490;">ඉරිදා වැඩ කළ කාලය (Sunday):</td>
+                <td style="color: #0891b2; font-weight: 800; font-family:'JetBrains Mono', monospace;">${pad(sundayHrs)}:${pad(sundayMins)}</td>
+                <td>---</td>
+            </tr>
+            ${hasOT ? `
+            <tr style="background-color: #fff1f2; font-weight: 800; border-top: 1px solid #cbd5e1;">
+                <td colspan="5" style="text-align: right; color: #be123c;">අතිකාල පැය (OT):</td>
+                <td style="color: #e11d48; font-weight: 800; font-family:'JetBrains Mono', monospace;">${pad(otHrs)}:${pad(otMins)}</td>
+                <td>---</td>
+            </tr>` : ''}
+            <tr style="background-color: #f5f3ff; font-weight: 800; border-top: 1px solid #cbd5e1;">
+                <td colspan="5" style="text-align: right; color: #6d28d9;">පෝය දින පැය (POYA):</td>
+                <td style="color: #7c3aed; font-weight: 800; font-family:'JetBrains Mono', monospace;">${pad(poyaHrs)}:${pad(poyaMins)}</td>
+                <td>---</td>
+            </tr>
+            <tr style="background-color: #fffbeb; font-weight: 800; border-top: 1px solid #cbd5e1;">
+                <td colspan="5" style="text-align: right; color: #b45309;">ප්‍රමාද වූ පැය (Late):</td>
+                <td style="color: #d97706; font-weight: 800; font-family:'JetBrains Mono', monospace;">${pad(lateHrs)}:${pad(lateMins)}</td>
+                <td>---</td>
+            </tr>`;
+
+        html += `</tbody></table>`;
+        card.innerHTML = html;
+        container.appendChild(card);
+    });
+}
+
+function updateP01Config() {
+    let base = parseFloat(document.getElementById('p01BaseAmount').value);
+    let perDay = parseFloat(document.getElementById('p01PerDayDeduction').value);
+    p01Config.baseAmount = isNaN(base) ? 0 : base;
+    p01Config.perDayDeduction = isNaN(perDay) ? 0 : perDay;
+    saveP01Config();
+    renderPerformance01();
+}
+
+function addP01Employee() {
+    let select = document.getElementById('p01EmployeeSelect');
+    let empId = select.value.trim();
+    if (!empId) return;
+    if (!p01SelectedIds.some(id => String(id) === String(empId))) {
+        p01SelectedIds.push(empId);
+        saveP01Selected();
+    }
+    renderPerformance01();
+}
+
+function removeP01Employee(empId) {
+    p01SelectedIds = p01SelectedIds.filter(id => String(id) !== String(empId));
+    saveP01Selected();
+    renderPerformance01();
+}
+
+function renderPerformance01() {
+    let baseInput = document.getElementById('p01BaseAmount');
+    let perDayInput = document.getElementById('p01PerDayDeduction');
+    if (!baseInput) return;
+
+    baseInput.value = p01Config.baseAmount;
+    perDayInput.value = p01Config.perDayDeduction;
+
+    let activeEmployees = currentUploadedData.filter(e => e.hasAttendedAtLeastOnce);
+
+    let select = document.getElementById('p01EmployeeSelect');
+    select.innerHTML = '<option value="">-- සේවකයා තෝරන්න --</option>';
+    activeEmployees.slice().sort((a, b) => String(a.id).localeCompare(String(b.id))).forEach(emp => {
+        if (!p01SelectedIds.some(id => String(id) === String(emp.id))) {
+            let opt = document.createElement('option');
+            opt.value = emp.id;
+            opt.textContent = `${emp.id} - ${emp.name}`;
+            select.appendChild(opt);
+        }
+    });
+
+    let container = document.getElementById('p01TableContainer');
+    if (!container) return;
+
+    let validSelectedIds = p01SelectedIds.filter(empId => activeEmployees.some(e => String(e.id) === String(empId)));
+
+    if (validSelectedIds.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#666; margin-top:20px;">තවම සේවකයන් තෝරාගෙන නැත.</p>';
+        return;
+    }
+
+    let html = `<table class="data-table">
+        <thead><tr>
+            <th style="width:40px; text-align:center;">#</th>
+            <th style="width:70px; text-align:center;">FP ID</th>
+            <th>Employee Name</th>
+            <th>Department</th>
+            <th style="text-align:center;">Absents (AB)*</th>
+            <th style="text-align:right;">අඩුවන මුදල (Deduction) Rs</th>
+            <th style="text-align:right;">ලැබෙන මුදල (Final Amount) Rs</th>
+            <th style="text-align:center;">ඉවත් කරන්න</th>
+        </tr></thead>
+        <tbody>`;
+
+    let rowNum = 1;
+    validSelectedIds.forEach(empId => {
+        let emp = activeEmployees.find(e => String(e.id) === String(empId));
+        let master = masterProfiles[empId] || {};
+        let name = emp ? emp.name : (master.name || `ID ${empId}`);
+        let dept = emp ? emp.dept : (master.dept || '-');
+        let absentDays = emp ? (emp.absentDays || 0) : 0;
+
+        let rawDeduction = absentDays * p01Config.perDayDeduction;
+        let deduction = Math.min(rawDeduction, p01Config.baseAmount);
+        let finalAmount = p01Config.baseAmount - deduction;
+
+        html += `<tr>
+            <td style="text-align:center; color:var(--text-muted); font-family:'JetBrains Mono', monospace;">${rowNum++}</td>
+            <td style="text-align:center; font-weight:800; font-family:'JetBrains Mono', monospace;">${empId}</td>
+            <td style="font-weight:600;">${name}</td>
+            <td><span class="badge badge-dept">${dept}</span></td>
+            <td style="text-align:center; color: var(--danger); font-weight: 800;">${absentDays}</td>
+            <td style="text-align:right; color: #b91c1c; font-weight: 700; font-family:'JetBrains Mono', monospace;">${deduction.toFixed(2)}</td>
+            <td style="text-align:right; color: var(--success); font-weight: 800; font-family:'JetBrains Mono', monospace;">${finalAmount.toFixed(2)}</td>
+            <td style="text-align:center;"><button class="btn-action" style="background:var(--danger); color:white; padding:6px 12px;" onclick="removeP01Employee('${empId}')">✖ ඉවත් කරන්න</button></td>
+        </tr>`;
+    });
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+}
+
+function updateP02Config() {
+    let base = parseFloat(document.getElementById('p02BaseAmount').value);
+    let perDay = parseFloat(document.getElementById('p02PerDayDeduction').value);
+    p02Config.baseAmount = isNaN(base) ? 0 : base;
+    p02Config.perDayDeduction = isNaN(perDay) ? 0 : perDay;
+    saveP02Config();
+    renderPerformance02();
+}
+
+function addP02Employee() {
+    let select = document.getElementById('p02EmployeeSelect');
+    let empId = select.value.trim();
+    if (!empId) return;
+    if (!p02SelectedIds.some(id => String(id) === String(empId))) {
+        p02SelectedIds.push(empId);
+        saveP02Selected();
+    }
+    renderPerformance02();
+}
+
+function removeP02Employee(empId) {
+    p02SelectedIds = p02SelectedIds.filter(id => String(id) !== String(empId));
+    saveP02Selected();
+    renderPerformance02();
+}
+
+function renderPerformance02() {
+    let baseInput = document.getElementById('p02BaseAmount');
+    let perDayInput = document.getElementById('p02PerDayDeduction');
+    if (!baseInput) return;
+
+    baseInput.value = p02Config.baseAmount;
+    perDayInput.value = p02Config.perDayDeduction;
+
+    let activeEmployees = currentUploadedData.filter(e => e.hasAttendedAtLeastOnce);
+
+    let select = document.getElementById('p02EmployeeSelect');
+    select.innerHTML = '<option value="">-- සේවකයා තෝරන්න --</option>';
+    activeEmployees.slice().sort((a, b) => String(a.id).localeCompare(String(b.id))).forEach(emp => {
+        if (!p02SelectedIds.some(id => String(id) === String(emp.id))) {
+            let opt = document.createElement('option');
+            opt.value = emp.id;
+            opt.textContent = `${emp.id} - ${emp.name}`;
+            select.appendChild(opt);
+        }
+    });
+
+    let container = document.getElementById('p02TableContainer');
+    if (!container) return;
+
+    let validSelectedIds = p02SelectedIds.filter(empId => activeEmployees.some(e => String(e.id) === String(empId)));
+
+    if (validSelectedIds.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#666; margin-top:20px;">තවම සේවකයන් තෝරාගෙන නැත.</p>';
+        return;
+    }
+
+    let html = `<table class="data-table">
+        <thead><tr>
+            <th style="width:40px; text-align:center;">#</th>
+            <th style="width:70px; text-align:center;">FP ID</th>
+            <th>Employee Name</th>
+            <th>Department</th>
+            <th style="text-align:center;">Absents (AB)*</th>
+            <th style="text-align:right;">අඩුවන මුදල (Deduction) Rs</th>
+            <th style="text-align:right;">ලැබෙන මුදල (Final Amount) Rs</th>
+            <th style="text-align:center;">ඉවත් කරන්න</th>
+        </tr></thead>
+        <tbody>`;
+
+    let rowNum = 1;
+    validSelectedIds.forEach(empId => {
+        let emp = activeEmployees.find(e => String(e.id) === String(empId));
+        let master = masterProfiles[empId] || {};
+        let name = emp ? emp.name : (master.name || `ID ${empId}`);
+        let dept = emp ? emp.dept : (master.dept || '-');
+        let absentDays = emp ? (emp.absentDays || 0) : 0;
+
+        let rawDeduction = absentDays * p02Config.perDayDeduction;
+        let deduction = Math.min(rawDeduction, p02Config.baseAmount);
+        let finalAmount = p02Config.baseAmount - deduction;
+
+        html += `<tr>
+            <td style="text-align:center; color:var(--text-muted); font-family:'JetBrains Mono', monospace;">${rowNum++}</td>
+            <td style="text-align:center; font-weight:800; font-family:'JetBrains Mono', monospace;">${empId}</td>
+            <td style="font-weight:600;">${name}</td>
+            <td><span class="badge badge-dept">${dept}</span></td>
+            <td style="text-align:center; color: var(--danger); font-weight: 800;">${absentDays}</td>
+            <td style="text-align:right; color: #b91c1c; font-weight: 700; font-family:'JetBrains Mono', monospace;">${deduction.toFixed(2)}</td>
+            <td style="text-align:right; color: var(--success); font-weight: 800; font-family:'JetBrains Mono', monospace;">${finalAmount.toFixed(2)}</td>
+            <td style="text-align:center;"><button class="btn-action" style="background:var(--danger); color:white; padding:6px 12px;" onclick="removeP02Employee('${empId}')">✖ ඉවත් කරන්න</button></td>
+        </tr>`;
+    });
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+}
+
+function updateP03Config() {
+    let amt1 = parseFloat(document.getElementById('p03Amount1').value);
+    let amt2 = parseFloat(document.getElementById('p03Amount2').value);
+    let perDay = parseFloat(document.getElementById('p03PerDayDeduction').value);
+    p03Config.amount1 = isNaN(amt1) ? 0 : amt1;
+    p03Config.amount2 = isNaN(amt2) ? 0 : amt2;
+    p03Config.perDayDeduction = isNaN(perDay) ? 0 : perDay;
+    saveP03Config();
+    renderPerformance03();
+}
+
+function populateP03TierSelect() {
+    let tierSelect = document.getElementById('p03TierSelect');
+    if (!tierSelect) return;
+    tierSelect.innerHTML = `
+        <option value="${p03Config.amount1}">Rs ${p03Config.amount1.toFixed(2)}</option>
+        <option value="${p03Config.amount2}">Rs ${p03Config.amount2.toFixed(2)}</option>
+    `;
+}
+
+function addP03Employee() {
+    let empSelect = document.getElementById('p03EmployeeSelect');
+    let tierSelect = document.getElementById('p03TierSelect');
+    let empId = empSelect.value.trim();
+    let baseAmount = parseFloat(tierSelect.value);
+    if (!empId || isNaN(baseAmount)) return;
+    if (!p03Selected.some(e => String(e.id) === String(empId))) {
+        p03Selected.push({ id: empId, baseAmount: baseAmount });
+        saveP03Selected();
+    }
+    renderPerformance03();
+}
+
+function removeP03Employee(empId) {
+    p03Selected = p03Selected.filter(e => String(e.id) !== String(empId));
+    saveP03Selected();
+    renderPerformance03();
+}
+
+function updateP03EmployeeTier(empId, newAmount) {
+    let entry = p03Selected.find(e => String(e.id) === String(empId));
+    if (!entry) return;
+    entry.baseAmount = parseFloat(newAmount) || 0;
+    saveP03Selected();
+    renderPerformance03();
+}
+
+function renderPerformance03() {
+    let amt1Input = document.getElementById('p03Amount1');
+    let amt2Input = document.getElementById('p03Amount2');
+    let perDayInput = document.getElementById('p03PerDayDeduction');
+    if (!amt1Input) return;
+
+    amt1Input.value = p03Config.amount1;
+    amt2Input.value = p03Config.amount2;
+    perDayInput.value = p03Config.perDayDeduction;
+
+    populateP03TierSelect();
+
+    let activeEmployees = currentUploadedData.filter(e => e.hasAttendedAtLeastOnce);
+
+    let select = document.getElementById('p03EmployeeSelect');
+    let selectedIds = p03Selected.map(e => String(e.id));
+    select.innerHTML = '<option value="">-- සේවකයා තෝරන්න --</option>';
+    activeEmployees.slice().sort((a, b) => String(a.id).localeCompare(String(b.id))).forEach(emp => {
+        if (!selectedIds.includes(String(emp.id))) {
+            let opt = document.createElement('option');
+            opt.value = emp.id;
+            opt.textContent = `${emp.id} - ${emp.name}`;
+            select.appendChild(opt);
+        }
+    });
+
+    let container = document.getElementById('p03TableContainer');
+    if (!container) return;
+
+    let validP03Selected = p03Selected.filter(sel => activeEmployees.some(e => String(e.id) === String(sel.id)));
+
+    if (validP03Selected.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#666; margin-top:20px;">තවම සේවකයන් තෝරාගෙන නැත.</p>';
+        return;
+    }
+
+    let html = `<table class="data-table">
+        <thead><tr>
+            <th style="width:40px; text-align:center;">#</th>
+            <th style="width:70px; text-align:center;">FP ID</th>
+            <th>Employee Name</th>
+            <th>Department</th>
+            <th style="text-align:right;">මුළු මුදල (Base Amount) Rs</th>
+            <th style="text-align:center;">Absents (AB)*</th>
+            <th style="text-align:right;">අඩුවන මුදල (Deduction) Rs</th>
+            <th style="text-align:right;">ලැබෙන මුදල (Final Amount) Rs</th>
+            <th style="text-align:center;">ඉවත් කරන්න</th>
+        </tr></thead>
+        <tbody>`;
+
+    let rowNum = 1;
+    validP03Selected.forEach(sel => {
+        let empId = sel.id;
+        let emp = activeEmployees.find(e => String(e.id) === String(empId));
+        let master = masterProfiles[empId] || {};
+        let name = emp ? emp.name : (master.name || `ID ${empId}`);
+        let dept = emp ? emp.dept : (master.dept || '-');
+        let absentDays = emp ? (emp.absentDays || 0) : 0;
+        let baseAmount = sel.baseAmount;
+
+        let rawDeduction = absentDays * p03Config.perDayDeduction;
+        let deduction = Math.min(rawDeduction, baseAmount);
+        let finalAmount = baseAmount - deduction;
+
+        html += `<tr>
+            <td style="text-align:center; color:var(--text-muted); font-family:'JetBrains Mono', monospace;">${rowNum++}</td>
+            <td style="text-align:center; font-weight:800; font-family:'JetBrains Mono', monospace;">${empId}</td>
+            <td style="font-weight:600;">${name}</td>
+            <td><span class="badge badge-dept">${dept}</span></td>
+            <td style="text-align:right;">
+                <select class="input-cell" style="width:140px; font-weight:700;" onchange="updateP03EmployeeTier('${empId}', this.value)">
+                    <option value="${p03Config.amount1}" ${baseAmount === p03Config.amount1 ? 'selected' : ''}>Rs ${p03Config.amount1.toFixed(2)}</option>
+                    <option value="${p03Config.amount2}" ${baseAmount === p03Config.amount2 ? 'selected' : ''}>Rs ${p03Config.amount2.toFixed(2)}</option>
+                </select>
+            </td>
+            <td style="text-align:center; color: var(--danger); font-weight: 800;">${absentDays}</td>
+            <td style="text-align:right; color: #b91c1c; font-weight: 700; font-family:'JetBrains Mono', monospace;">${deduction.toFixed(2)}</td>
+            <td style="text-align:right; color: var(--success); font-weight: 800; font-family:'JetBrains Mono', monospace;">${finalAmount.toFixed(2)}</td>
+            <td style="text-align:center;"><button class="btn-action" style="background:var(--danger); color:white; padding:6px 12px;" onclick="removeP03Employee('${empId}')">✖ ඉවත් කරන්න</button></td>
+        </tr>`;
+    });
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+}
+
+function getSalaryReportData() {
+    let activeEmployees = currentUploadedData.filter(emp => emp.hasAttendedAtLeastOnce);
+
+    return activeEmployees.map(emp => {
+        let master = masterProfiles[emp.id] || {};
+        let group = master.isFixed ? 1 : (master.group || 2);
+        let basicSalary = master.basicSalary || 0;
+        let absentDays = emp.absentDays || 0;
+        let workDays = emp.workDays || 0;
+
+        let otHoursDecimal = (emp.otMinutes || 0) / 60;
+        let sundayHoursDecimal = (emp.sundayMinutes || 0) / 60;
+        let poyaHoursDecimal = (emp.poyaMinutes || 0) / 60;
+        let lateHoursDecimal = (emp.lateMinutes || 0) / 60;
+
+        let otAmount = (master.otRate || 0) * otHoursDecimal;
+        let sundayAmount = (master.sundayRate || 0) * sundayHoursDecimal;
+        let poyaAmount = (master.poyaRate || 0) * poyaHoursDecimal;
+        let noPayAmount = (master.noPayRate || 0) * absentDays;
+        let lateAmount = (master.late || 0) * lateHoursDecimal;
+
+        let p01Amount = 0;
+        if (p01SelectedIds.some(id => String(id) === String(emp.id))) {
+            let ded = Math.min(absentDays * p01Config.perDayDeduction, p01Config.baseAmount);
+            p01Amount = p01Config.baseAmount - ded;
+        }
+
+        let p02Amount = 0;
+        if (p02SelectedIds.some(id => String(id) === String(emp.id))) {
+            let ded = Math.min(absentDays * p02Config.perDayDeduction, p02Config.baseAmount);
+            p02Amount = p02Config.baseAmount - ded;
+        }
+
+        let p03Amount = 0;
+        let p03Entry = p03Selected.find(sel => String(sel.id) === String(emp.id));
+        if (p03Entry) {
+            let ded = Math.min(absentDays * p03Config.perDayDeduction, p03Entry.baseAmount);
+            p03Amount = p03Entry.baseAmount - ded;
+        }
+
+        let specialAmount = parseFloat(master.special) || 0;
+        let slAdRaw = slAdValues[emp.id] !== undefined ? slAdValues[emp.id] : '';
+        let slAdAmount = parseFloat(slAdRaw) || 0;
+        let epf8Value = master.epf8 || 0;
+
+        let netSalary = basicSalary + specialAmount + otAmount + sundayAmount + poyaAmount
+            + p01Amount + p02Amount + p03Amount + slAdAmount - noPayAmount - lateAmount;
+        if (group === 1) {
+            netSalary -= epf8Value;
+        }
+
+        return {
+            id: emp.id,
+            name: emp.name,
+            dept: emp.dept,
+            group: group,
+            basicSalary: basicSalary,
+            special: master.special || '',
+            otAmount: otAmount,
+            sundayAmount: sundayAmount,
+            poyaAmount: poyaAmount,
+            p01Amount: p01Amount,
+            p02Amount: p02Amount,
+            p03Amount: p03Amount,
+            noPayAmount: noPayAmount,
+            lateAmount: lateAmount,
+            epfSalary: Math.max(0, basicSalary - noPayAmount),
+            epf8: master.epf8 || 0,
+            epf12: master.epf12 || 0,
+            etf3: master.etf3 || 0,
+            absentDays: absentDays,
+            workDays: workDays,
+            slAd: slAdRaw,
+            netSalary: netSalary
+        };
+    });
+}
+
+function buildSalaryTableHtml(data, includeEpfEtf) {
+    if (data.length === 0) {
+        return '<p style="color: #666; padding: 15px;">මෙම Group එක සඳහා සේවකයින් ඇතුළත් කර නොමැත.</p>';
+    }
+    let epfSalaryHeader = includeEpfEtf ? `<th style="text-align:right;">EPF Salary</th>` : '';
+    let epfEtfHeader = includeEpfEtf ? `
+            <th style="text-align:right;">EPF 8%</th>
+            <th style="text-align:right;">EPF 12%</th>
+            <th style="text-align:right;">ETF 3%</th>` : '';
+    let html = `<table class="data-table">
+        <thead><tr>
+            <th style="width:40px; text-align:center;">#</th>
+            <th style="width:60px; text-align:center;">FP ID</th>
+            <th>Employee Name</th>
+            <th style="text-align:right;">Basic Salary</th>
+            <th>Special</th>
+            <th style="text-align:right;">OT</th>
+            <th style="text-align:right;">Sunday</th>
+            <th style="text-align:right;">Poya Day</th>
+            <th style="text-align:right;">P01</th>
+            <th style="text-align:right;">P02</th>
+            <th style="text-align:right;">P03</th>
+            <th style="text-align:right;">No Pay</th>
+            <th style="text-align:right;">Late</th>${epfSalaryHeader}${epfEtfHeader}
+            <th style="text-align:center;">Absents (AB)</th>
+            <th style="text-align:right;">SL Ad</th>
+            <th style="text-align:right;">Net Salary</th>
+        </tr></thead>
+        <tbody>`;
+    data.forEach((e, i) => {
+        let epfSalaryCell = includeEpfEtf ? `<td style="text-align:right; font-family:'JetBrains Mono', monospace;">${formatAccounting(e.epfSalary)}</td>` : '';
+        let epfEtfCells = includeEpfEtf ? `
+            <td style="text-align:right; font-family:'JetBrains Mono', monospace;">${formatAccounting(e.epf8)}</td>
+            <td style="text-align:right; font-family:'JetBrains Mono', monospace;">${formatAccounting(e.epf12)}</td>
+            <td style="text-align:right; font-family:'JetBrains Mono', monospace;">${formatAccounting(e.etf3)}</td>` : '';
+        html += `<tr>
+            <td style="text-align:center; color:var(--text-muted); font-family:'JetBrains Mono', monospace;">${i + 1}</td>
+            <td style="text-align:center; font-weight:800; font-family:'JetBrains Mono', monospace;">${e.id}</td>
+            <td style="font-weight:600;">${e.name}</td>
+            <td style="text-align:right; font-family:'JetBrains Mono', monospace;">${formatAccounting(e.basicSalary)}</td>
+            <td>${e.special !== '' ? e.special : '-'}</td>
+            <td style="text-align:right; font-family:'JetBrains Mono', monospace;">${formatAccounting(e.otAmount)}</td>
+            <td style="text-align:right; font-family:'JetBrains Mono', monospace;">${formatAccounting(e.sundayAmount)}</td>
+            <td style="text-align:right; font-family:'JetBrains Mono', monospace;">${formatAccounting(e.poyaAmount)}</td>
+            <td style="text-align:right; font-family:'JetBrains Mono', monospace;">${formatAccounting(e.p01Amount)}</td>
+            <td style="text-align:right; font-family:'JetBrains Mono', monospace;">${formatAccounting(e.p02Amount)}</td>
+            <td style="text-align:right; font-family:'JetBrains Mono', monospace;">${formatAccounting(e.p03Amount)}</td>
+            <td style="text-align:right; font-family:'JetBrains Mono', monospace; color:var(--danger);">${formatAccounting(e.noPayAmount)}</td>
+            <td style="text-align:right; font-family:'JetBrains Mono', monospace; color:#d97706;">${formatAccounting(e.lateAmount)}</td>${epfSalaryCell}${epfEtfCells}
+            <td style="text-align:center; color: var(--danger); font-weight: 800;">${e.absentDays}</td>
+            <td style="text-align:right;"><input type="text" class="input-cell" style="text-align:right; width:80px;" value="${e.slAd}" placeholder="+/-" onchange="updateSlAd('${e.id}', this.value)"></td>
+            <td style="text-align:right; color: var(--success); font-weight: 800; font-family:'JetBrains Mono', monospace;">${formatAccounting(e.netSalary)}</td>
+        </tr>`;
+    });
+    html += `</tbody></table>`;
+    return html;
+}
+
+function buildSalaryReportRows(groupNum) {
+    let data = getSalaryReportData().filter(e => e.group === groupNum).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    let includeEpfEtf = groupNum === 1;
+
+    let headers = ['#', 'FP ID', 'Employee Name', 'Basic Salary', 'Special', 'OT', 'Sunday', 'Poya Day', 'P01', 'P02', 'P03', 'No Pay', 'Late'];
+    if (includeEpfEtf) headers = headers.concat(['EPF Salary', 'EPF 8%', 'EPF 12%', 'ETF 3%']);
+    headers = headers.concat(['Absents (AB)', 'SL Ad', 'Net Salary']);
+
+    let rows = data.map((e, i) => {
+        let row = [
+            i + 1, e.id, e.name,
+            formatAccounting(e.basicSalary),
+            e.special !== '' ? e.special : '-',
+            formatAccounting(e.otAmount),
+            formatAccounting(e.sundayAmount),
+            formatAccounting(e.poyaAmount),
+            formatAccounting(e.p01Amount),
+            formatAccounting(e.p02Amount),
+            formatAccounting(e.p03Amount),
+            formatAccounting(e.noPayAmount),
+            formatAccounting(e.lateAmount)
+        ];
+        if (includeEpfEtf) {
+            row = row.concat([
+                formatAccounting(e.epfSalary),
+                formatAccounting(e.epf8),
+                formatAccounting(e.epf12),
+                formatAccounting(e.etf3)
+            ]);
+        }
+        row = row.concat([e.absentDays, e.slAd !== '' ? e.slAd : '-', formatAccounting(e.netSalary)]);
+        return row;
+    });
+
+    return { headers, rows };
+}
+
+function downloadSalaryReportExcel(groupNum) {
+    let { headers, rows } = buildSalaryReportRows(groupNum);
+    if (rows.length === 0) {
+        alert('මෙම Group එක සඳහා සේවකයින් නොමැත.');
+        return;
+    }
+    let ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    let wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, `Group ${groupNum} Salary`);
+    XLSX.writeFile(wb, `Group_${groupNum}_Salary_Report.xlsx`);
+}
+
+function downloadSalaryReportPDF(groupNum) {
+    let { headers, rows } = buildSalaryReportRows(groupNum);
+    if (rows.length === 0) {
+        alert('මෙම Group එක සඳහා සේවකයින් නොමැත.');
+        return;
+    }
+
+    let pdfHeaders = [...headers, 'Signature'];
+    let pdfRows = rows.map(r => [...r, '']);
+
+    let { jsPDF } = window.jspdf;
+    let doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+    let rym = getReportYearMonth();
+    let compTitle = companyProfile.name ? `${companyProfile.name} — ` : '';
+
+    doc.setFontSize(13);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`${compTitle}Group ${groupNum} Salary Report (${rym.monthName || '-'} ${rym.year || ''})`, 40, 30);
+
+    doc.autoTable({
+        head: [pdfHeaders],
+        body: pdfRows,
+        startY: 42,
+        theme: 'grid',
+        styles: { 
+            fontSize: 6.5, 
+            cellPadding: 3, 
+            textColor: [0, 0, 0], 
+            lineColor: [0, 0, 0], 
+            lineWidth: 0.5,
+            fillColor: [255, 255, 255]
+        },
+        headStyles: { 
+            fillColor: [255, 255, 255], 
+            textColor: [0, 0, 0], 
+            fontStyle: 'bold',
+            lineColor: [0, 0, 0],
+            lineWidth: 0.8
+        },
+        alternateRowStyles: { 
+            fillColor: [255, 255, 255] 
+        },
+        columnStyles: {
+            [pdfHeaders.length - 1]: { cellWidth: 55 }
+        }
+    });
+
+    doc.save(`Group_${groupNum}_Salary_Report.pdf`);
+}
+
+function renderSalaryReportCenter() {
+    let elTotalEmp = document.getElementById('srcTotalEmployees');
+    if (!elTotalEmp) return;
+
+    let data = getSalaryReportData();
+    let group1Data = data.filter(e => e.group === 1).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    let group2Data = data.filter(e => e.group === 2).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    let totalSalary = data.reduce((sum, e) => sum + e.netSalary, 0);
+    let group1Total = group1Data.reduce((sum, e) => sum + e.netSalary, 0);
+    let group2Total = group2Data.reduce((sum, e) => sum + e.netSalary, 0);
+
+    elTotalEmp.textContent = data.length;
+    document.getElementById('srcTotalSalary').textContent = 'Rs ' + formatAccounting(totalSalary);
+    document.getElementById('srcGroup1Total').textContent = 'Rs ' + formatAccounting(group1Total);
+    document.getElementById('srcGroup2Total').textContent = 'Rs ' + formatAccounting(group2Total);
+
+    let rym = getReportYearMonth();
+    let metaHtml = `<strong>${companyProfile.name || 'Company Name'}</strong> &nbsp;|&nbsp; Year: <strong>${rym.year || '-'}</strong> &nbsp;|&nbsp; Month: <strong>${rym.monthName || '-'}</strong>`;
+    document.getElementById('srcGroup1Meta').innerHTML = metaHtml;
+    document.getElementById('srcGroup2Meta').innerHTML = metaHtml;
+
+    document.getElementById('srcGroup1TableContainer').innerHTML = buildSalaryTableHtml(group1Data, true);
+    document.getElementById('srcGroup2TableContainer').innerHTML = buildSalaryTableHtml(group2Data, false);
+
+    let select = document.getElementById('srcEmployeeSelect');
+    let prevVal = select.value;
+    select.innerHTML = '<option value="">-- සේවකයා තෝරන්න --</option>';
+    data.slice().sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    }).forEach(e => {
+        let opt = document.createElement('option');
+        opt.value = e.id;
+        opt.textContent = `${e.id} - ${e.name}`;
+        select.appendChild(opt);
+    });
+    if (prevVal && data.some(e => String(e.id) === String(prevVal))) {
+        select.value = prevVal;
+    }
+
+    renderSalaryEmployeeDetail();
+}
+
+function renderSalaryEmployeeDetail() {
+    let select = document.getElementById('srcEmployeeSelect');
+    let container = document.getElementById('srcEmployeeDetailContainer');
+    if (!select || !container) return;
+
+    let empId = select.value.trim();
+    if (!empId) {
+        container.innerHTML = '';
+        return;
+    }
+
+    let data = getSalaryReportData();
+    let e = data.find(d => String(d.id) === String(empId));
+    if (!e) {
+        container.innerHTML = '';
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="summary-card">
+            <strong>${e.id} - ${e.name}</strong> &nbsp;|&nbsp; ${e.dept} &nbsp;|&nbsp; Group ${e.group}
+        </div>
+        <table class="data-table" style="max-width:520px;">
+            <tbody>
+                <tr><td><strong>Basic Salary</strong></td><td style="font-family:'JetBrains Mono', monospace; text-align:right;">Rs ${formatAccounting(e.basicSalary)}</td></tr>
+                <tr><td><strong>Special</strong></td><td style="text-align:right;">${e.special !== '' ? e.special : '-'}</td></tr>
+                <tr><td><strong>OT</strong></td><td style="font-family:'JetBrains Mono', monospace; text-align:right;">Rs ${formatAccounting(e.otAmount)}</td></tr>
+                <tr><td><strong>Sunday</strong></td><td style="font-family:'JetBrains Mono', monospace; text-align:right;">Rs ${formatAccounting(e.sundayAmount)}</td></tr>
+                <tr><td><strong>Poya Day</strong></td><td style="font-family:'JetBrains Mono', monospace; text-align:right;">Rs ${formatAccounting(e.poyaAmount)}</td></tr>
+                <tr><td><strong>P01</strong></td><td style="font-family:'JetBrains Mono', monospace; text-align:right;">Rs ${formatAccounting(e.p01Amount)}</td></tr>
+                <tr><td><strong>P02</strong></td><td style="font-family:'JetBrains Mono', monospace; text-align:right;">Rs ${formatAccounting(e.p02Amount)}</td></tr>
+                <tr><td><strong>P03</strong></td><td style="font-family:'JetBrains Mono', monospace; text-align:right;">Rs ${formatAccounting(e.p03Amount)}</td></tr>
+                <tr><td><strong>No Pay</strong></td><td style="font-family:'JetBrains Mono', monospace; text-align:right; color:var(--danger);">Rs ${formatAccounting(e.noPayAmount)}</td></tr>
+                <tr><td><strong>Late</strong></td><td style="font-family:'JetBrains Mono', monospace; text-align:right; color:#d97706;">Rs ${formatAccounting(e.lateAmount)}</td></tr>
+                ${e.group === 1 ? `
+                <tr><td><strong>EPF Salary</strong></td><td style="font-family:'JetBrains Mono', monospace; text-align:right;">Rs ${formatAccounting(e.epfSalary)}</td></tr>
+                <tr><td><strong>EPF 8%</strong></td><td style="font-family:'JetBrains Mono', monospace; text-align:right;">Rs ${formatAccounting(e.epf8)}</td></tr>
+                <tr><td><strong>EPF 12%</strong></td><td style="font-family:'JetBrains Mono', monospace; text-align:right;">Rs ${formatAccounting(e.epf12)}</td></tr>
+                <tr><td><strong>ETF 3%</strong></td><td style="font-family:'JetBrains Mono', monospace; text-align:right;">Rs ${formatAccounting(e.etf3)}</td></tr>` : ''}
+                <tr><td><strong>Absents (AB)</strong></td><td style="color:var(--danger); font-weight:800; text-align:right;">${e.absentDays}</td></tr>
+                <tr><td><strong>Worked Days (WD)</strong></td><td style="color:var(--success); font-weight:800; text-align:right;">${e.workDays}</td></tr>
+                <tr><td><strong>SL Ad</strong></td><td style="text-align:right;">${e.slAd !== '' ? e.slAd : '-'}</td></tr>
+                <tr style="background:#f0fdf4;"><td><strong>Net Salary</strong></td><td style="color:var(--success); font-weight:800; font-size:16px; font-family:'JetBrains Mono', monospace; text-align:right;">Rs ${formatAccounting(e.netSalary)}</td></tr>
+            </tbody>
+        </table>
+    `;
+}
+
+function formatSignedNumber(num) {
+    num = parseFloat(num) || 0;
+    return (num < 0 ? '-' : '') + Math.abs(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function buildPaySlipCardHtml(e, meta) {
+    return `
+    <div style="border:1px solid #cbd5e1; border-radius:var(--radius-lg); padding:20px; margin-bottom:20px; max-width:600px; background:#fff; box-shadow:var(--shadow-sm);">
+        <div style="border-bottom:2px solid var(--primary); padding-bottom:10px; margin-bottom:12px;">
+            <div style="text-align:center; font-size:18px; font-weight:bold; color:var(--primary);">${meta.companyName || 'Company Name'}</div>
+            ${meta.companyAddress ? `<div style="text-align:center; font-size:12px; color:var(--text-muted);">${meta.companyAddress}</div>` : ''}
+            ${meta.companyPhone ? `<div style="text-align:center; font-size:12px; color:var(--text-muted);">Tel: ${meta.companyPhone}</div>` : ''}
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:8px;">
+                <div style="width:60px;"></div>
+                <div style="font-weight:bold; text-align:center;">PAY SHEET — ${meta.monthName || '-'} ${meta.year || ''}</div>
+                <div style="text-align:right; font-weight:bold; font-size:13px; color:#1e293b; background:#f1f5f9; padding:2px 8px; border-radius:4px; border:1px solid #cbd5e1;">WD: ${e.workDays || 0}</div>
+            </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:14px;">
+            <div><strong>Employee:</strong> ${e.id} - ${e.name}</div>
+            <div><strong>Dept:</strong> ${e.dept}</div>
+        </div>
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <tr><td>Basic Salary</td><td style="text-align:right;">${formatAccounting(e.basicSalary)}</td></tr>
+            <tr><td>Special</td><td style="text-align:right;">${e.special !== '' ? e.special : '-'}</td></tr>
+            <tr><td>OT</td><td style="text-align:right;">${formatAccounting(e.otAmount)}</td></tr>
+            <tr><td>Sunday</td><td style="text-align:right;">${formatAccounting(e.sundayAmount)}</td></tr>
+            <tr><td>Poya Day</td><td style="text-align:right;">${formatAccounting(e.poyaAmount)}</td></tr>
+            <tr><td>P01</td><td style="text-align:right;">${formatAccounting(e.p01Amount)}</td></tr>
+            <tr><td>P02</td><td style="text-align:right;">${formatAccounting(e.p02Amount)}</td></tr>
+            <tr><td>P03</td><td style="text-align:right;">${formatAccounting(e.p03Amount)}</td></tr>
+            <tr><td>SL Ad</td><td style="text-align:right;">${e.slAd !== '' ? e.slAd : '-'}</td></tr>
+            <tr><td style="color:#b91c1c;">No Pay</td><td style="text-align:right; color:#b91c1c;">- ${formatAccounting(e.noPayAmount)}</td></tr>
+            <tr><td style="color:#b91c1c;">Late</td><td style="text-align:right; color:#b91c1c;">- ${formatAccounting(e.lateAmount)}</td></tr>
+        </table>
+        <div style="display:flex; justify-content:space-between; border-top:2px solid var(--primary); margin-top:10px; padding-top:10px; font-size:16px; font-weight:bold; color:var(--success);">
+            <span>Net Salary</span>
+            <span>Rs ${formatAccounting(e.netSalary)}</span>
+        </div>
+    </div>`;
+}
+
+function buildPaySlipCardHtmlForPDF(e, meta) {
+    return `
+    <div style="border:1px solid #ccc; border-radius:6px; padding:10px; max-width:600px; background:#fff;">
+        <div style="border-bottom:2px solid var(--primary); padding-bottom:6px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-weight:bold; font-size:14px; flex-grow:1; text-align:center; padding-left:45px;">${meta.monthName || '-'} ${meta.year || ''}</div>
+            <div style="font-weight:bold; font-size:12px; border:1px solid #94a3b8; padding:2px 6px; border-radius:4px; background:#f8fafc; white-space:nowrap;">WD: ${e.workDays || 0}</div>
+        </div>
+        <div style="margin-bottom:8px; font-size:12px;">
+            <strong>Employee:</strong> ${e.id}
+        </div>
+        <table style="width:100%; border-collapse:collapse; font-size:11px;">
+            <tr><td>B S</td><td style="text-align:right;">${formatAccounting(e.basicSalary)}</td></tr>
+            <tr><td>Special</td><td style="text-align:right;">${e.special !== '' ? e.special : '-'}</td></tr>
+            <tr><td>OT</td><td style="text-align:right;">${formatAccounting(e.otAmount)}</td></tr>
+            <tr><td>Sunday</td><td style="text-align:right;">${formatAccounting(e.sundayAmount)}</td></tr>
+            <tr><td>Poya Day</td><td style="text-align:right;">${formatAccounting(e.poyaAmount)}</td></tr>
+            <tr><td>P01</td><td style="text-align:right;">${formatAccounting(e.p01Amount)}</td></tr>
+            <tr><td>P02</td><td style="text-align:right;">${formatAccounting(e.p02Amount)}</td></tr>
+            <tr><td>P03</td><td style="text-align:right;">${formatAccounting(e.p03Amount)}</td></tr>
+            <tr><td>SL Ad</td><td style="text-align:right;">${e.slAd !== '' ? e.slAd : '-'}</td></tr>
+            <tr><td style="color:#b91c1c;">No Pay</td><td style="text-align:right; color:#b91c1c;">- ${formatAccounting(e.noPayAmount)}</td></tr>
+            <tr><td style="color:#b91c1c;">Late</td><td style="text-align:right; color:#b91c1c;">- ${formatAccounting(e.lateAmount)}</td></tr>
+        </table>
+        <div style="display:flex; justify-content:space-between; border-top:2px solid var(--primary); margin-top:6px; padding-top:6px; font-size:13px; font-weight:bold; color:var(--success);">
+            <span>Net Salary</span>
+            <span>Rs ${formatAccounting(e.netSalary)}</span>
+        </div>
+    </div>`;
+}
+
+function buildPaySlipGroup1Html(e, meta) {
+    let allowance = 0;
+    let specialNum = parseFloat(e.special) || 0;
+
+    let totalGross = e.basicSalary + specialNum + e.otAmount + allowance
+        + e.sundayAmount + e.poyaAmount + e.p01Amount + e.p02Amount + e.p03Amount;
+
+    let totalDeduction = totalGross - e.netSalary;
+    let slAdAmount = parseFloat(e.slAd) || 0;
+    let slAdDeductionRow = -slAdAmount;
+
+    let r = (val) => formatAccounting(val);
+
+    return `
+    <div style="border:2px solid #000; max-width:650px; margin:0 auto; font-family: Arial, sans-serif; background:#fff;">
+        <div style="border-bottom:2px solid #000; padding:12px 10px 8px;">
+            <div style="text-align:center; font-size:18px; font-weight:bold;">${meta.companyName || 'Company Name'}</div>
+            <div style="text-align:center; font-size:12px;">${meta.companyAddress || ''}${meta.companyAddress && meta.companyPhone ? ' / ' : ''}${meta.companyPhone || ''}</div>
+            <div style="text-align:center; font-weight:bold; margin-top:6px;">${e.name}</div>
+            <div style="text-align:center; font-weight:bold;">${(meta.monthName || '-') + ' ' + (meta.year || '')}</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; padding:0 5px;">
+                <div style="width:60px;"></div>
+                <div style="font-weight:bold; font-size:14px; text-align:center;">${e.id}</div>
+                <div style="font-weight:bold; font-size:13px; border:1.5px solid #000; padding:2px 8px; border-radius:3px;">WD: ${e.workDays || 0}</div>
+            </div>
+        </div>
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <tr>
+                <td style="padding:6px 10px 4px;"></td>
+                <td style="padding:6px 10px 4px;"></td>
+                <td style="padding:6px 10px 4px; text-align:right; font-weight:bold; border-bottom:1px solid #000;">Rs.</td>
+            </tr>
+            <tr><td style="padding:3px 10px; font-weight:bold;">BASIC SALARY</td><td></td><td style="padding:3px 10px; text-align:right;">${r(e.basicSalary)}</td></tr>
+            <tr><td style="padding:3px 10px;">Special</td><td></td><td style="padding:3px 10px; text-align:right;">${r(specialNum)}</td></tr>
+            <tr><td style="padding:3px 10px;">OT</td><td></td><td style="padding:3px 10px; text-align:right;">${r(e.otAmount)}</td></tr>
+            <tr><td style="padding:3px 10px;">ALLOWANCE</td><td></td><td style="padding:3px 10px; text-align:right;">${r(allowance)}</td></tr>
+            <tr><td style="padding:3px 10px;">NO PAY DEDUCTIONS</td><td></td><td style="padding:3px 10px; text-align:right;">${r(e.noPayAmount)}</td></tr>
+            <tr><td style="padding:3px 10px;">Sunday</td><td></td><td style="padding:3px 10px; text-align:right;">${r(e.sundayAmount)}</td></tr>
+            <tr><td style="padding:3px 10px;">Poya Day</td><td></td><td style="padding:3px 10px; text-align:right;">${r(e.poyaAmount)}</td></tr>
+            <tr><td style="padding:3px 10px;">P01</td><td></td><td style="padding:3px 10px; text-align:right;">${r(e.p01Amount)}</td></tr>
+            <tr><td style="padding:3px 10px;">P02</td><td></td><td style="padding:3px 10px; text-align:right;">${r(e.p02Amount)}</td></tr>
+            <tr><td style="padding:3px 10px;">P03</td><td></td><td style="padding:3px 10px; text-align:right;">${r(e.p03Amount)}</td></tr>
+            <tr>
+                <td style="padding:5px 10px; font-weight:bold; border-top:1px solid #000;">TOTAL GROSS SALARY</td>
+                <td style="border-top:1px solid #000;"></td>
+                <td style="padding:5px 10px; text-align:right; font-weight:bold; border-top:1px solid #000;">${r(totalGross)}</td>
+            </tr>
+            <tr><td colspan="3" style="padding:8px;"></td></tr>
+            <tr><td style="padding:3px 10px; font-weight:bold; text-decoration:underline;" colspan="3">Deductions</td></tr>
+            <tr><td style="padding:3px 10px;">EPF- 8%</td><td style="padding:3px 10px; text-align:right;">${r(e.epf8)}</td><td></td></tr>
+            <tr><td style="padding:3px 10px;">SL Ad</td><td style="padding:3px 10px; text-align:right;">${formatSignedNumber(slAdDeductionRow)}</td><td></td></tr>
+            <tr><td style="padding:3px 10px;">No Pay</td><td style="padding:3px 10px; text-align:right;">${r(e.noPayAmount)}</td><td></td></tr>
+            <tr><td style="padding:3px 10px;">Late</td><td style="padding:3px 10px; text-align:right;">${r(e.lateAmount)}</td><td></td></tr>
+            <tr>
+                <td style="padding:5px 10px; font-weight:bold; border-top:1px solid #000;">Total Deduction</td>
+                <td style="border-top:1px solid #000;"></td>
+                <td style="padding:5px 10px; text-align:right; font-weight:bold; border-top:1px solid #000;">${r(totalDeduction)}</td>
+            </tr>
+            <tr><td colspan="3" style="padding:10px;"></td></tr>
+            <tr>
+                <td style="padding:6px 10px; font-weight:bold; font-size:15px; border-top:3px double #000;">TOTAL NET SALARY</td>
+                <td style="border-top:3px double #000;"></td>
+                <td style="padding:6px 10px; text-align:right; font-weight:bold; font-size:15px; border-top:3px double #000;">${r(e.netSalary)}</td>
+            </tr>
+            <tr><td colspan="3" style="padding:14px;"></td></tr>
+            <tr><td style="padding:3px 10px; font-weight:bold; text-decoration:underline; border-top:1px solid #000;" colspan="3">EMPLOYER'S CONTRIBUTION</td></tr>
+            <tr><td colspan="3" style="padding:8px;"></td></tr>
+            <tr><td style="padding:3px 10px; font-weight:bold;">EPF -12%</td><td></td><td style="padding:3px 10px; text-align:right;">${r(e.epf12)}</td></tr>
+            <tr><td colspan="3" style="padding:8px;"></td></tr>
+            <tr><td style="padding:3px 10px 12px; font-weight:bold;">ETF - 3%</td><td></td><td style="padding:3px 10px 12px; text-align:right;">${r(e.etf3)}</td></tr>
+        </table>
+    </div>`;
+}
+
+function getPaySheetMeta() {
+    let rym = getReportYearMonth();
+    return {
+        companyName: companyProfile.name,
+        companyAddress: companyProfile.address,
+        companyPhone: companyProfile.phone,
+        companyEpf: companyProfile.epfNumber,
+        year: rym.year,
+        monthName: rym.monthName
+    };
+}
+
+function renderPaySheetGroup1Selected() {
+    let select = document.getElementById('paySheetG1Select');
+    let container = document.getElementById('paySheetGroup1Container');
+    if (!select || !container) return;
+
+    let val = select.value.trim();
+    if (!val) {
+        container.innerHTML = '<p style="color:#666; padding:15px;">සේවකයෙක් තෝරන්න.</p>';
+        return;
+    }
+
+    let data = getSalaryReportData().filter(d => d.group === 1).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    let meta = getPaySheetMeta();
+
+    if (val === 'ALL') {
+        container.innerHTML = data.length === 0
+            ? '<p style="color:#666; padding:15px;">Group 1 සේවකයින් නොමැත.</p>'
+            : data.map(e => buildPaySlipGroup1Html(e, meta)).join('<div style="height:30px;"></div>');
+        return;
+    }
+
+    let e = data.find(d => String(d.id) === String(val));
+    if (!e) { container.innerHTML = ''; return; }
+
+    container.innerHTML = buildPaySlipGroup1Html(e, meta);
+}
+
+function renderPaySheetGroup2Selected() {
+    let select = document.getElementById('paySheetG2Select');
+    let container = document.getElementById('paySheetGroup2Container');
+    if (!select || !container) return;
+
+    let val = select.value.trim();
+    if (!val) {
+        container.innerHTML = '<p style="color:#666; padding:15px;">සේවකයෙක් තෝරන්න.</p>';
+        return;
+    }
+
+    let data = getSalaryReportData().filter(d => d.group === 2).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    let meta = getPaySheetMeta();
+
+    if (val === 'ALL') {
+        container.innerHTML = data.length === 0
+            ? '<p style="color:#666; padding:15px;">Group 2 සේවකයින් නොමැත.</p>'
+            : data.map(e => buildPaySlipCardHtml(e, meta)).join('');
+        return;
+    }
+
+    let e = data.find(d => String(d.id) === String(val));
+    if (!e) { container.innerHTML = ''; return; }
+
+    container.innerHTML = buildPaySlipCardHtml(e, meta);
+}
+
+function renderPaySheet() {
+    let g1Select = document.getElementById('paySheetG1Select');
+    let g2Select = document.getElementById('paySheetG2Select');
+    if (!g1Select) return;
+
+    let data = getSalaryReportData();
+    let group1Data = data.filter(e => e.group === 1).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    let group2Data = data.filter(e => e.group === 2).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    let prevG1 = g1Select.value;
+    g1Select.innerHTML = '<option value="">-- සේවකයා තෝරන්න --</option><option value="ALL">🔽 සියලුම සේවකයන් (All Employees)</option>';
+    group1Data.forEach(e => {
+        let opt = document.createElement('option');
+        opt.value = e.id;
+        opt.textContent = `${e.id} - ${e.name}`;
+        g1Select.appendChild(opt);
+    });
+    if (prevG1 && (prevG1 === 'ALL' || group1Data.some(e => String(e.id) === String(prevG1)))) g1Select.value = prevG1;
+
+    let prevG2 = g2Select.value;
+    g2Select.innerHTML = '<option value="">-- සේවකයා තෝරන්න --</option><option value="ALL">🔽 සියලුම සේවකයන් (All Employees)</option>';
+    group2Data.forEach(e => {
+        let opt = document.createElement('option');
+        opt.value = e.id;
+        opt.textContent = `${e.id} - ${e.name}`;
+        g2Select.appendChild(opt);
+    });
+    if (prevG2 && (prevG2 === 'ALL' || group2Data.some(e => String(e.id) === String(prevG2)))) g2Select.value = prevG2;
+
+    renderPaySheetGroup1Selected();
+    renderPaySheetGroup2Selected();
+}
+
+async function renderPaySlipToCanvas(htmlString, widthPx) {
+    let staging = document.createElement('div');
+    staging.style.position = 'fixed';
+    staging.style.left = '-9999px';
+    staging.style.top = '0';
+    staging.style.width = widthPx + 'px';
+    staging.style.background = '#fff';
+    staging.innerHTML = htmlString;
+    document.body.appendChild(staging);
+
+    await new Promise(resolve => setTimeout(resolve, 50));
+    let canvas = await html2canvas(staging, { scale: 2, backgroundColor: '#ffffff' });
+    document.body.removeChild(staging);
+    return canvas;
+}
+
+async function downloadPaySheetPDF(groupNum) {
+    let selectId = groupNum === 1 ? 'paySheetG1Select' : 'paySheetG2Select';
+    let btnId = groupNum === 1 ? 'paySheetG1PdfBtn' : 'paySheetG2PdfBtn';
+    let select = document.getElementById(selectId);
+    let btn = document.getElementById(btnId);
+    let val = select.value.trim();
+
+    if (!val) {
+        alert('කරුණාකර පළමුව සේවකයෙක් හෝ "සියලුම සේවකයන්" තෝරන්න.');
+        return;
+    }
+
+    let data = getSalaryReportData().filter(d => d.group === groupNum).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    if (data.length === 0) {
+        alert(`Group ${groupNum} සඳහා සේවකයින් නොමැත.`);
+        return;
+    }
+
+    let meta = getPaySheetMeta();
+    let buildFn = groupNum === 1 ? buildPaySlipGroup1Html : buildPaySlipCardHtmlForPDF;
+    let perPage = groupNum === 2 ? 6 : 4; 
+    let columns = 2;
+    let rows = perPage / columns;
+
+    let originalBtnText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Generating PDF...';
+
+    try {
+        let { jsPDF } = window.jspdf;
+        let doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        let pageWidth = 210, pageHeight = 297, margin = 8;
+
+        if (val === 'ALL') {
+            let cellWidth = (pageWidth - margin * (columns + 1)) / columns;
+            let cellHeight = (pageHeight - margin * (rows + 1)) / rows;
+
+            for (let i = 0; i < data.length; i++) {
+                let e = data[i];
+                let canvas = await renderPaySlipToCanvas(buildFn(e, meta), 650);
+                let imgData = canvas.toDataURL('image/png');
+
+                let posInPage = i % perPage;
+                if (posInPage === 0 && i !== 0) doc.addPage();
+
+                let col = posInPage % columns;
+                let row = Math.floor(posInPage / columns);
+                let x = margin + col * (cellWidth + margin);
+                let y = margin + row * (cellHeight + margin);
+
+                let imgRatio = canvas.width / canvas.height;
+                let cellRatio = cellWidth / cellHeight;
+                let drawWidth, drawHeight;
+                if (imgRatio > cellRatio) {
+                    drawWidth = cellWidth;
+                    drawHeight = cellWidth / imgRatio;
+                } else {
+                    drawHeight = cellHeight;
+                    drawWidth = cellHeight * imgRatio;
+                }
+                let offsetX = x + (cellWidth - drawWidth) / 2;
+                let offsetY = y + (cellHeight - drawHeight) / 2;
+
+                doc.addImage(imgData, 'PNG', offsetX, offsetY, drawWidth, drawHeight);
+            }
+
+            doc.save(`Group_${groupNum}_PaySheet_All_Employees.pdf`);
+        } else {
+            let e = data.find(d => String(d.id) === String(val));
+            if (!e) { alert('සේවකයා හමු නොවුනි.'); return; }
+
+            let canvas = await renderPaySlipToCanvas(buildFn(e, meta), 650);
+            let imgData = canvas.toDataURL('image/png');
+
+            let imgRatio = canvas.width / canvas.height;
+            let availWidth = pageWidth - margin * 2;
+            let availHeight = pageHeight - margin * 2;
+            let drawWidth = availWidth;
+            let drawHeight = availWidth / imgRatio;
+            if (drawHeight > availHeight) {
+                drawHeight = availHeight;
+                drawWidth = availHeight * imgRatio;
+            }
+            let x = margin + (availWidth - drawWidth) / 2;
+            let y = margin;
+
+            doc.addImage(imgData, 'PNG', x, y, drawWidth, drawHeight);
+            doc.save(`Group_${groupNum}_PaySheet_${e.id}_${e.name}.pdf`);
+        }
+    } catch (err) {
+        alert('❌ PDF Generate කිරීමේදී දෝෂයක් ඇති විය: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalBtnText;
+    }
+}
+
+function updateEpfNic(empId, val) {
+    epfNicData[empId] = String(val).trim();
+    localStorage.setItem(EPF_NIC_DATA_KEY, JSON.stringify(epfNicData));
+}
+
+function updateEpfOverride(empId, field, val) {
+    if (!epfOverrides[empId]) epfOverrides[empId] = {};
+    if (field === 'fdNumber') {
+        epfOverrides[empId][field] = String(val).trim();
+    } else {
+        let num = parseFloat(val);
+        epfOverrides[empId][field] = isNaN(num) ? 0 : num;
+    }
+    localStorage.setItem(EPF_OVERRIDES_KEY, JSON.stringify(epfOverrides));
+    
+    if (field === 'employer' || field === 'employee') {
+        let tr = document.querySelector(`tr[data-epf-row="${empId}"]`);
+        if (tr) {
+            let employerVal = parseFloat(tr.querySelector('.epf-field-employer').value) || 0;
+            let employeeVal = parseFloat(tr.querySelector('.epf-field-employee').value) || 0;
+            let totalCell = tr.querySelector('.epf-field-total');
+            if (totalCell) totalCell.textContent = formatAccounting(employerVal + employeeVal);
+        }
+    }
+    recalculateEpfTotals();
+}
+
+function recalculateEpfTotals() {
+    let rows = document.querySelectorAll('#epfEtfTableBody tr');
+    let sumEmployer = 0, sumEmployee = 0, sumTotal = 0, sumEarnings = 0;
+
+    rows.forEach(tr => {
+        let empInp = tr.querySelector('.epf-field-employer');
+        let empyInp = tr.querySelector('.epf-field-employee');
+        let earnInp = tr.querySelector('.epf-field-earnings');
+        let totCell = tr.querySelector('.epf-field-total');
+
+        if (empInp) sumEmployer += (parseFloat(empInp.value) || 0);
+        if (empyInp) sumEmployee += (parseFloat(empyInp.value) || 0);
+        if (totCell) sumTotal += parseAccounting(totCell.textContent);
+        if (earnInp) sumEarnings += (parseFloat(earnInp.value) || 0);
+    });
+
+    let foot = document.getElementById('epfTableFooter');
+    if (foot) {
+        foot.innerHTML = `
+            <tr style="background:#f1f5f9; font-weight:800; border-top:2px solid #cbd5e1;">
+                <td colspan="4" style="text-align:right; color:#1e293b;">GRAND TOTALS:</td>
+                <td style="text-align:right; font-family:'JetBrains Mono', monospace; color:#3730a3;">Rs ${formatAccounting(sumEmployer)}</td>
+                <td style="text-align:right; font-family:'JetBrains Mono', monospace; color:#3730a3;">Rs ${formatAccounting(sumEmployee)}</td>
+                <td style="text-align:right; font-family:'JetBrains Mono', monospace; color:#059669; font-size:14px;">Rs ${formatAccounting(sumTotal)}</td>
+                <td style="text-align:right; font-family:'JetBrains Mono', monospace; color:#0f172a;">Rs ${formatAccounting(sumEarnings)}</td>
+            </tr>
+        `;
+    }
+}
+
+function renderEpfEtfReport() {
+    let typeSelect = document.getElementById('epfEtfTypeSelect');
+    let container = document.getElementById('epfEtfTableContainer');
+    if (!typeSelect || !container) return;
+
+    let reportType = typeSelect.value;
+    let data = getSalaryReportData().filter(d => d.group === 1).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    if (data.length === 0) {
+        container.innerHTML = '<p style="color:#666; padding:20px; text-align:center;">Group 1 සඳහා සේවකයින් තවම ඇතුළත් කර නොමැත.</p>';
+        return;
+    }
+
+    if (reportType === 'EPF') {
+        let html = `
+            <table class="data-table master-table" style="box-shadow:var(--shadow-sm);">
+                <thead>
+                    <tr>
+                        <th style="width:40px; text-align:center;">#</th>
+                        <th style="min-width:200px;">Name</th>
+                        <th style="min-width:160px;">Identity Card Number</th>
+                        <th style="min-width:90px; text-align:center;">FD Number</th>
+                        <th style="min-width:115px; text-align:right;">Employer (12%)</th>
+                        <th style="min-width:115px; text-align:right;">Employee (8%)</th>
+                        <th style="min-width:115px; text-align:right;">Total</th>
+                        <th style="min-width:125px; text-align:right;">Total Earnings</th>
+                    </tr>
+                </thead>
+                <tbody id="epfEtfTableBody">`;
+
+        let sumEmployer = 0, sumEmployee = 0, sumTotal = 0, sumEarnings = 0;
+
+        data.forEach((e, idx) => {
+            let nicVal = epfNicData[e.id] !== undefined ? epfNicData[e.id] : '';
+            let ov = epfOverrides[e.id] || {};
+
+            let fdNumber = ov.fdNumber !== undefined ? ov.fdNumber : e.id;
+            let employerVal = ov.employer !== undefined ? ov.employer : (e.epf12 || 0);
+            let employeeVal = ov.employee !== undefined ? ov.employee : (e.epf8 || 0);
+            let totalVal = employerVal + employeeVal;
+            let earningsVal = ov.totalEarnings !== undefined ? ov.totalEarnings : (e.epfSalary || 0);
+
+            sumEmployer += employerVal;
+            sumEmployee += employeeVal;
+            sumTotal += totalVal;
+            sumEarnings += earningsVal;
+
+            html += `
+                <tr data-epf-row="${e.id}">
+                    <td style="text-align:center; color:var(--text-muted); font-family:'JetBrains Mono', monospace;">${idx + 1}</td>
+                    <td><strong style="color:#0f172a;">${e.name}</strong></td>
+                    <td>
+                        <input type="text" class="input-cell" style="font-weight:600;" value="${nicVal}" placeholder="e.g. 199012345678 / 901234567V" onchange="updateEpfNic('${e.id}', this.value)">
+                    </td>
+                    <td style="text-align:center;">
+                        <input type="text" class="input-cell" style="text-align:center; font-family:'JetBrains Mono', monospace; font-weight:700;" value="${fdNumber}" onchange="updateEpfOverride('${e.id}', 'fdNumber', this.value)">
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="input-cell input-num-cell epf-field-employer" value="${employerVal}" onchange="updateEpfOverride('${e.id}', 'employer', this.value)">
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="input-cell input-num-cell epf-field-employee" value="${employeeVal}" onchange="updateEpfOverride('${e.id}', 'employee', this.value)">
+                    </td>
+                    <td style="text-align:right; font-weight:800; color:var(--success); font-family:'JetBrains Mono', monospace; vertical-align:middle;" class="epf-field-total">
+                        ${formatAccounting(totalVal)}
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="input-cell input-num-cell epf-field-earnings" style="color:#047857; font-weight:700;" value="${earningsVal}" onchange="updateEpfOverride('${e.id}', 'totalEarnings', this.value)">
+                    </td>
+                </tr>`;
+        });
+
+        html += `
+                </tbody>
+                <tfoot id="epfTableFooter">
+                    <tr style="background:#f1f5f9; font-weight:800; border-top:2px solid #cbd5e1;">
+                        <td colspan="4" style="text-align:right; color:#1e293b;">GRAND TOTALS:</td>
+                        <td style="text-align:right; font-family:'JetBrains Mono', monospace; color:#3730a3;">Rs ${formatAccounting(sumEmployer)}</td>
+                        <td style="text-align:right; font-family:'JetBrains Mono', monospace; color:#3730a3;">Rs ${formatAccounting(sumEmployee)}</td>
+                        <td style="text-align:right; font-family:'JetBrains Mono', monospace; color:#059669; font-size:14px;">Rs ${formatAccounting(sumTotal)}</td>
+                        <td style="text-align:right; font-family:'JetBrains Mono', monospace; color:#0f172a;">Rs ${formatAccounting(sumEarnings)}</td>
+                    </tr>
+                </tfoot>
+            </table>`;
+
+        container.innerHTML = html;
+    } else {
+        let html = `
+            <table class="data-table master-table" style="box-shadow:var(--shadow-sm);">
+                <thead>
+                    <tr>
+                        <th style="width:40px; text-align:center;">#</th>
+                        <th>Name</th>
+                        <th>Identity Card Number</th>
+                        <th style="text-align:center;">FD Number</th>
+                        <th style="text-align:right;">Employer ETF (3%)</th>
+                        <th style="text-align:right;">Total Earnings</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        let sumEtf = 0, sumEarnings = 0;
+        data.forEach((e, idx) => {
+            let nicVal = epfNicData[e.id] !== undefined ? epfNicData[e.id] : '';
+            let ov = epfOverrides[e.id] || {};
+            let fdNumber = ov.fdNumber !== undefined ? ov.fdNumber : e.id;
+            let earningsVal = ov.totalEarnings !== undefined ? ov.totalEarnings : (e.epfSalary || 0);
+            let etfVal = e.etf3 || 0;
+
+            sumEtf += etfVal;
+            sumEarnings += earningsVal;
+
+            html += `
+                <tr>
+                    <td style="text-align:center; color:var(--text-muted); font-family:'JetBrains Mono', monospace;">${idx + 1}</td>
+                    <td><strong>${e.name}</strong></td>
+                    <td><input type="text" class="input-cell" value="${nicVal}" onchange="updateEpfNic('${e.id}', this.value)"></td>
+                    <td style="text-align:center; font-family:'JetBrains Mono', monospace; font-weight:700;">${fdNumber}</td>
+                    <td style="text-align:right; font-family:'JetBrains Mono', monospace; font-weight:700; color:#3730a3;">${formatAccounting(etfVal)}</td>
+                    <td style="text-align:right; font-family:'JetBrains Mono', monospace; font-weight:700;">${formatAccounting(earningsVal)}</td>
+                </tr>`;
+        });
+
+        html += `
+                </tbody>
+                <tfoot>
+                    <tr style="background:#f1f5f9; font-weight:800; border-top:2px solid #cbd5e1;">
+                        <td colspan="4" style="text-align:right; color:#1e293b;">GRAND TOTALS:</td>
+                        <td style="text-align:right; font-family:'JetBrains Mono', monospace; color:#3730a3;">Rs ${formatAccounting(sumEtf)}</td>
+                        <td style="text-align:right; font-family:'JetBrains Mono', monospace; color:#0f172a;">Rs ${formatAccounting(sumEarnings)}</td>
+                    </tr>
+                </tfoot>
+            </table>`;
+
+        container.innerHTML = html;
+    }
+}
+
+function buildOfficialCFormPageHtml(pageIndex, totalPages, pageRows, sums, meta) {
+    let emptySlotsCount = 15 - pageRows.length;
+    let emptySlotsHtml = '';
+    for (let i = 0; i < emptySlotsCount; i++) {
+        emptySlotsHtml += `
+            <tr style="height:22px;">
+                <td style="border:1px solid #000; padding:2px 4px;">&nbsp;</td>
+                <td style="border:1px solid #000; padding:2px 4px;">&nbsp;</td>
+                <td style="border:1px solid #000; padding:2px 4px;">&nbsp;</td>
+                <td style="border:1px solid #000; padding:2px 4px;">&nbsp;</td>
+                <td style="border:1px solid #000; padding:2px 4px;">&nbsp;</td>
+                <td style="border:1px solid #000; padding:2px 4px;">&nbsp;</td>
+                <td style="border:1px solid #000; padding:2px 4px;">&nbsp;</td>
+            </tr>
+        `;
+    }
+
+    let isLastPage = (pageIndex === totalPages - 1);
+    let totalRowHtml = isLastPage ? `
+        <tr style="height:24px; font-weight:bold; background:#fff;">
+            <td colspan="3" style="border:1px solid #000; padding:3px 6px; text-align:right; font-size:11px;">
+                එකතුව / மொத்தம் / Total
+            </td>
+            <td style="border:1px solid #000; padding:3px 6px; text-align:right; font-size:11px; font-family:'Courier New', monospace;">${formatAccounting(sums.total)}</td>
+            <td style="border:1px solid #000; padding:3px 6px; text-align:right; font-size:11px; font-family:'Courier New', monospace;">${formatAccounting(sums.employer)}</td>
+            <td style="border:1px solid #000; padding:3px 6px; text-align:right; font-size:11px; font-family:'Courier New', monospace;">${formatAccounting(sums.employee)}</td>
+            <td style="border:1px solid #000; padding:3px 6px; text-align:right; font-size:11px; font-family:'Courier New', monospace;">${formatAccounting(sums.earnings)}</td>
+        </tr>
+    ` : `
+        <tr style="height:24px; font-weight:bold;">
+            <td colspan="3" style="border:1px solid #000; padding:3px 6px; text-align:right; font-size:11px;">(Page ${pageIndex + 1} of ${totalPages})</td>
+            <td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td>
+        </tr>
+    `;
+
+    return `
+    <div style="width:780px; background:#fff; color:#000; padding:18px 24px; box-sizing:border-box; font-family:Arial, sans-serif; font-size:10px; border:2px solid #000; margin-bottom:20px;">
+        <table style="width:100%; border-collapse:collapse;">
+            <tr>
+                <td style="width:48%; vertical-align:top; border:1px solid #000; padding:6px 8px;">
+                    <div style="font-size:10.5px; font-weight:bold;">රා. සේ. පි. / තැපැල් ගාස්තු ගෙවන ලදි M - 13</div>
+                    <div style="font-size:9.5px; margin-top:2px;">දිය හැකි වුවහොත් ආපසු එවන්න : අධිකාරි, සේවක අර්ථසාධක අරමුදල, ශ්‍රී ලංකා මහ බැංකුව, තැ.පෙ. 1299, කොළඹ.</div>
+                    <div style="border-top:1px dashed #000; margin-top:6px; padding-top:6px;">
+                        <div style="font-size:11px; font-weight:bold; color:#000; text-transform:uppercase;">${meta.companyName || 'COMPANY NAME'}</div>
+                        <div style="font-size:10px; line-height:1.3; color:#111; margin-top:2px;">${meta.companyAddress || '-'}</div>
+                    </div>
+                </td>
+                <td style="width:4%;"></td>
+                <td style="width:48%; vertical-align:top;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+                        <div>
+                            <span style="font-size:26px; font-weight:bold; border:2px solid #000; padding:2px 10px; display:inline-block;">C</span>
+                        </div>
+                        <div style="text-align:right; font-size:9.5px; line-height:1.3;">
+                            වාර්තාව | 1958 අංක 15 දරණ සේ.අ.අ පනත<br>
+                            படிவம் | ஊ. சே. நி. 1958 15ம் பிரிவின்படி<br>
+                            FORM | EPF Act No. 15 of 1958
+                        </div>
+                    </div>
+
+                    <table style="width:100%; border-collapse:collapse; font-size:9.5px; margin-top:4px;">
+                        <tr>
+                            <td style="border:1px solid #000; padding:3px 6px; width:60%;">සේ.අ.අ. සේව්‍ය අංකය / E.P.F. Registration No.</td>
+                            <td style="border:1px solid #000; padding:3px 6px; font-weight:bold; font-size:11px; font-family:'Courier New', monospace;">${meta.epfRegNo || '-'}</td>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #000; padding:3px 6px;">දායක දීමනා වර්ෂය සහ මාසය / Month & Year of Contribution</td>
+                            <td style="border:1px solid #000; padding:3px 6px; font-weight:bold; font-size:11px; font-family:'Courier New', monospace;">${meta.monthYearCode}</td>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #000; padding:3px 6px;">දායක මුදල් / Contributions (Rs.)</td>
+                            <td style="border:1px solid #000; padding:3px 6px; font-weight:bold; font-size:11px; font-family:'Courier New', monospace;">${formatAccounting(sums.total)}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+        <table style="width:100%; border-collapse:collapse; margin-top:12px; font-size:9.5px;">
+            <thead>
+                <tr style="background:#f1f1f1; text-align:center;">
+                    <th style="border:1px solid #000; padding:4px; width:22%;">සේවකයාගේ නම<br>Employee's Name</th>
+                    <th style="border:1px solid #000; padding:4px; width:15%;">ජාතික හැඳුනුම්පත් අංකය<br>National Idt. No.</th>
+                    <th style="border:1px solid #000; padding:4px; width:9%;">සාමාජික අංකය<br>Member No</th>
+                    <th style="border:1px solid #000; padding:4px; width:13%;">දායක මුදල් එකතුව<br>Total (Rs.)</th>
+                    <th style="border:1px solid #000; padding:4px; width:13%;">සේව්‍යයා (12%)<br>Employer (Rs.)</th>
+                    <th style="border:1px solid #000; padding:4px; width:13%;">සේවකයා (8%)<br>Employee (Rs.)</th>
+                    <th style="border:1px solid #000; padding:4px; width:15%;">මුළු වේතනය<br>Total Earnings (Rs.)</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${pageRows.map(r => `
+                    <tr style="height:22px;">
+                        <td style="border:1px solid #000; padding:3px 6px; font-weight:bold;">${r.name}</td>
+                        <td style="border:1px solid #000; padding:3px 6px; font-family:'Courier New', monospace;">${r.nic}</td>
+                        <td style="border:1px solid #000; padding:3px 6px; text-align:center; font-weight:bold; font-family:'Courier New', monospace;">${r.memberNo}</td>
+                        <td style="border:1px solid #000; padding:3px 6px; text-align:right; font-family:'Courier New', monospace;">${r.total}</td>
+                        <td style="border:1px solid #000; padding:3px 6px; text-align:right; font-family:'Courier New', monospace;">${r.employer}</td>
+                        <td style="border:1px solid #000; padding:3px 6px; text-align:right; font-family:'Courier New', monospace;">${r.employee}</td>
+                        <td style="border:1px solid #000; padding:3px 6px; text-align:right; font-family:'Courier New', monospace;">${r.earnings}</td>
+                    </tr>
+                `).join('')}
+                ${emptySlotsHtml}
+                ${totalRowHtml}
+            </tbody>
+        </table>
+
+        <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:9.5px;">
+            <tr>
+                <td style="width:65%; vertical-align:bottom;">
+                    <div>ඉහත සඳහන් විස්තර නිවැරදි බව සහතික කරමි. / I certify that the information given above is correct.</div>
+                    <div style="margin-top:22px;">.........................................................................<br>සේව්‍යයාගේ අත්සන / Signature of Employer</div>
+                </td>
+                <td style="width:35%; vertical-align:bottom; text-align:right;">
+                    <div>දුරකථන / Telephone: ${companyProfile.phone || '-'}</div>
+                    <div style="margin-top:2px;">E-mail: epfhelpdesk@cbsl.lk | Web: www.epf.lk</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    `;
+}
+
+async function generateOfficialCFormViaJsPDF() {
+    let data = getSalaryReportData().filter(d => d.group === 1).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
+
+    if (data.length === 0) {
+        alert('Group 1 සඳහා සේවකයින් දත්ත පද්ධතියේ හමු නොවීය.');
+        return;
+    }
+
+    let rym = getReportYearMonth();
+    let yearVal = rym.year || new Date().getFullYear();
+    let monthNumVal = rym.numericMonth ? String(rym.numericMonth).padStart(2, '0') : String(new Date().getMonth() + 1).padStart(2, '0');
+    let monthYearCode = `${yearVal}${monthNumVal}`;
+
+    let btn = document.getElementById('generateCFormBtn');
+    let origText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Generating C-Form...';
+
+    try {
+        let sumEmployer = 0, sumEmployee = 0, sumTotal = 0, sumEarnings = 0;
+        let preparedRows = data.map(e => {
+            let nicVal = epfNicData[e.id] || '';
+            let ov = epfOverrides[e.id] || {};
+            let fdNumber = ov.fdNumber !== undefined ? ov.fdNumber : e.id;
+            let employerVal = ov.employer !== undefined ? ov.employer : (e.epf12 || 0);
+            let employeeVal = ov.employee !== undefined ? ov.employee : (e.epf8 || 0);
+            let totalVal = employerVal + employeeVal;
+            let earningsVal = ov.totalEarnings !== undefined ? ov.totalEarnings : (e.epfSalary || 0);
+
+            sumEmployer += employerVal;
+            sumEmployee += employeeVal;
+            sumTotal += totalVal;
+            sumEarnings += earningsVal;
+
+            return {
+                name: e.name,
+                nic: nicVal,
+                memberNo: String(fdNumber),
+                total: formatAccounting(totalVal),
+                employer: formatAccounting(employerVal),
+                employee: formatAccounting(employeeVal),
+                earnings: formatAccounting(earningsVal)
+            };
+        });
+
+        let sums = { employer: sumEmployer, employee: sumEmployee, total: sumTotal, earnings: sumEarnings };
+        let meta = {
+            companyName: companyProfile.name,
+            companyAddress: companyProfile.address,
+            epfRegNo: companyProfile.epfNumber,
+            monthYearCode: monthYearCode
+        };
+
+        const ROWS_PER_PAGE = 15;
+        const totalPages = Math.ceil(preparedRows.length / ROWS_PER_PAGE) || 1;
+
+        let { jsPDF } = window.jspdf;
+        let doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        let pageWidth = 210, pageHeight = 297, margin = 8;
+        let availWidth = pageWidth - margin * 2;
+
+        for (let p = 0; p < totalPages; p++) {
+            let pageRows = preparedRows.slice(p * ROWS_PER_PAGE, (p + 1) * ROWS_PER_PAGE);
+            let pageHtml = buildOfficialCFormPageHtml(p, totalPages, pageRows, sums, meta);
+
+            let canvas = await renderPaySlipToCanvas(pageHtml, 800);
+            let imgData = canvas.toDataURL('image/png');
+
+            if (p !== 0) doc.addPage();
+
+            let imgRatio = canvas.width / canvas.height;
+            let drawWidth = availWidth;
+            let drawHeight = availWidth / imgRatio;
+
+            if (drawHeight > (pageHeight - margin * 2)) {
+                drawHeight = pageHeight - margin * 2;
+                drawWidth = drawHeight * imgRatio;
+            }
+
+            let x = margin + (availWidth - drawWidth) / 2;
+            let y = margin;
+
+            doc.addImage(imgData, 'PNG', x, y, drawWidth, drawHeight);
+        }
+
+        let fileName = `EPF_Form_C_${monthYearCode}_Filled.pdf`;
+        doc.save(fileName);
+        alert(`✅ Official C-Form PDF එක (${fileName}) සාර්ථකව Generate වී බාගත විය (Download).`);
+    } catch (err) {
+        alert('❌ C-Form PDF සකස් කිරීමේදී දෝෂයක් ඇති විය: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = origText;
+    }
+}
+
+function switchMainTab(tabId, btn) {
+    document.querySelectorAll('.tab-container > .tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.container > .tab-content').forEach(c => c.classList.remove('active'));
+    
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+
+    if (tabId === 'masterProfiles') renderMasterProfilesTable();
+    if (tabId === 'salaryReportCenter') renderSalaryReportCenter();
+    if (tabId === 'paySheet') renderPaySheet();
+    if (tabId === 'epfEtfReportTab') renderEpfEtfReport();
+}
+
+function switchSubTab(tabId, btn) {
+    document.querySelectorAll('#reportArea .tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('#tabHeader .sub-tab-btn').forEach(b => b.classList.remove('active'));
+    
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+
+    if (tabId === 'manualEntryTab') {
+        updateManualEmployeesDropdown();
+    }
+}
+</script>
+
+</body>
+</html>
