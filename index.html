@@ -59,7 +59,7 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        #authOverlay {
+        #authOverlay, #rulesModalOverlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -87,13 +87,24 @@
             box-sizing: border-box;
             margin: auto;
         }
-        .auth-card h3 {
+        .rules-modal-card {
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            padding: 28px 30px;
+            width: 100%;
+            max-width: 580px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            box-sizing: border-box;
+            margin: auto;
+        }
+        .auth-card h3, .rules-modal-card h3 {
             margin: 0 0 6px 0;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 800;
             color: var(--text-main);
         }
-        .auth-card p {
+        .auth-card p, .rules-modal-card p {
             margin: 0 0 20px 0;
             color: var(--text-muted);
             font-size: 13px;
@@ -647,6 +658,30 @@
             letter-spacing: -0.5px;
             font-family: 'JetBrains Mono', sans-serif;
         }
+
+        /* Rules Dialog / Modal Elements */
+        .rule-form-group {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            text-align: left;
+        }
+        .rule-form-group label {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #1e293b;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .rule-form-group span.desc {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -697,6 +732,58 @@
 
         <button class="auth-btn" id="authSubmitBtn" onclick="handleAuthSubmit()">Log In</button>
         <div class="auth-error" id="authErrorMsg"></div>
+    </div>
+</div>
+
+<!-- Adjusted Attendance Rules Configuration Modal (Dialog Box) -->
+<div id="rulesModalOverlay" style="display: none;">
+    <div class="rules-modal-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:10px; margin-bottom:14px;">
+            <h3 style="margin:0;">⚙️ Attendance Adjustment Rules</h3>
+            <button type="button" onclick="closeRulesModal()" style="background:none; border:none; font-size:18px; cursor:pointer; color:#64748b; font-weight:bold;">✕</button>
+        </div>
+        <p style="margin-bottom:14px;">පැමිණීමේ වේලාවන් සහ කෑම පැය ගණනය කිරීමේ කොන්දේසි පහතින් අවශ්‍ය පරිදි වෙනස් කර Save කළ හැක (Default අගයන් සුරක්ෂිතව පවතී).</p>
+        
+        <div class="rule-form-group">
+            <label>1. මුල්ම ආරම්භක වේලාව (Earliest Start Time - Default: 07:30 AM)</label>
+            <span class="desc">මෙම වේලාවට පෙර In තැබුවද වැඩ ආරම්භ කළ වේලාව ලෙස සලකන්නේ මෙම වේලාවයි (උදෑසන 07:30 = විනාඩි 450).</span>
+            <input type="time" id="ruleEarliestInTime" class="input-cell" style="width:160px; font-weight:bold;">
+        </div>
+
+        <div class="rule-form-group">
+            <label>2. In Time Round-up Interval (මිනිත්තු - Default: 15)</label>
+            <span class="desc">ආරම්භක වේලාවට පසු පැමිණි විට ඉදිරි විනාඩි කීයට Round-up විය යුතුද? (15 = 08:01 ට ආවොත් 08:15 වේ).</span>
+            <input type="number" id="ruleInInterval" class="input-cell input-num-cell" style="width:120px;" min="1" max="60">
+        </div>
+
+        <div class="rule-form-group">
+            <label>3. Out Time Round-down Interval (මිනිත්තු - Default: 15)</label>
+            <span class="desc">සවස වැඩ අවසන් වූ විට පසුපස විනාඩි කීයට කපා හැරිය යුතුද? (15 = 05:14 ට ගියහොත් 05:00 PM වේ).</span>
+            <input type="number" id="ruleOutInterval" class="input-cell input-num-cell" style="width:120px;" min="1" max="60">
+        </div>
+
+        <div class="rule-form-group">
+            <label>4. දිවා ආහාර විරාමය කැපීම (Lunch Break Deduction)</label>
+            <span class="desc">දිනක සකස් කළ වැඩ කරන කාලය පහත සීමාව පැන්න විට කෑම පැය ස්වයංක්‍රීයව අඩු කෙරේ.</span>
+            <div style="display:flex; gap:12px; align-items:center;">
+                <div>
+                    <label style="font-size:11px; color:#475569;">වැඩ කරන කාලය (පැය):</label>
+                    <input type="number" id="ruleLunchThresholdHours" class="input-cell input-num-cell" style="width:90px;" step="0.5" min="1">
+                </div>
+                <div>
+                    <label style="font-size:11px; color:#475569;">අඩුවන කෑම විරාමය (මිනිත්තු):</label>
+                    <input type="number" id="ruleLunchDeductionMinutes" class="input-cell input-num-cell" style="width:90px;" min="0" max="120">
+                </div>
+            </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; gap:10px; flex-wrap:wrap;">
+            <button type="button" class="btn-action" style="background:#64748b; color:white;" onclick="resetAttendanceRulesToDefault()">🔄 Restore Defaults (යථා තත්ත්වයට)</button>
+            <div style="display:flex; gap:10px;">
+                <button type="button" class="btn-action" style="background:#e2e8f0; color:#334155;" onclick="closeRulesModal()">Cancel</button>
+                <button type="button" class="btn-action btn-save" onclick="saveAttendanceRules()">💾 Save & Apply Rules</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -778,7 +865,7 @@
     <!-- TAB 1: MASTER EMPLOYEE PROFILES -->
     <div id="masterProfiles" class="tab-content active">
         <div class="summary-card">
-            <strong>💡 Master Employee Database (Local Storage):</strong> මෙහි ඇති සේවක විස්තර ස්ථිරව Save වී පවතී. අලුත් Excel එකක් Upload කළ විට දැනට නැති අලුත් FP ID පමණක් Auto-Add වේ[cite: 1]. Group 1 සේවකයින්ගේ EPF 8%, 12%, ETF 3% අගයන් Salary Report Generate වන විට Auto-Calculate වන අතර අවශ්‍ය නම් Edit කර Save කළ හැක[cite: 1]. <strong>Manually එක් කළ Group 2 සේවකයින් පමණක් අවශ්‍ය විට Delete කර සම්පූර්ණයෙන්ම ඉවත් කළ හැක[cite: 1].</strong>
+            <strong>💡 Master Employee Database (Local Storage):</strong> මෙහි ඇති සේවක විස්තර ස්ථිරව Save වී පවතී. අලුත් Excel එකක් Upload කළ විට දැනට නැති අලුත් FP ID පමණක් Auto-Add වේ. Group 1 සේවකයින්ගේ EPF 8%, 12%, ETF 3% අගයන් Salary Report Generate වන විට Auto-Calculate වන අතර අවශ්‍ය නම් Edit කර Save කළ හැක. <strong>Manually එක් කළ Group 2 සේවකයින් පමණක් අවශ්‍ය විට Delete කර සම්පූර්ණයෙන්ම ඉවත් කළ හැක.</strong>
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:28px; margin-bottom:12px;">
@@ -844,7 +931,7 @@
         <div id="selectionArea" class="selection-box">
             <div class="poya-box">
                 <h4 style="margin:0 0 8px 0; color:#b45309; font-size:15px; font-weight:800;">🌕 අදාළ මාසයේ පොහෝ දින තෝරන්න (Poya Days Configuration):</h4>
-                <p style="margin:0; font-size:13px; color:#78350f;">මෙම මාසයේ පෝය දිනයන් 1ක් හෝ 2ක් ඇත්නම් Calendar එකෙන් තෝරන්න. <strong>(ඉරිදා දින පෝය ලෙස තෝරාගත නොහැක)</strong>[cite: 1]</p>
+                <p style="margin:0; font-size:13px; color:#78350f;">මෙම මාසයේ පෝය දිනයන් 1ක් හෝ 2ක් ඇත්නම් Calendar එකෙන් තෝරන්න. <strong>(ඉරිදා දින පෝය ලෙස තෝරාගත නොහැක)</strong></p>
                 <div class="poya-inputs" style="display:flex; gap:15px; align-items:center; flex-wrap:wrap; margin-top:12px;">
                     <label><strong>පෝය දිනය 1:</strong> <input type="date" id="poyaDate1" onchange="validatePoyaSunday(this)"></label>
                     <label><strong>පෝය දිනය 2 (තිබේ නම්):</strong> <input type="date" id="poyaDate2" onchange="validatePoyaSunday(this)"></label>
@@ -855,7 +942,7 @@
 
             <h3 style="text-align:center; color:#0f172a; margin-top:10px; font-weight:800;">⚙️ සේවකයින් Group වලට වෙන් කිරීම තවුරු කරන්න</h3>
             <p style="text-align: center; color: var(--text-muted); font-size: 13.5px; margin-bottom:18px;">
-                🔒 <strong>FP ID 1 - 29</strong> Group 1 හි ස්ථිරයි[cite: 1]. | ➕ Group 2 සේවකයින් අවශ්‍ය නම් Group 1 ට මාරු කළ හැක[cite: 1].
+                🔒 <strong>FP ID 1 - 29</strong> Group 1 හි ස්ථිරයි. | ➕ Group 2 සේවකයින් අවශ්‍ය නම් Group 1 ට මාරු කළ හැක.
             </p>
             <table class="data-table">
                 <thead>
@@ -896,7 +983,7 @@
 
             <div id="manualEntryTab" class="tab-content">
                 <div class="summary-card" style="background:linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border-left:5px solid var(--success); color:#065f46;">
-                    <strong>✍️ Manually Add / Edit Group 2 Employee:</strong> Fingerprint සටහන් නොවන සේවකයින්ගේ විස්තර එක් කරන්න[cite: 1]. In/Out Time Drop-down එකෙන් පැය (Hour) සහ මිනිත්තු (Minute) තෝරන්න[cite: 1]. <strong>In Time සහ Out Time දෙකම ඇතුළත් කළ පසු එම පේළිය Light Green පැහැයෙන් ස්වයංක්‍රීයව වෙනස් වේ[cite: 1].</strong>
+                    <strong>✍️ Manually Add / Edit Group 2 Employee:</strong> Fingerprint සටහන් නොවන සේවකයින්ගේ විස්තර එක් කරන්න. In/Out Time Drop-down එකෙන් පැය (Hour) සහ මිනිත්තු (Minute) තෝරන්න. <strong>In Time සහ Out Time දෙකම ඇතුළත් කළ පසු එම පේළිය Light Green පැහැයෙන් ස්වයංක්‍රීයව වෙනස් වේ.</strong>
                 </div>
 
                 <div class="filter-box" style="background:#ffffff; border:1px solid var(--border); box-shadow:var(--shadow-xs); gap:16px; align-items:flex-end;">
@@ -926,10 +1013,18 @@
                 <div id="manualEntryContainer" style="margin-top:20px;"></div>
             </div>
 
+            <!-- Adjusted Attendance Report Tab with Configuration Dialog Button -->
             <div id="adjReportCenter" class="tab-content">
-                <div class="filter-box">
-                    <label><strong>🔍 සේවකයා තෝරන්න:</strong></label>
-                    <select id="adjEmployeeFilter" onchange="filterAdjReportCenter()"></select>
+                <div class="filter-box" style="justify-content: space-between;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <label><strong>🔍 සේවකයා තෝරන්න:</strong></label>
+                        <select id="adjEmployeeFilter" onchange="filterAdjReportCenter()"></select>
+                    </div>
+                    <div>
+                        <button type="button" class="btn-action" style="background:#4338ca; color:white;" onclick="openRulesModal()">
+                            ⚙️ Adjust Attendance Conditions (නීති වෙනස් කරන්න)
+                        </button>
+                    </div>
                 </div>
                 <div id="adjEmployeeFilterContent"></div>
             </div>
@@ -1005,7 +1100,7 @@
     <!-- TAB 3: SALARY REPORT CENTER -->
     <div id="salaryReportCenter" class="tab-content">
         <div class="summary-card">
-            <strong>💡 Salary Report Center:</strong> මෙම Report එක Excel එකක් Upload කර Report Generate කළ පසු Auto-Update වේ[cite: 1]. (අදාළ මාසයේ එක දිනක් හෝ පැමිණි සේවකයින් පමණක් මෙහි ඇතුළත් වේ)[cite: 1]
+            <strong>💡 Salary Report Center:</strong> මෙම Report එක Excel එකක් Upload කර Report Generate කළ පසු Auto-Update වේ. (අදාළ මාසයේ එක දිනක් හෝ පැමිණි සේවකයින් පමණක් මෙහි ඇතුළත් වේ)
         </div>
 
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:18px; margin: 26px 0;">
@@ -1075,7 +1170,7 @@
     <!-- TAB 5: EPF / ETF REPORT -->
     <div id="epfEtfReportTab" class="tab-content">
         <div class="summary-card" style="background:linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); border-left:5px solid #3b82f6; color:#1e3a8a;">
-            <strong>🏛️ EPF / ETF Official Compliance Center:</strong> මෙම Report එක Group 1 සේවකයින්ගේ වැටුප් දත්ත මත පදනම්ව ස්වයංක්‍රීයව ජනනය වේ[cite: 1]. කිසිදු බාහිර අන්තර්ජාල script එකක් මත රඳා නොපවතින පරිදි, <strong>"🚀 Generate & Download Official Form C"</strong> බොත්තමෙන් නිල C-Form පෝරමය සෘජුවම බාගත (Direct Download) කරගත හැක[cite: 1].
+            <strong>🏛️ EPF / ETF Official Compliance Center:</strong> මෙම Report එක Group 1 සේවකයින්ගේ වැටුප් දත්ත මත පදනම්ව ස්වයංක්‍රීයව ජනනය වේ. කිසිදු බාහිර අන්තර්ජාල script එකක් මත රඳා නොපවතින පරිදි, <strong>"🚀 Generate & Download Official Form C"</strong> බොත්තමෙන් නිල C-Form පෝරමය සෘජුවම බාගත (Direct Download) කරගත හැක.
         </div>
 
         <div class="filter-box" style="justify-content: space-between;">
@@ -1221,7 +1316,7 @@ function firebaseSignOut() {
     }
 }
 
-// Session Observer (Auto Login & Profile Sync)
+// Session Observer
 auth.onAuthStateChanged(async user => {
     let overlay = document.getElementById('authOverlay');
     let container = document.getElementById('mainContainer');
@@ -1276,15 +1371,119 @@ const COMPANY_PROFILE_KEY = 'COMPANY_PROFILE';
 const SESSION_RESTORE_KEY = 'SESSION_MONTH_DATA';
 const EPF_NIC_DATA_KEY = 'EPF_NIC_DATA';
 const EPF_OVERRIDES_KEY = 'EPF_OVERRIDES_DATA';
+const ATTENDANCE_RULES_KEY = 'ATTENDANCE_ADJ_RULES';
 
 let companyProfile = { name: '', address: '', phone: '', epfNumber: '' };
 let epfNicData = {};
 let epfOverrides = {};
 
+// ===================== ATTENDANCE RULES CONFIGURATION =====================
+const DEFAULT_ATTENDANCE_RULES = {
+    earliestInMinutes: 450,       // 07:30 AM (450 mins)
+    inRoundInterval: 15,          // Next 15 mins round-up
+    outRoundInterval: 15,         // Previous 15 mins round-down
+    lunchThresholdMinutes: 240,   // If working minutes > 240 (4 hours)
+    lunchDeductionMinutes: 45     // Deduct 45 minutes
+};
+
+let attendanceRules = Object.assign({}, DEFAULT_ATTENDANCE_RULES);
+
+function loadAttendanceRules() {
+    let saved = localStorage.getItem(ATTENDANCE_RULES_KEY);
+    if (saved) {
+        try {
+            attendanceRules = Object.assign({}, DEFAULT_ATTENDANCE_RULES, JSON.parse(saved));
+        } catch (e) {
+            attendanceRules = Object.assign({}, DEFAULT_ATTENDANCE_RULES);
+        }
+    } else {
+        attendanceRules = Object.assign({}, DEFAULT_ATTENDANCE_RULES);
+    }
+}
+
+function openRulesModal() {
+    let modal = document.getElementById('rulesModalOverlay');
+    if (!modal) return;
+
+    let h = Math.floor(attendanceRules.earliestInMinutes / 60);
+    let m = attendanceRules.earliestInMinutes % 60;
+    let timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+
+    document.getElementById('ruleEarliestInTime').value = timeStr;
+    document.getElementById('ruleInInterval').value = attendanceRules.inRoundInterval;
+    document.getElementById('ruleOutInterval').value = attendanceRules.outRoundInterval;
+    document.getElementById('ruleLunchThresholdHours').value = (attendanceRules.lunchThresholdMinutes / 60);
+    document.getElementById('ruleLunchDeductionMinutes').value = attendanceRules.lunchDeductionMinutes;
+
+    modal.style.display = 'flex';
+}
+
+function closeRulesModal() {
+    let modal = document.getElementById('rulesModalOverlay');
+    if (modal) modal.style.display = 'none';
+}
+
+function saveAttendanceRules() {
+    let timeVal = document.getElementById('ruleEarliestInTime').value;
+    let inInt = parseInt(document.getElementById('ruleInInterval').value, 10);
+    let outInt = parseInt(document.getElementById('ruleOutInterval').value, 10);
+    let lunchThHours = parseFloat(document.getElementById('ruleLunchThresholdHours').value);
+    let lunchDed = parseInt(document.getElementById('ruleLunchDeductionMinutes').value, 10);
+
+    if (timeVal) {
+        let parts = timeVal.split(':');
+        attendanceRules.earliestInMinutes = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+    }
+    attendanceRules.inRoundInterval = (inInt > 0) ? inInt : 15;
+    attendanceRules.outRoundInterval = (outInt > 0) ? outInt : 15;
+    attendanceRules.lunchThresholdMinutes = (!isNaN(lunchThHours) && lunchThHours > 0) ? Math.round(lunchThHours * 60) : 240;
+    attendanceRules.lunchDeductionMinutes = (!isNaN(lunchDed) && lunchDed >= 0) ? lunchDed : 45;
+
+    localStorage.setItem(ATTENDANCE_RULES_KEY, JSON.stringify(attendanceRules));
+    closeRulesModal();
+
+    // Re-calculate daily records for all uploaded employees with updated rules
+    recalcAllAdjustedTimes();
+    alert('✅ පැමිණීමේ නීති (Attendance Rules) සාර්ථකව Save කර සියලුම වාර්තා Update කරන ලදී!');
+}
+
+function resetAttendanceRulesToDefault() {
+    let proceed = confirm('ඔබට සියලුම Attendance Adjustment Rules නැවතත් Default තත්ත්වයට (07:30 AM, 15 Mins Rounding, 45 Mins Lunch) පත් කිරීමට අවශ්‍යද?');
+    if (!proceed) return;
+
+    attendanceRules = Object.assign({}, DEFAULT_ATTENDANCE_RULES);
+    localStorage.removeItem(ATTENDANCE_RULES_KEY);
+
+    openRulesModal(); // Refresh modal inputs
+    recalcAllAdjustedTimes();
+    alert('🔄 නීති සියල්ල නැවත Default තත්ත්වයට පත් කරන ලදී!');
+}
+
+function recalcAllAdjustedTimes() {
+    if (!currentUploadedData || currentUploadedData.length === 0) return;
+
+    currentUploadedData.forEach(emp => {
+        if (!emp.dailyRecords) return;
+        emp.dailyRecords.forEach(rec => {
+            let inMinutes = rawTimeToMinutes(rec.rawInTime);
+            let outMinutes = rawTimeToMinutes(rec.rawOutTime);
+            rec.adjInTime = adjustInTime(inMinutes);
+            rec.adjOutTime = adjustOutTime(outMinutes);
+            rec.workingMinutes = getWorkingMinutes(inMinutes, outMinutes);
+            rec.workingHours = calculateWorkingHours(inMinutes, outMinutes);
+        });
+    });
+
+    let activeEmployees = currentUploadedData.filter(emp => emp.hasAttendedAtLeastOnce);
+    renderAdjReportCenter(activeEmployees);
+    renderSalaryReportCenter();
+    renderPaySheet();
+}
+
 const APP_BACKUP_KEYS = [
     STORAGE_KEY, P01_SELECTED_KEY, P01_CONFIG_KEY,
     P02_SELECTED_KEY, P02_CONFIG_KEY, P03_SELECTED_KEY, P03_CONFIG_KEY, SL_AD_KEY,
-    COMPANY_PROFILE_KEY, EPF_NIC_DATA_KEY, EPF_OVERRIDES_KEY
+    COMPANY_PROFILE_KEY, EPF_NIC_DATA_KEY, EPF_OVERRIDES_KEY, ATTENDANCE_RULES_KEY
 ];
 
 function downloadSampleExcelTemplate() {
@@ -1586,6 +1785,7 @@ function updateSlAd(empId, value) {
 let poyaDates = [];
 
 function initPayrollApp() {
+    loadAttendanceRules();
     loadMasterProfiles();
     renderMasterProfilesTable();
     loadP01Data();
@@ -1706,18 +1906,23 @@ function minutesToRaw24Hour(totalMinutes) {
     return `${pad(hours)}:${pad(minutes)}:00`;
 }
 
+// Configurable Dynamic Adjustment Functions
 function getAdjInMinutes(rawMinutes) {
     if (rawMinutes === null) return null;
-    if (rawMinutes <= 450) return 450; 
-    let remainder = rawMinutes % 15;
-    return (remainder === 0) ? rawMinutes + 15 : rawMinutes + (15 - remainder);
+    let earliest = attendanceRules.earliestInMinutes;
+    let interval = attendanceRules.inRoundInterval || 15;
+
+    if (rawMinutes <= earliest) return earliest; 
+    let remainder = rawMinutes % interval;
+    return (remainder === 0) ? rawMinutes + interval : rawMinutes + (interval - remainder);
 }
 
 function adjustInTime(rawMinutes) { return minutesToFormattedTime(getAdjInMinutes(rawMinutes)); }
 
 function getAdjOutMinutes(rawMinutes) {
     if (rawMinutes === null) return null;
-    return rawMinutes - (rawMinutes % 15);
+    let interval = attendanceRules.outRoundInterval || 15;
+    return rawMinutes - (rawMinutes % interval);
 }
 
 function adjustOutTime(rawMinutes) { return minutesToFormattedTime(getAdjOutMinutes(rawMinutes)); }
@@ -1728,7 +1933,11 @@ function getWorkingMinutes(inMinutes, outMinutes) {
     if (adjIn === null || adjOut === null) return 0;
     let diffMins = adjOut - adjIn;
     if (diffMins <= 0) return 0;
-    if (diffMins > 240) diffMins -= 45; 
+
+    let threshold = attendanceRules.lunchThresholdMinutes || 240;
+    let deduction = attendanceRules.lunchDeductionMinutes || 45;
+
+    if (diffMins > threshold) diffMins -= deduction; 
     return diffMins;
 }
 
