@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     
-    <!-- SheetJS Library for reading & writing Excel files -->
+    <!-- SheetJS Library for reading Excel files -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
@@ -705,7 +705,7 @@
             <input type="password" id="authPassword" placeholder="••••••••">
         </div>
 
-        <!-- Additional Registration Fields -->
+        <!-- Additional Registration Fields (Visible ONLY in Sign Up) -->
         <div id="signupExtraFields" style="display:none;">
             <div class="auth-field">
                 <label>User Full Name</label>
@@ -1146,7 +1146,7 @@
         <div id="srcEmployeeDetailContainer" style="margin-top:15px;"></div>
     </div>
 
-    <!-- TAB 4: PAY SHEET (WITH FULL-PAGE ZERO-MARGIN PDF & EXCEL DOWNLOAD) -->
+    <!-- TAB 4: PAY SHEET (With Enhanced PDF Margin Fix, Word, and Excel Downloads) -->
     <div id="paySheet" class="tab-content">
         <h3 style="color:#0f172a; margin:15px 0 20px 0; font-size:19px; font-weight:800;">🧾 Pay Sheet</h3>
 
@@ -1154,8 +1154,9 @@
         <div class="filter-box">
             <label><strong>සේවකයා තෝරන්න:</strong></label>
             <select id="paySheetG1Select" style="min-width:250px;" onchange="renderPaySheetGroup1Selected()"></select>
-            <button class="btn-action" id="paySheetG1PdfBtn" style="background:#dc2626; color:white;" onclick="downloadPaySheetPDF(1)">📄 Full Page PDF Download</button>
-            <button class="btn-action" id="paySheetG1XlsxBtn" style="background:#059669; color:white;" onclick="downloadPaySheetExcel(1)">📊 Excel Pay Sheet Download</button>
+            <button class="btn-action" id="paySheetG1PdfBtn" style="background:#dc2626; color:white;" onclick="downloadPaySheetPDF(1)">📄 PDF Download (Full Page)</button>
+            <button class="btn-action" id="paySheetG1WordBtn" style="background:#2563eb; color:white;" onclick="downloadPaySheetWord(1)">📝 Word Download</button>
+            <button class="btn-action" id="paySheetG1ExcelBtn" style="background:#059669; color:white;" onclick="downloadPaySheetExcel(1)">📊 Excel Download</button>
         </div>
         <div id="paySheetGroup1Container" style="margin-top:15px;"></div>
 
@@ -1163,8 +1164,9 @@
         <div class="filter-box">
             <label><strong>සේවකයා තෝරන්න:</strong></label>
             <select id="paySheetG2Select" style="min-width:250px;" onchange="renderPaySheetGroup2Selected()"></select>
-            <button class="btn-action" id="paySheetG2PdfBtn" style="background:#dc2626; color:white;" onclick="downloadPaySheetPDF(2)">📄 Full Page PDF Download</button>
-            <button class="btn-action" id="paySheetG2XlsxBtn" style="background:#059669; color:white;" onclick="downloadPaySheetExcel(2)">📊 Excel Pay Sheet Download</button>
+            <button class="btn-action" id="paySheetG2PdfBtn" style="background:#dc2626; color:white;" onclick="downloadPaySheetPDF(2)">📄 PDF Download (Full Page)</button>
+            <button class="btn-action" id="paySheetG2WordBtn" style="background:#2563eb; color:white;" onclick="downloadPaySheetWord(2)">📝 Word Download</button>
+            <button class="btn-action" id="paySheetG2ExcelBtn" style="background:#059669; color:white;" onclick="downloadPaySheetExcel(2)">📊 Excel Download</button>
         </div>
         <div id="paySheetGroup2Container" style="margin-top:15px;"></div>
     </div>
@@ -1172,7 +1174,7 @@
     <!-- TAB 5: EPF / ETF REPORT -->
     <div id="epfEtfReportTab" class="tab-content">
         <div class="summary-card" style="background:linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); border-left:5px solid #3b82f6; color:#1e3a8a;">
-            <strong>🏛️ EPF / ETF Official Compliance Center:</strong> මෙම Report එක Group 1 සේවකයින්ගේ වැටුප් දත්ත මත පදනම්ව ස්වයංක්‍රීයව ජනනය වේ[cite: 1]. කිසිදු බාහිර අන්තර්ජාල script එකක් මත රඳා නොපවතින පරිදි, <strong>"🚀 Generate & Download Official Form C"</strong> බොත්තමෙන් නිල C-Form පෝරමය සෘජුවම බාගත (Direct Download) කරගත හැක[cite: 1].
+            <strong>🏛️ EPF / ETF Official Compliance Center:</strong> මෙම Report එක Group 1 සේවකයින්ගේ වැටුප් දත්ත මත පදනම්ව ස්වයංක්‍රීයව ජනනය වේ. කිසිදු බාහිර අන්තර්ජාල script එකක් මත රඳා නොපවතින පරිදි, <strong>"🚀 Generate & Download Official Form C"</strong> බොත්තමෙන් නිල C-Form පෝරමය සෘජුවම බාගත (Direct Download) කරගත හැක.
         </div>
 
         <div class="filter-box" style="justify-content: space-between;">
@@ -3685,18 +3687,16 @@ function buildPaySlipCardHtml(e, meta) {
 
 function buildPaySlipCardHtmlForPDF(e, meta) {
     return `
-    <div style="border:1.5px solid #000; border-radius:4px; padding:12px; max-width:600px; background:#fff; box-sizing:border-box;">
-        <div style="border-bottom:1.5px solid #000; padding-bottom:6px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-            <div style="font-weight:bold; font-size:13.5px; flex-grow:1; text-align:center; padding-left:35px;">
-                ${meta.companyName ? `${meta.companyName} — ` : ''}${meta.monthName || '-'} ${meta.year || ''}
-            </div>
+    <div style="border:1.5px solid #000; border-radius:4px; padding:12px 14px; max-width:600px; background:#fff; font-family:Arial, sans-serif; box-sizing:border-box;">
+        <div style="border-bottom:2px solid #000; padding-bottom:6px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-weight:bold; font-size:14px; flex-grow:1; text-align:center; padding-left:45px;">${meta.monthName || '-'} ${meta.year || ''}</div>
             <div style="font-weight:bold; font-size:12px; border:1px solid #000; padding:2px 6px; border-radius:3px; background:#fff; white-space:nowrap;">WD: ${e.workDays || 0}</div>
         </div>
-        <div style="margin-bottom:8px; font-size:12.5px;">
+        <div style="margin-bottom:8px; font-size:12px; font-weight:bold;">
             <strong>Employee:</strong> ${e.id} - ${e.name}
         </div>
-        <table style="width:100%; border-collapse:collapse; font-size:11.5px; line-height:1.5;">
-            <tr><td>Basic Salary</td><td style="text-align:right;">${formatAccounting(e.basicSalary)}</td></tr>
+        <table style="width:100%; border-collapse:collapse; font-size:11.5px; line-height:1.4;">
+            <tr><td>B S</td><td style="text-align:right; font-weight:bold;">${formatAccounting(e.basicSalary)}</td></tr>
             <tr><td>Special</td><td style="text-align:right;">${e.special !== '' ? e.special : '-'}</td></tr>
             <tr><td>OT</td><td style="text-align:right;">${formatAccounting(e.otAmount)}</td></tr>
             <tr><td>Sunday</td><td style="text-align:right;">${formatAccounting(e.sundayAmount)}</td></tr>
@@ -3705,10 +3705,10 @@ function buildPaySlipCardHtmlForPDF(e, meta) {
             <tr><td>P02</td><td style="text-align:right;">${formatAccounting(e.p02Amount)}</td></tr>
             <tr><td>P03</td><td style="text-align:right;">${formatAccounting(e.p03Amount)}</td></tr>
             <tr><td>SL Ad</td><td style="text-align:right;">${e.slAd !== '' ? e.slAd : '-'}</td></tr>
-            <tr><td style="color:#b91c1c;">No Pay</td><td style="text-align:right; color:#b91c1c;">- ${formatAccounting(e.noPayAmount)}</td></tr>
-            <tr><td style="color:#b91c1c;">Late</td><td style="text-align:right; color:#b91c1c;">- ${formatAccounting(e.lateAmount)}</td></tr>
+            <tr><td style="color:#000;">No Pay</td><td style="text-align:right; color:#000;">- ${formatAccounting(e.noPayAmount)}</td></tr>
+            <tr><td style="color:#000;">Late</td><td style="text-align:right; color:#000;">- ${formatAccounting(e.lateAmount)}</td></tr>
         </table>
-        <div style="display:flex; justify-content:space-between; border-top:1.5px solid #000; margin-top:8px; padding-top:6px; font-size:13.5px; font-weight:bold; color:#000;">
+        <div style="display:flex; justify-content:space-between; border-top:2px solid #000; margin-top:8px; padding-top:6px; font-size:13.5px; font-weight:bold; color:#000;">
             <span>Net Salary</span>
             <span>Rs ${formatAccounting(e.netSalary)}</span>
         </div>
@@ -3730,61 +3730,61 @@ function buildPaySlipGroup1Html(e, meta) {
 
     return `
     <div style="border:2px solid #000; max-width:650px; margin:0 auto; font-family: Arial, sans-serif; background:#fff; box-sizing:border-box;">
-        <div style="border-bottom:2px solid #000; padding:12px 10px 8px;">
-            <div style="text-align:center; font-size:18px; font-weight:bold;">${meta.companyName || 'Company Name'}</div>
-            <div style="text-align:center; font-size:12px;">${meta.companyAddress || ''}${meta.companyAddress && meta.companyPhone ? ' / ' : ''}${meta.companyPhone || ''}</div>
-            <div style="text-align:center; font-weight:bold; margin-top:6px;">${e.name}</div>
+        <div style="border-bottom:2px solid #000; padding:10px 8px 6px;">
+            <div style="text-align:center; font-size:17px; font-weight:bold;">${meta.companyName || 'Company Name'}</div>
+            <div style="text-align:center; font-size:11.5px;">${meta.companyAddress || ''}${meta.companyAddress && meta.companyPhone ? ' / ' : ''}${meta.companyPhone || ''}</div>
+            <div style="text-align:center; font-weight:bold; margin-top:4px;">${e.name}</div>
             <div style="text-align:center; font-weight:bold;">${(meta.monthName || '-') + ' ' + (meta.year || '')}</div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; padding:0 5px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; padding:0 4px;">
                 <div style="width:60px;"></div>
-                <div style="font-weight:bold; font-size:14px; text-align:center;">${e.id}</div>
-                <div style="font-weight:bold; font-size:13px; border:1.5px solid #000; padding:2px 8px; border-radius:3px;">WD: ${e.workDays || 0}</div>
+                <div style="font-weight:bold; font-size:13.5px; text-align:center;">${e.id}</div>
+                <div style="font-weight:bold; font-size:12.5px; border:1.5px solid #000; padding:2px 8px; border-radius:3px;">WD: ${e.workDays || 0}</div>
             </div>
         </div>
-        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+        <table style="width:100%; border-collapse:collapse; font-size:12px; line-height:1.35;">
             <tr>
-                <td style="padding:6px 10px 4px;"></td>
-                <td style="padding:6px 10px 4px;"></td>
-                <td style="padding:6px 10px 4px; text-align:right; font-weight:bold; border-bottom:1px solid #000;">Rs.</td>
+                <td style="padding:4px 8px 2px;"></td>
+                <td style="padding:4px 8px 2px;"></td>
+                <td style="padding:4px 8px 2px; text-align:right; font-weight:bold; border-bottom:1px solid #000;">Rs.</td>
             </tr>
-            <tr><td style="padding:3px 10px; font-weight:bold;">BASIC SALARY</td><td></td><td style="padding:3px 10px; text-align:right;">${r(e.basicSalary)}</td></tr>
-            <tr><td style="padding:3px 10px;">Special</td><td></td><td style="padding:3px 10px; text-align:right;">${r(specialNum)}</td></tr>
-            <tr><td style="padding:3px 10px;">OT</td><td></td><td style="padding:3px 10px; text-align:right;">${r(e.otAmount)}</td></tr>
-            <tr><td style="padding:3px 10px;">ALLOWANCE</td><td></td><td style="padding:3px 10px; text-align:right;">${r(allowance)}</td></tr>
-            <tr><td style="padding:3px 10px;">NO PAY DEDUCTIONS</td><td></td><td style="padding:3px 10px; text-align:right;">${r(e.noPayAmount)}</td></tr>
-            <tr><td style="padding:3px 10px;">Sunday</td><td></td><td style="padding:3px 10px; text-align:right;">${r(e.sundayAmount)}</td></tr>
-            <tr><td style="padding:3px 10px;">Poya Day</td><td></td><td style="padding:3px 10px; text-align:right;">${r(e.poyaAmount)}</td></tr>
-            <tr><td style="padding:3px 10px;">P01</td><td></td><td style="padding:3px 10px; text-align:right;">${r(e.p01Amount)}</td></tr>
-            <tr><td style="padding:3px 10px;">P02</td><td></td><td style="padding:3px 10px; text-align:right;">${r(e.p02Amount)}</td></tr>
-            <tr><td style="padding:3px 10px;">P03</td><td></td><td style="padding:3px 10px; text-align:right;">${r(e.p03Amount)}</td></tr>
+            <tr><td style="padding:2px 8px; font-weight:bold;">BASIC SALARY</td><td></td><td style="padding:2px 8px; text-align:right;">${r(e.basicSalary)}</td></tr>
+            <tr><td style="padding:2px 8px;">Special</td><td></td><td style="padding:2px 8px; text-align:right;">${r(specialNum)}</td></tr>
+            <tr><td style="padding:2px 8px;">OT</td><td></td><td style="padding:2px 8px; text-align:right;">${r(e.otAmount)}</td></tr>
+            <tr><td style="padding:2px 8px;">ALLOWANCE</td><td></td><td style="padding:2px 8px; text-align:right;">${r(allowance)}</td></tr>
+            <tr><td style="padding:2px 8px;">NO PAY DEDUCTIONS</td><td></td><td style="padding:2px 8px; text-align:right;">${r(e.noPayAmount)}</td></tr>
+            <tr><td style="padding:2px 8px;">Sunday</td><td></td><td style="padding:2px 8px; text-align:right;">${r(e.sundayAmount)}</td></tr>
+            <tr><td style="padding:2px 8px;">Poya Day</td><td></td><td style="padding:2px 8px; text-align:right;">${r(e.poyaAmount)}</td></tr>
+            <tr><td style="padding:2px 8px;">P01</td><td></td><td style="padding:2px 8px; text-align:right;">${r(e.p01Amount)}</td></tr>
+            <tr><td style="padding:2px 8px;">P02</td><td></td><td style="padding:2px 8px; text-align:right;">${r(e.p02Amount)}</td></tr>
+            <tr><td style="padding:2px 8px;">P03</td><td></td><td style="padding:2px 8px; text-align:right;">${r(e.p03Amount)}</td></tr>
             <tr>
-                <td style="padding:5px 10px; font-weight:bold; border-top:1px solid #000;">TOTAL GROSS SALARY</td>
+                <td style="padding:4px 8px; font-weight:bold; border-top:1px solid #000;">TOTAL GROSS SALARY</td>
                 <td style="border-top:1px solid #000;"></td>
-                <td style="padding:5px 10px; text-align:right; font-weight:bold; border-top:1px solid #000;">${r(totalGross)}</td>
+                <td style="padding:4px 8px; text-align:right; font-weight:bold; border-top:1px solid #000;">${r(totalGross)}</td>
             </tr>
-            <tr><td colspan="3" style="padding:8px;"></td></tr>
-            <tr><td style="padding:3px 10px; font-weight:bold; text-decoration:underline;" colspan="3">Deductions</td></tr>
-            <tr><td style="padding:3px 10px;">EPF- 8%</td><td style="padding:3px 10px; text-align:right;">${r(e.epf8)}</td><td></td></tr>
-            <tr><td style="padding:3px 10px;">SL Ad</td><td style="padding:3px 10px; text-align:right;">${formatSignedNumber(slAdDeductionRow)}</td><td></td></tr>
-            <tr><td style="padding:3px 10px;">No Pay</td><td style="padding:3px 10px; text-align:right;">${r(e.noPayAmount)}</td><td></td></tr>
-            <tr><td style="padding:3px 10px;">Late</td><td style="padding:3px 10px; text-align:right;">${r(e.lateAmount)}</td><td></td></tr>
+            <tr><td colspan="3" style="padding:4px;"></td></tr>
+            <tr><td style="padding:2px 8px; font-weight:bold; text-decoration:underline;" colspan="3">Deductions</td></tr>
+            <tr><td style="padding:2px 8px;">EPF- 8%</td><td style="padding:2px 8px; text-align:right;">${r(e.epf8)}</td><td></td></tr>
+            <tr><td style="padding:2px 8px;">SL Ad</td><td style="padding:2px 8px; text-align:right;">${formatSignedNumber(slAdDeductionRow)}</td><td></td></tr>
+            <tr><td style="padding:2px 8px;">No Pay</td><td style="padding:2px 8px; text-align:right;">${r(e.noPayAmount)}</td><td></td></tr>
+            <tr><td style="padding:2px 8px;">Late</td><td style="padding:2px 8px; text-align:right;">${r(e.lateAmount)}</td><td></td></tr>
             <tr>
-                <td style="padding:5px 10px; font-weight:bold; border-top:1px solid #000;">Total Deduction</td>
+                <td style="padding:4px 8px; font-weight:bold; border-top:1px solid #000;">Total Deduction</td>
                 <td style="border-top:1px solid #000;"></td>
-                <td style="padding:5px 10px; text-align:right; font-weight:bold; border-top:1px solid #000;">${r(totalDeduction)}</td>
+                <td style="padding:4px 8px; text-align:right; font-weight:bold; border-top:1px solid #000;">${r(totalDeduction)}</td>
             </tr>
-            <tr><td colspan="3" style="padding:10px;"></td></tr>
+            <tr><td colspan="3" style="padding:6px;"></td></tr>
             <tr>
-                <td style="padding:6px 10px; font-weight:bold; font-size:15px; border-top:3px double #000;">TOTAL NET SALARY</td>
+                <td style="padding:5px 8px; font-weight:bold; font-size:14px; border-top:3px double #000;">TOTAL NET SALARY</td>
                 <td style="border-top:3px double #000;"></td>
-                <td style="padding:6px 10px; text-align:right; font-weight:bold; font-size:15px; border-top:3px double #000;">${r(e.netSalary)}</td>
+                <td style="padding:5px 8px; text-align:right; font-weight:bold; font-size:14px; border-top:3px double #000;">${r(e.netSalary)}</td>
             </tr>
-            <tr><td colspan="3" style="padding:14px;"></td></tr>
-            <tr><td style="padding:3px 10px; font-weight:bold; text-decoration:underline; border-top:1px solid #000;" colspan="3">EMPLOYER'S CONTRIBUTION</td></tr>
             <tr><td colspan="3" style="padding:8px;"></td></tr>
-            <tr><td style="padding:3px 10px; font-weight:bold;">EPF -12%</td><td></td><td style="padding:3px 10px; text-align:right;">${r(e.epf12)}</td></tr>
-            <tr><td colspan="3" style="padding:8px;"></td></tr>
-            <tr><td style="padding:3px 10px 12px; font-weight:bold;">ETF - 3%</td><td></td><td style="padding:3px 10px 12px; text-align:right;">${r(e.etf3)}</td></tr>
+            <tr><td style="padding:2px 8px; font-weight:bold; text-decoration:underline; border-top:1px solid #000;" colspan="3">EMPLOYER'S CONTRIBUTION</td></tr>
+            <tr><td colspan="3" style="padding:4px;"></td></tr>
+            <tr><td style="padding:2px 8px; font-weight:bold;">EPF -12%</td><td></td><td style="padding:2px 8px; text-align:right;">${r(e.epf12)}</td></tr>
+            <tr><td colspan="3" style="padding:4px;"></td></tr>
+            <tr><td style="padding:2px 8px 8px; font-weight:bold;">ETF - 3%</td><td></td><td style="padding:2px 8px 8px; text-align:right;">${r(e.etf3)}</td></tr>
         </table>
     </div>`;
 }
@@ -3918,12 +3918,12 @@ async function renderPaySlipToCanvas(htmlString, widthPx) {
     document.body.appendChild(staging);
 
     await new Promise(resolve => setTimeout(resolve, 50));
-    let canvas = await html2canvas(staging, { scale: 2.5, backgroundColor: '#ffffff', useCORS: true });
+    let canvas = await html2canvas(staging, { scale: 2, backgroundColor: '#ffffff' });
     document.body.removeChild(staging);
     return canvas;
 }
 
-// FULL PAGE 0.5mm ULTRA-MINIMAL MARGIN PDF DOWNLOAD
+// ----------------- FULL PAGE A4 PDF DOWNLOAD (TIGHT 5mm / 0.5cm MARGINS) -----------------
 async function downloadPaySheetPDF(groupNum) {
     let selectId = groupNum === 1 ? 'paySheetG1Select' : 'paySheetG2Select';
     let btnId = groupNum === 1 ? 'paySheetG1PdfBtn' : 'paySheetG2PdfBtn';
@@ -3948,78 +3948,59 @@ async function downloadPaySheetPDF(groupNum) {
     }
 
     let meta = getPaySheetMeta();
+    let buildFn = groupNum === 1 ? buildPaySlipGroup1Html : buildPaySlipCardHtmlForPDF;
+    
+    // Per page exact 4 slips (2x2 Grid) for full A4 coverage
+    let perPage = 4;
+    let columns = 2;
+    let rows = 2;
+
     let originalBtnText = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '⏳ Generating Full-Page PDF...';
+    btn.innerHTML = '⏳ Generating PDF...';
 
     try {
         let { jsPDF } = window.jspdf;
         let doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         let pageWidth = 210, pageHeight = 297;
-        let margin = 0.5; // 0.5 mm Ultra Minimal Margin for Full-page Print!
+        
+        // 5mm Margins (~0.5cm) for full print coverage
+        let marginX = 5, marginY = 5, gap = 4;
 
         if (val === 'ALL') {
-            if (groupNum === 1) {
-                // Group 1: 1 Full Detailed Slip Per Page for absolute clarity
-                for (let i = 0; i < data.length; i++) {
-                    let e = data[i];
-                    let canvas = await renderPaySlipToCanvas(buildPaySlipGroup1Html(e, meta), 750);
-                    let imgData = canvas.toDataURL('image/png');
+            let cellWidth = (pageWidth - (marginX * 2) - gap) / columns;   // ~98mm
+            let cellHeight = (pageHeight - (marginY * 2) - gap) / rows;   // ~141.5mm
 
-                    if (i !== 0) doc.addPage();
+            for (let i = 0; i < data.length; i++) {
+                let e = data[i];
+                let canvas = await renderPaySlipToCanvas(buildFn(e, meta), 650);
+                let imgData = canvas.toDataURL('image/png');
 
-                    let availWidth = pageWidth - (margin * 2);
-                    let availHeight = pageHeight - (margin * 2);
-                    let imgRatio = canvas.width / canvas.height;
-                    let drawWidth = availWidth;
-                    let drawHeight = availWidth / imgRatio;
+                let posInPage = i % perPage;
+                if (posInPage === 0 && i !== 0) doc.addPage();
 
-                    if (drawHeight > availHeight) {
-                        drawHeight = availHeight;
-                        drawWidth = availHeight * imgRatio;
-                    }
-                    let x = margin + (availWidth - drawWidth) / 2;
-                    let y = margin + (availHeight - drawHeight) / 2;
+                let col = posInPage % columns;
+                let row = Math.floor(posInPage / columns);
+                let x = marginX + col * (cellWidth + gap);
+                let y = marginY + row * (cellHeight + gap);
 
-                    doc.addImage(imgData, 'PNG', x, y, drawWidth, drawHeight);
+                let imgRatio = canvas.width / canvas.height;
+                let cellRatio = cellWidth / cellHeight;
+                let drawWidth, drawHeight;
+
+                if (imgRatio > cellRatio) {
+                    drawWidth = cellWidth;
+                    drawHeight = cellWidth / imgRatio;
+                } else {
+                    drawHeight = cellHeight;
+                    drawWidth = cellHeight * imgRatio;
                 }
-            } else {
-                // Group 2: Compact 4 Slips Per Page (2x2 Grid filling the whole A4 page)
-                let perPage = 4;
-                let columns = 2;
-                let rows = 2;
-                let cellWidth = (pageWidth - (margin * 3)) / columns;
-                let cellHeight = (pageHeight - (margin * 3)) / rows;
+                
+                // Centering inside each quadrant
+                let offsetX = x + (cellWidth - drawWidth) / 2;
+                let offsetY = y + (cellHeight - drawHeight) / 2;
 
-                for (let i = 0; i < data.length; i++) {
-                    let e = data[i];
-                    let canvas = await renderPaySlipToCanvas(buildPaySlipCardHtmlForPDF(e, meta), 600);
-                    let imgData = canvas.toDataURL('image/png');
-
-                    let posInPage = i % perPage;
-                    if (posInPage === 0 && i !== 0) doc.addPage();
-
-                    let col = posInPage % columns;
-                    let row = Math.floor(posInPage / columns);
-                    let cellX = margin + col * (cellWidth + margin);
-                    let cellY = margin + row * (cellHeight + margin);
-
-                    let imgRatio = canvas.width / canvas.height;
-                    let cellRatio = cellWidth / cellHeight;
-                    let drawWidth, drawHeight;
-
-                    if (imgRatio > cellRatio) {
-                        drawWidth = cellWidth;
-                        drawHeight = cellWidth / imgRatio;
-                    } else {
-                        drawHeight = cellHeight;
-                        drawWidth = cellHeight * imgRatio;
-                    }
-                    let x = cellX + (cellWidth - drawWidth) / 2;
-                    let y = cellY + (cellHeight - drawHeight) / 2;
-
-                    doc.addImage(imgData, 'PNG', x, y, drawWidth, drawHeight);
-                }
+                doc.addImage(imgData, 'PNG', offsetX, offsetY, drawWidth, drawHeight);
             }
 
             doc.save(`Group_${groupNum}_PaySheet_FullPage_All_Employees.pdf`);
@@ -4027,12 +4008,11 @@ async function downloadPaySheetPDF(groupNum) {
             let e = data.find(d => String(d.id) === String(val));
             if (!e) { alert('සේවකයා හමු නොවුනි.'); return; }
 
-            let buildFn = groupNum === 1 ? buildPaySlipGroup1Html : buildPaySlipCardHtmlForPDF;
-            let canvas = await renderPaySlipToCanvas(buildFn(e, meta), 750);
+            let canvas = await renderPaySlipToCanvas(buildFn(e, meta), 650);
             let imgData = canvas.toDataURL('image/png');
 
-            let availWidth = pageWidth - (margin * 2);
-            let availHeight = pageHeight - (margin * 2);
+            let availWidth = pageWidth - (marginX * 2);
+            let availHeight = pageHeight - (marginY * 2);
             let imgRatio = canvas.width / canvas.height;
             let drawWidth = availWidth;
             let drawHeight = availWidth / imgRatio;
@@ -4041,8 +4021,8 @@ async function downloadPaySheetPDF(groupNum) {
                 drawHeight = availHeight;
                 drawWidth = availHeight * imgRatio;
             }
-            let x = margin + (availWidth - drawWidth) / 2;
-            let y = margin + (availHeight - drawHeight) / 2;
+            let x = marginX + (availWidth - drawWidth) / 2;
+            let y = marginY + (availHeight - drawHeight) / 2;
 
             doc.addImage(imgData, 'PNG', x, y, drawWidth, drawHeight);
             doc.save(`Group_${groupNum}_PaySheet_${e.id}_${e.name}.pdf`);
@@ -4055,10 +4035,16 @@ async function downloadPaySheetPDF(groupNum) {
     }
 }
 
-// EXCEL PAY SHEET DOWNLOAD FUNCTION (WORD / EXCEL FORMAT EDITABLE)
-function downloadPaySheetExcel(groupNum) {
+// ----------------- WORD (.DOC) DOWNLOAD FEATURE -----------------
+function downloadPaySheetWord(groupNum) {
     let selectId = groupNum === 1 ? 'paySheetG1Select' : 'paySheetG2Select';
-    let val = document.getElementById(selectId).value.trim();
+    let select = document.getElementById(selectId);
+    let val = select.value.trim();
+
+    if (!val) {
+        alert('කරුණාකර පළමුව සේවකයෙක් හෝ "සියලුම සේවකයන්" තෝරන්න.');
+        return;
+    }
 
     let data = getSalaryReportData().filter(d => d.group === groupNum).sort((a, b) => {
         let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
@@ -4066,9 +4052,84 @@ function downloadPaySheetExcel(groupNum) {
         return String(a.id).localeCompare(String(b.id));
     });
 
-    if (val && val !== 'ALL') {
-        data = data.filter(e => String(e.id) === String(val));
+    if (data.length === 0) {
+        alert(`Group ${groupNum} සඳහා සේවකයින් නොමැත.`);
+        return;
     }
+
+    let meta = getPaySheetMeta();
+    let targetEmployees = (val === 'ALL') ? data : data.filter(d => String(d.id) === String(val));
+    let buildFn = groupNum === 1 ? buildPaySlipGroup1Html : buildPaySlipCardHtml;
+
+    let slipsHtml = '';
+    targetEmployees.forEach((emp, idx) => {
+        slipsHtml += `
+            <div style="margin-bottom: 25px; page-break-inside: avoid;">
+                ${buildFn(emp, meta)}
+            </div>
+            ${(idx + 1) % 4 === 0 ? '<br style="page-break-after:always;">' : ''}
+        `;
+    });
+
+    let wordContent = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+            <meta charset='utf-8'>
+            <title>Pay Sheet</title>
+            <!--[if gte mso 9]>
+            <xml>
+                <w:WordDocument>
+                    <w:View>Print</w:View>
+                    <w:Zoom>100</w:Zoom>
+                    <w:DoNotOptimizeForBrowser/>
+                </w:WordDocument>
+            </xml>
+            <![endif]-->
+            <style>
+                @page {
+                    size: A4 portrait;
+                    margin: 0.5in 0.5in 0.5in 0.5in;
+                    mso-header-margin: 0.2in;
+                    mso-footer-margin: 0.2in;
+                }
+                body {
+                    font-family: Arial, sans-serif;
+                }
+            </style>
+        </head>
+        <body>
+            ${slipsHtml}
+        </body>
+        </html>
+    `;
+
+    let blob = new Blob(['\ufeff', wordContent], { type: 'application/msword' });
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = `Group_${groupNum}_PaySheet_${val === 'ALL' ? 'All_Employees' : val}.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// ----------------- EXCEL (.XLS) PAY SHEET DOWNLOAD FEATURE -----------------
+function downloadPaySheetExcel(groupNum) {
+    let selectId = groupNum === 1 ? 'paySheetG1Select' : 'paySheetG2Select';
+    let select = document.getElementById(selectId);
+    let val = select.value.trim();
+
+    if (!val) {
+        alert('කරුණාකර පළමුව සේවකයෙක් හෝ "සියලුම සේවකයන්" තෝරන්න.');
+        return;
+    }
+
+    let data = getSalaryReportData().filter(d => d.group === groupNum).sort((a, b) => {
+        let numA = parseInt(a.id, 10), numB = parseInt(b.id, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a.id).localeCompare(String(b.id));
+    });
 
     if (data.length === 0) {
         alert(`Group ${groupNum} සඳහා සේවකයින් නොමැත.`);
@@ -4076,57 +4137,44 @@ function downloadPaySheetExcel(groupNum) {
     }
 
     let meta = getPaySheetMeta();
-    let rym = getReportYearMonth();
+    let targetEmployees = (val === 'ALL') ? data : data.filter(d => String(d.id) === String(val));
 
-    let aoa = [
-        [meta.companyName || 'Company Name'],
-        [`PAY SHEET — ${rym.monthName || '-'} ${rym.year || ''}`],
-        [`Group: ${groupNum}`],
-        []
-    ];
+    let excelRows = [];
+    excelRows.push([meta.companyName || 'Payroll System']);
+    excelRows.push([`PAY SHEET — ${meta.monthName || '-'} ${meta.year || ''} (Group ${groupNum})`]);
+    excelRows.push([]);
 
-    if (groupNum === 1) {
-        aoa.push([
-            "FP ID", "Employee Name", "Department", "Work Days (WD)", "Basic Salary",
-            "Special", "OT Amount", "Sunday", "Poya Day", "P01", "P02", "P03",
-            "Gross Salary", "EPF 8%", "SL Ad", "No Pay Deductions", "Late Deductions",
-            "Total Deductions", "NET SALARY", "Employer EPF 12%", "Employer ETF 3%"
-        ]);
+    targetEmployees.forEach((e) => {
+        excelRows.push(['FP ID:', e.id, 'Name:', e.name, 'Department:', e.dept, 'Worked Days (WD):', e.workDays || 0]);
+        excelRows.push(['Item Description', 'Earnings (Rs.)', 'Deductions (Rs.)', 'Notes']);
+        excelRows.push(['Basic Salary', e.basicSalary, '', '']);
+        excelRows.push(['Special', e.special !== '' ? e.special : 0, '', '']);
+        excelRows.push(['OT Amount', e.otAmount, '', '']);
+        excelRows.push(['Sunday Amount', e.sundayAmount, '', '']);
+        excelRows.push(['Poya Amount', e.poyaAmount, '', '']);
+        excelRows.push(['P01', e.p01Amount, '', '']);
+        excelRows.push(['P02', e.p02Amount, '', '']);
+        excelRows.push(['P03', e.p03Amount, '', '']);
+        excelRows.push(['No Pay', '', e.noPayAmount, '']);
+        excelRows.push(['Late', '', e.lateAmount, '']);
+        if (groupNum === 1) {
+            excelRows.push(['EPF 8%', '', e.epf8, '']);
+        }
+        excelRows.push(['SL Ad', e.slAd !== '' ? e.slAd : 0, '', '']);
+        excelRows.push(['NET SALARY', e.netSalary, '', '']);
+        if (groupNum === 1) {
+            excelRows.push(['Employer EPF 12%', e.epf12, '', '']);
+            excelRows.push(['Employer ETF 3%', e.etf3, '', '']);
+        }
+        excelRows.push([]);
+        excelRows.push(['------------------------------------------------------------------------------------------------']);
+        excelRows.push([]);
+    });
 
-        data.forEach(e => {
-            let allowance = 0;
-            let specialNum = parseFloat(e.special) || 0;
-            let totalGross = e.basicSalary + specialNum + e.otAmount + allowance
-                + e.sundayAmount + e.poyaAmount + e.p01Amount + e.p02Amount + e.p03Amount;
-            let totalDeduction = totalGross - e.netSalary;
-
-            aoa.push([
-                e.id, e.name, e.dept, e.workDays || 0, e.basicSalary,
-                specialNum, e.otAmount, e.sundayAmount, e.poyaAmount, e.p01Amount, e.p02Amount, e.p03Amount,
-                totalGross, e.epf8, parseFloat(e.slAd) || 0, e.noPayAmount, e.lateAmount,
-                totalDeduction, e.netSalary, e.epf12, e.etf3
-            ]);
-        });
-    } else {
-        aoa.push([
-            "FP ID", "Employee Name", "Department", "Work Days (WD)", "Basic Salary",
-            "Special", "OT Amount", "Sunday", "Poya Day", "P01", "P02", "P03",
-            "SL Ad", "No Pay", "Late", "NET SALARY"
-        ]);
-
-        data.forEach(e => {
-            aoa.push([
-                e.id, e.name, e.dept, e.workDays || 0, e.basicSalary,
-                parseFloat(e.special) || 0, e.otAmount, e.sundayAmount, e.poyaAmount, e.p01Amount, e.p02Amount, e.p03Amount,
-                parseFloat(e.slAd) || 0, e.noPayAmount, e.lateAmount, e.netSalary
-            ]);
-        });
-    }
-
-    let ws = XLSX.utils.aoa_to_sheet(aoa);
+    let ws = XLSX.utils.aoa_to_sheet(excelRows);
     let wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, `Group_${groupNum}_PaySheet`);
-    XLSX.writeFile(wb, `Group_${groupNum}_PaySheet_${rym.monthName || 'Month'}_${rym.year || ''}.xlsx`);
+    XLSX.writeFile(wb, `Group_${groupNum}_PaySheet_${val === 'ALL' ? 'All_Employees' : val}.xlsx`);
 }
 
 function updateEpfNic(empId, val) {
