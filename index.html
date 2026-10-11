@@ -618,7 +618,7 @@
 </head>
 <body>
 
-<!-- Firebase Login & Sign-up Overlay Modal -->
+<!-- Firebase Login Modal -->
 <div id="authOverlay">
     <div class="auth-card">
         <h3>🔐 Payroll System Access</h3>
@@ -637,7 +637,6 @@
             <input type="password" id="authPassword" placeholder="••••••••">
         </div>
 
-        <!-- Additional Registration Fields -->
         <div id="signupExtraFields" style="display:none;">
             <div class="auth-field">
                 <label>User Full Name</label>
@@ -667,14 +666,14 @@
     </div>
 </div>
 
-<!-- Adjusted Attendance Rules Configuration Modal (Dialog Box) -->
+<!-- Adjusted Attendance Rules Configuration Modal -->
 <div id="rulesModalOverlay" style="display: none;">
     <div class="rules-modal-card">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:10px; margin-bottom:14px;">
             <h3 style="margin:0;">⚙️ Attendance Adjustment Rules</h3>
             <button type="button" onclick="closeRulesModal()" style="background:none; border:none; font-size:18px; cursor:pointer; color:#64748b; font-weight:bold;">✕</button>
         </div>
-        <p style="margin-bottom:14px;">පැමිණීමේ වේලාවන් සහ කෑම පැය ගණනය කිරීමේ කොන්දේසි පහතින් අවශ්‍ය පරිදි වෙනස් කර Save කළ හැක (Default අගයන් සුරක්ෂිතව පවතී).</p>
+        <p style="margin-bottom:14px;">පැමිණීමේ වේලාවන් සහ කෑම පැය ගණනය කිරීමේ කොන්දේසි පහතින් අවශ්‍ය පරිදි වෙනස් කර Save කළ හැක.</p>
         
         <div class="rule-form-group">
             <label>1. මුල්ම ආරම්භක වේලාව (Earliest Start Time - Default: 07:30 AM)</label>
@@ -710,7 +709,7 @@
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; gap:10px; flex-wrap:wrap;">
-            <button type="button" class="btn-action" style="background:#64748b; color:white;" onclick="resetAttendanceRulesToDefault()">🔄 Restore Defaults (යථා තත්ත්වයට)</button>
+            <button type="button" class="btn-action" style="background:#64748b; color:white;" onclick="resetAttendanceRulesToDefault()">🔄 Restore Defaults</button>
             <div style="display:flex; gap:10px;">
                 <button type="button" class="btn-action" style="background:#e2e8f0; color:#334155;" onclick="closeRulesModal()">Cancel</button>
                 <button type="button" class="btn-action btn-save" onclick="saveAttendanceRules()">💾 Save & Apply Rules</button>
@@ -727,7 +726,7 @@
         </div>
     </div>
 
-    <!-- Modern System Bar with User Status and Log Out -->
+    <!-- System Bar -->
     <div class="system-bar">
         <div style="font-weight:700; font-size:13.5px; color:#1e293b; display:flex; align-items:center; gap:8px;">
             <span style="font-size:16px;">🔐</span> <span>System Backup & Security Vault</span>
@@ -915,7 +914,7 @@
 
             <div id="manualEntryTab" class="tab-content">
                 <div class="summary-card" style="background:linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border-left:5px solid var(--success); color:#065f46;">
-                    <strong>✍️ Manually Add / Edit Group 2 Employee:</strong> Fingerprint සටහන් නොවන සේවකයින්ගේ විස්තර එක් කරන්න. In/Out Time Drop-down එකෙන් පැය සහ මිනිත්තු තෝරන්න. In Time සහ Out Time දෙකම ඇතුළත් කළ පසු පේළිය Light Green පැහැයට හැරේ.
+                    <strong>✍️ Manually Add / Edit Group 2 Employee:</strong> Fingerprint සටහන් නොවන සේවකයින්ගේ විස්තර එක් කරන්න. In/Out Time Drop-down එකෙන් පැය සහ මිනිත්තු තෝරන්න.
                 </div>
 
                 <div class="filter-box" style="background:#ffffff; border:1px solid var(--border); box-shadow:var(--shadow-xs); gap:16px; align-items:flex-end;">
@@ -1085,7 +1084,7 @@
         <div class="filter-box">
             <label><strong>සේවකයා තෝරන්න:</strong></label>
             <select id="paySheetG1Select" style="min-width:250px;" onchange="renderPaySheetGroup1Selected()"></select>
-            <button class="btn-action" id="paySheetG1PdfBtn" style="background:#dc2626; color:white;" onclick="downloadPaySheetPDF(1)">📄 PDF Download (Full Page)</button>
+            <button class="btn-action" id="paySheetG1PdfBtn" style="background:#dc2626; color:white;" onclick="downloadPaySheetPDF(1)">📄 PDF Download (Full Page 4 Slips)</button>
             <button class="btn-action" id="paySheetG1WordBtn" style="background:#2563eb; color:white;" onclick="downloadPaySheetWord(1)">📝 Word Download</button>
             <button class="btn-action" id="paySheetG1ExcelBtn" style="background:#059669; color:white;" onclick="downloadPaySheetExcel(1)">📊 Excel Download</button>
         </div>
@@ -1095,7 +1094,7 @@
         <div class="filter-box">
             <label><strong>සේවකයා තෝරන්න:</strong></label>
             <select id="paySheetG2Select" style="min-width:250px;" onchange="renderPaySheetGroup2Selected()"></select>
-            <button class="btn-action" id="paySheetG2PdfBtn" style="background:#dc2626; color:white;" onclick="downloadPaySheetPDF(2)">📄 PDF Download (Full Page)</button>
+            <button class="btn-action" id="paySheetG2PdfBtn" style="background:#dc2626; color:white;" onclick="downloadPaySheetPDF(2)">📄 PDF Download (Full Page 6 Slips)</button>
             <button class="btn-action" id="paySheetG2WordBtn" style="background:#2563eb; color:white;" onclick="downloadPaySheetWord(2)">📝 Word Download</button>
             <button class="btn-action" id="paySheetG2ExcelBtn" style="background:#059669; color:white;" onclick="downloadPaySheetExcel(2)">📊 Excel Download</button>
         </div>
@@ -2033,7 +2032,7 @@ function renderMasterProfilesTable() {
     tbodyG2.innerHTML = "";
 
     let sortedIds = Object.keys(masterProfiles).sort((a, b) => {
-        let numA = parseInt(a, 10), numB = parseInt(b, 10);
+        let numA = parseInt(a, 10), numB = parseInt(b.id, 10);
         if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
         return String(a.id).localeCompare(String(b.id));
     });
@@ -3575,23 +3574,16 @@ function formatSignedNumber(num) {
     return (num < 0 ? '-' : '') + Math.abs(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// Group 2 Web Card HTML
+// Group 2 Web Card HTML (No Company Info, No Name)
 function buildPaySlipCardHtml(e, meta) {
     return `
     <div style="border:1px solid #cbd5e1; border-radius:var(--radius-lg); padding:20px; margin-bottom:20px; max-width:600px; background:#fff; box-shadow:var(--shadow-sm);">
-        <div style="border-bottom:2px solid var(--primary); padding-bottom:10px; margin-bottom:12px;">
-            <div style="text-align:center; font-size:18px; font-weight:bold; color:var(--primary);">${meta.companyName || 'Company Name'}</div>
-            ${meta.companyAddress ? `<div style="text-align:center; font-size:12px; color:var(--text-muted);">${meta.companyAddress}</div>` : ''}
-            ${meta.companyPhone ? `<div style="text-align:center; font-size:12px; color:var(--text-muted);">Tel: ${meta.companyPhone}</div>` : ''}
-            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:8px;">
-                <div style="width:60px;"></div>
-                <div style="font-weight:bold; text-align:center;">PAY SHEET — ${meta.monthName || '-'} ${meta.year || ''}</div>
-                <div style="text-align:right; font-weight:bold; font-size:13px; color:#1e293b; background:#f1f5f9; padding:2px 8px; border-radius:4px; border:1px solid #cbd5e1;">WD: ${e.workDays || 0}</div>
-            </div>
+        <div style="border-bottom:2px solid var(--primary); padding-bottom:10px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-weight:bold; font-size:16px; color:#1e293b;">${meta.monthName || '-'} ${meta.year || ''}</div>
+            <div style="text-align:right; font-weight:bold; font-size:13px; color:#1e293b; background:#f1f5f9; padding:2px 8px; border-radius:4px; border:1px solid #cbd5e1;">WD: ${e.workDays || 0}</div>
         </div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:14px;">
-            <div><strong>Employee:</strong> ${e.id}</div>
-            <div><strong>Dept:</strong> ${e.dept}</div>
+        <div style="margin-bottom:10px; font-size:14px;">
+            <strong>Employee:</strong> ${e.id}
         </div>
         <table style="width:100%; border-collapse:collapse; font-size:13px;">
             <tr><td>B S</td><td style="text-align:right;">${formatAccounting(e.basicSalary)}</td></tr>
@@ -3613,31 +3605,31 @@ function buildPaySlipCardHtml(e, meta) {
     </div>`;
 }
 
-// Group 2 Exact Condition: NO Name, Shows Employee ID only, Shows WD, Uses 'B S'
+// Group 2 Exact PDF Template: 6 Slips/Page Optimized (Clear large text, NO Name, Employee ID only, 'B S')
 function buildPaySlipCardHtmlForPDF(e, meta) {
     return `
-    <div style="border:1.5px solid #000; border-radius:4px; padding:12px 14px; max-width:600px; background:#fff; font-family:Arial, sans-serif; box-sizing:border-box;">
+    <div style="border:2px solid #000; border-radius:4px; padding:12px 14px; max-width:650px; background:#fff; font-family:Arial, sans-serif; box-sizing:border-box;">
         <div style="border-bottom:2px solid #000; padding-bottom:6px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-            <div style="font-weight:bold; font-size:14px; flex-grow:1; text-align:center; padding-left:45px;">${meta.monthName || '-'} ${meta.year || ''}</div>
-            <div style="font-weight:bold; font-size:12px; border:1px solid #000; padding:2px 6px; border-radius:3px; background:#fff; white-space:nowrap;">WD: ${e.workDays || 0}</div>
+            <div style="font-weight:bold; font-size:16px; flex-grow:1; text-align:center; padding-left:45px;">${meta.monthName || '-'} ${meta.year || ''}</div>
+            <div style="font-weight:bold; font-size:13.5px; border:1.5px solid #000; padding:2px 8px; border-radius:3px; background:#fff; white-space:nowrap;">WD: ${e.workDays || 0}</div>
         </div>
-        <div style="margin-bottom:8px; font-size:12px; font-weight:bold;">
+        <div style="margin-bottom:8px; font-size:14.5px; font-weight:bold;">
             <strong>Employee:</strong> ${e.id}
         </div>
-        <table style="width:100%; border-collapse:collapse; font-size:11.5px; line-height:1.4;">
-            <tr><td>B S</td><td style="text-align:right; font-weight:bold;">${formatAccounting(e.basicSalary)}</td></tr>
-            <tr><td>Special</td><td style="text-align:right;">${e.special !== '' ? e.special : '-'}</td></tr>
-            <tr><td>OT</td><td style="text-align:right;">${formatAccounting(e.otAmount)}</td></tr>
-            <tr><td>Sunday</td><td style="text-align:right;">${formatAccounting(e.sundayAmount)}</td></tr>
-            <tr><td>Poya Day</td><td style="text-align:right;">${formatAccounting(e.poyaAmount)}</td></tr>
-            <tr><td>P01</td><td style="text-align:right;">${formatAccounting(e.p01Amount)}</td></tr>
-            <tr><td>P02</td><td style="text-align:right;">${formatAccounting(e.p02Amount)}</td></tr>
-            <tr><td>P03</td><td style="text-align:right;">${formatAccounting(e.p03Amount)}</td></tr>
-            <tr><td>SL Ad</td><td style="text-align:right;">${e.slAd !== '' ? e.slAd : '-'}</td></tr>
-            <tr><td style="color:#000;">No Pay</td><td style="text-align:right; color:#000;">- ${formatAccounting(e.noPayAmount)}</td></tr>
-            <tr><td style="color:#000;">Late</td><td style="text-align:right; color:#000;">- ${formatAccounting(e.lateAmount)}</td></tr>
+        <table style="width:100%; border-collapse:collapse; font-size:13.5px; line-height:1.45;">
+            <tr><td style="padding:2px 0;">B S</td><td style="text-align:right; font-weight:bold;">${formatAccounting(e.basicSalary)}</td></tr>
+            <tr><td style="padding:2px 0;">Special</td><td style="text-align:right;">${e.special !== '' ? e.special : '-'}</td></tr>
+            <tr><td style="padding:2px 0;">OT</td><td style="text-align:right;">${formatAccounting(e.otAmount)}</td></tr>
+            <tr><td style="padding:2px 0;">Sunday</td><td style="text-align:right;">${formatAccounting(e.sundayAmount)}</td></tr>
+            <tr><td style="padding:2px 0;">Poya Day</td><td style="text-align:right;">${formatAccounting(e.poyaAmount)}</td></tr>
+            <tr><td style="padding:2px 0;">P01</td><td style="text-align:right;">${formatAccounting(e.p01Amount)}</td></tr>
+            <tr><td style="padding:2px 0;">P02</td><td style="text-align:right;">${formatAccounting(e.p02Amount)}</td></tr>
+            <tr><td style="padding:2px 0;">P03</td><td style="text-align:right;">${formatAccounting(e.p03Amount)}</td></tr>
+            <tr><td style="padding:2px 0;">SL Ad</td><td style="text-align:right;">${e.slAd !== '' ? e.slAd : '-'}</td></tr>
+            <tr><td style="padding:2px 0; color:#000;">No Pay</td><td style="text-align:right; color:#000;">- ${formatAccounting(e.noPayAmount)}</td></tr>
+            <tr><td style="padding:2px 0; color:#000;">Late</td><td style="text-align:right; color:#000;">- ${formatAccounting(e.lateAmount)}</td></tr>
         </table>
-        <div style="display:flex; justify-content:space-between; border-top:2px solid #000; margin-top:8px; padding-top:6px; font-size:13.5px; font-weight:bold; color:#000;">
+        <div style="display:flex; justify-content:space-between; border-top:2px solid #000; margin-top:8px; padding-top:6px; font-size:15.5px; font-weight:bold; color:#000;">
             <span>Net Salary</span>
             <span>Rs ${formatAccounting(e.netSalary)}</span>
         </div>
@@ -3828,7 +3820,7 @@ function renderPaySheet() {
     group2Data.forEach(e => {
         let opt = document.createElement('option');
         opt.value = e.id;
-        opt.textContent = `${e.id} - ${e.name}`;
+        opt.textContent = `EMP ID: ${e.id}`;
         g2Select.appendChild(opt);
     });
     if (prevG2 && (prevG2 === 'ALL' || group2Data.some(e => String(e.id) === String(prevG2)))) g2Select.value = prevG2;
@@ -3853,7 +3845,7 @@ async function renderPaySlipToCanvas(htmlString, widthPx) {
     return canvas;
 }
 
-// ----------------- FULL PAGE A4 PDF DOWNLOAD (TIGHT 5mm MARGINS, 4 SLIPS PER PAGE) -----------------
+// ----------------- FULL PAGE A4 PDF DOWNLOAD (G1 = 4 PER PAGE, G2 = 6 PER PAGE) -----------------
 async function downloadPaySheetPDF(groupNum) {
     let selectId = groupNum === 1 ? 'paySheetG1Select' : 'paySheetG2Select';
     let btnId = groupNum === 1 ? 'paySheetG1PdfBtn' : 'paySheetG2PdfBtn';
@@ -3880,9 +3872,10 @@ async function downloadPaySheetPDF(groupNum) {
     let meta = getPaySheetMeta();
     let buildFn = groupNum === 1 ? buildPaySlipGroup1Html : buildPaySlipCardHtmlForPDF;
     
-    let perPage = 4;
+    // Group 1: 4 Slips (2x2 Grid) | Group 2: 6 Slips (2x3 Grid)
+    let perPage = groupNum === 1 ? 4 : 6;
     let columns = 2;
-    let rows = 2;
+    let rows = groupNum === 1 ? 2 : 3;
 
     let originalBtnText = btn.innerHTML;
     btn.disabled = true;
@@ -3893,11 +3886,11 @@ async function downloadPaySheetPDF(groupNum) {
         let doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         let pageWidth = 210, pageHeight = 297;
         
-        let marginX = 5, marginY = 5, gap = 4;
+        let marginX = 5, marginY = 5, gapX = 4, gapY = 4;
 
         if (val === 'ALL') {
-            let cellWidth = (pageWidth - (marginX * 2) - gap) / columns;
-            let cellHeight = (pageHeight - (marginY * 2) - gap) / rows;
+            let cellWidth = (pageWidth - (marginX * 2) - gapX) / columns;
+            let cellHeight = (pageHeight - (marginY * 2) - (gapY * (rows - 1))) / rows;
 
             for (let i = 0; i < data.length; i++) {
                 let e = data[i];
@@ -3909,8 +3902,8 @@ async function downloadPaySheetPDF(groupNum) {
 
                 let col = posInPage % columns;
                 let row = Math.floor(posInPage / columns);
-                let x = marginX + col * (cellWidth + gap);
-                let y = marginY + row * (cellHeight + gap);
+                let x = marginX + col * (cellWidth + gapX);
+                let y = marginY + row * (cellHeight + gapY);
 
                 let imgRatio = canvas.width / canvas.height;
                 let cellRatio = cellWidth / cellHeight;
@@ -3952,7 +3945,12 @@ async function downloadPaySheetPDF(groupNum) {
             let y = marginY + (availHeight - drawHeight) / 2;
 
             doc.addImage(imgData, 'PNG', x, y, drawWidth, drawHeight);
-            doc.save(`Group_${groupNum}_PaySheet_${e.id}_${groupNum === 1 ? e.name : ''}.pdf`);
+            
+            // Group 2 fileName strictly without employee name
+            let fileName = groupNum === 1 
+                ? `Group_1_PaySheet_${e.id}_${e.name}.pdf` 
+                : `Group_2_PaySheet_EMP_${e.id}.pdf`;
+            doc.save(fileName);
         }
     } catch (err) {
         alert('❌ PDF Generate කිරීමේදී දෝෂයක් ඇති විය: ' + err.message);
@@ -3987,14 +3985,15 @@ function downloadPaySheetWord(groupNum) {
     let meta = getPaySheetMeta();
     let targetEmployees = (val === 'ALL') ? data : data.filter(d => String(d.id) === String(val));
     let buildFn = groupNum === 1 ? buildPaySlipGroup1Html : buildPaySlipCardHtmlForPDF;
+    let slipsPerPage = groupNum === 1 ? 4 : 6;
 
     let slipsHtml = '';
     targetEmployees.forEach((emp, idx) => {
         slipsHtml += `
-            <div style="margin-bottom: 25px; page-break-inside: avoid;">
+            <div style="margin-bottom: 20px; page-break-inside: avoid;">
                 ${buildFn(emp, meta)}
             </div>
-            ${(idx + 1) % 4 === 0 ? '<br style="page-break-after:always;">' : ''}
+            ${(idx + 1) % slipsPerPage === 0 ? '<br style="page-break-after:always;">' : ''}
         `;
     });
 
@@ -4023,7 +4022,10 @@ function downloadPaySheetWord(groupNum) {
     let url = URL.createObjectURL(blob);
     let a = document.createElement('a');
     a.href = url;
-    a.download = `Group_${groupNum}_PaySheet_${val === 'ALL' ? 'All_Employees' : val}.doc`;
+    let fileName = val === 'ALL' 
+        ? `Group_${groupNum}_PaySheet_All_Employees.doc` 
+        : (groupNum === 1 ? `Group_1_PaySheet_${val}.doc` : `Group_2_PaySheet_EMP_${val}.doc`);
+    a.download = fileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -4083,6 +4085,7 @@ function downloadPaySheetExcel(groupNum) {
             excelRows.push(['EPF -12%', e.epf12, '', '']);
             excelRows.push(['ETF - 3%', e.etf3, '', '']);
         } else {
+            // Group 2 shows strictly Employee ID and WD, omitting employee name as conditioned
             excelRows.push(['Employee:', e.id, '', '', '', 'WD:', e.workDays || 0]);
             excelRows.push(['Item Description', 'Amount (Rs.)']);
             excelRows.push(['B S', e.basicSalary]);
@@ -4106,7 +4109,10 @@ function downloadPaySheetExcel(groupNum) {
     let ws = XLSX.utils.aoa_to_sheet(excelRows);
     let wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, `Group_${groupNum}_PaySheet`);
-    XLSX.writeFile(wb, `Group_${groupNum}_PaySheet_${val === 'ALL' ? 'All_Employees' : val}.xlsx`);
+    let fileName = val === 'ALL' 
+        ? `Group_${groupNum}_PaySheet_All_Employees.xlsx` 
+        : (groupNum === 1 ? `Group_1_PaySheet_${val}.xlsx` : `Group_2_PaySheet_EMP_${val}.xlsx`);
+    XLSX.writeFile(wb, fileName);
 }
 
 function updateEpfNic(empId, val) {
@@ -4363,7 +4369,7 @@ function buildOfficialCFormPageHtml(pageIndex, totalPages, pageRows, sums, meta)
                         </div>
                         <div style="text-align:right; font-size:9.5px; line-height:1.3;">
                             වාර්තාව | 1958 අංක 15 දරණ සේ.අ.අ පනත<br>
-                            படிவம் | ஊ. சே. நி. 1958 15ம் பிரிவின்படி<br>
+                            படிவம் | ஊ. சே. நி. 1958 15ம் privinpadi<br>
                             FORM | EPF Act No. 15 of 1958
                         </div>
                     </div>
