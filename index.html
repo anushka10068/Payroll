@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     
-    <!-- SheetJS Library for reading Excel files -->
+    <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
@@ -176,9 +176,7 @@
             margin-top: 10px;
             transition: background 0.2s;
         }
-        .auth-btn:hover {
-            background: var(--primary-hover);
-        }
+        .auth-btn:hover { background: var(--primary-hover); }
         .auth-error {
             color: var(--danger);
             font-size: 12px;
@@ -296,15 +294,8 @@
             transition: all 0.2s ease;
             white-space: nowrap;
         }
-        .tab-btn:hover:not(.active) { 
-            color: var(--text-main); 
-            background: rgba(255, 255, 255, 0.7); 
-        }
-        .tab-btn.active { 
-            background: var(--surface); 
-            color: var(--primary); 
-            box-shadow: var(--shadow-sm); 
-        }
+        .tab-btn:hover:not(.active) { color: var(--text-main); background: rgba(255, 255, 255, 0.7); }
+        .tab-btn.active { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-sm); }
 
         .sub-tab-container {
             display: flex;
@@ -326,15 +317,8 @@
             transition: all 0.2s ease;
             white-space: nowrap;
         }
-        .sub-tab-btn:hover {
-            background: #e2e8f0;
-            color: #0f172a;
-        }
-        .sub-tab-btn.active {
-            background: var(--primary);
-            color: #ffffff;
-            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
-        }
+        .sub-tab-btn:hover { background: #e2e8f0; color: #0f172a; }
+        .sub-tab-btn.active { background: var(--primary); color: #ffffff; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25); }
 
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.25s ease-out; }
@@ -370,9 +354,7 @@
             font-weight: 700; 
             border-bottom: 2px solid var(--border);
         }
-        .data-table tbody tr:hover {
-            background-color: #f8fafc;
-        }
+        .data-table tbody tr:hover { background-color: #f8fafc; }
 
         .master-table {
             border-collapse: separate;
@@ -399,12 +381,8 @@
             border-bottom: 1px solid #e2e8f0;
             border-right: 1px solid #f1f5f9;
         }
-        .master-table tbody tr:nth-child(even) {
-            background-color: #fafbfc;
-        }
-        .master-table tbody tr:hover {
-            background-color: #eef2ff !important;
-        }
+        .master-table tbody tr:nth-child(even) { background-color: #fafbfc; }
+        .master-table tbody tr:hover { background-color: #eef2ff !important; }
 
         .btn-action { 
             padding: 8px 16px; 
@@ -419,14 +397,8 @@
             gap: 6px;
             box-shadow: var(--shadow-xs);
         }
-        .btn-action:hover { 
-            transform: translateY(-1.5px); 
-            box-shadow: var(--shadow-sm);
-            filter: brightness(1.05);
-        }
-        .btn-action:active {
-            transform: translateY(0);
-        }
+        .btn-action:hover { transform: translateY(-1.5px); box-shadow: var(--shadow-sm); filter: brightness(1.05); }
+        .btn-action:active { transform: translateY(0); }
         .btn-save { background: var(--success); color: white; }
         .btn-save:hover { background: var(--success-hover); }
         .btn-submit { 
@@ -445,11 +417,7 @@
             box-shadow: var(--shadow-md);
             letter-spacing: 0.3px;
         }
-        .btn-submit:hover { 
-            filter: brightness(1.08); 
-            transform: translateY(-2px); 
-            box-shadow: var(--shadow-lg);
-        }
+        .btn-submit:hover { filter: brightness(1.08); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 
         .badge { 
             padding: 4px 8px; 
@@ -477,9 +445,7 @@
             line-height: 1.6; 
             color: #1e1b4b;
             box-shadow: var(--shadow-xs);
-            border-top: 1px solid rgba(226, 232, 240, 0.6);
-            border-right: 1px solid rgba(226, 232, 240, 0.6);
-            border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+            border: 1px solid rgba(226, 232, 240, 0.6);
         }
         .selection-box { 
             background: #ffffff; 
@@ -539,10 +505,7 @@
             outline: none;
             transition: all 0.2s ease;
         }
-        .filter-box select:focus, .filter-box input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-focus);
-        }
+        .filter-box select:focus, .filter-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-focus); }
         .time-missing { color: var(--danger); font-weight: bold; background-color: #fff1f2; }
         
         .input-cell { 
@@ -558,21 +521,9 @@
             transition: all 0.2s ease;
             box-sizing: border-box;
         }
-        .input-cell:focus {
-            border-color: var(--primary);
-            background-color: #ffffff;
-            box-shadow: 0 0 0 3px var(--primary-focus);
-        }
-        .input-num-cell {
-            text-align: right;
-            font-family: 'JetBrains Mono', monospace;
-            letter-spacing: -0.2px;
-        }
-        .input-stat-cell {
-            background-color: #f8fafc;
-            color: #3730a3;
-            border-color: #c7d2fe;
-        }
+        .input-cell:focus { border-color: var(--primary); background-color: #ffffff; box-shadow: 0 0 0 3px var(--primary-focus); }
+        .input-num-cell { text-align: right; font-family: 'JetBrains Mono', monospace; letter-spacing: -0.2px; }
+        .input-stat-cell { background-color: #f8fafc; color: #3730a3; border-color: #c7d2fe; }
         .time-picker-wrapper {
             display: inline-flex;
             align-items: center;
@@ -595,9 +546,7 @@
             cursor: pointer;
             font-family: 'JetBrains Mono', monospace;
         }
-        .time-select:focus {
-            border-color: var(--primary);
-        }
+        .time-select:focus { border-color: var(--primary); }
         .time-clear-btn {
             background: #fee2e2;
             color: #be123c;
@@ -609,25 +558,12 @@
             cursor: pointer;
             transition: all 0.15s ease;
         }
-        .time-clear-btn:hover {
-            background: var(--danger);
-            color: #fff;
-        }
+        .time-clear-btn:hover { background: var(--danger); color: #fff; }
 
-        .manual-row-completed {
-            background-color: #ecfdf5 !important;
-            transition: background-color 0.2s ease;
-        }
-        .manual-row-completed td {
-            border-bottom: 1px solid #a7f3d0 !important;
-        }
-        .manual-row-completed:hover {
-            background-color: #d1fae5 !important;
-        }
-        .manual-row-completed .time-picker-wrapper {
-            background: #ffffff;
-            border-color: #6ee7b7;
-        }
+        .manual-row-completed { background-color: #ecfdf5 !important; transition: background-color 0.2s ease; }
+        .manual-row-completed td { border-bottom: 1px solid #a7f3d0 !important; }
+        .manual-row-completed:hover { background-color: #d1fae5 !important; }
+        .manual-row-completed .time-picker-wrapper { background: #ffffff; border-color: #6ee7b7; }
 
         .metric-card {
             background: #ffffff; 
@@ -640,10 +576,7 @@
             overflow: hidden;
             transition: all 0.2s ease;
         }
-        .metric-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
+        .metric-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
         .metric-card-title {
             font-size: 12px; 
             color: var(--text-muted); 
@@ -659,7 +592,6 @@
             font-family: 'JetBrains Mono', sans-serif;
         }
 
-        /* Rules Dialog / Modal Elements */
         .rule-form-group {
             background: #f8fafc;
             border: 1px solid var(--border);
@@ -705,7 +637,7 @@
             <input type="password" id="authPassword" placeholder="••••••••">
         </div>
 
-        <!-- Additional Registration Fields (Visible ONLY in Sign Up) -->
+        <!-- Additional Registration Fields -->
         <div id="signupExtraFields" style="display:none;">
             <div class="auth-field">
                 <label>User Full Name</label>
@@ -983,7 +915,7 @@
 
             <div id="manualEntryTab" class="tab-content">
                 <div class="summary-card" style="background:linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border-left:5px solid var(--success); color:#065f46;">
-                    <strong>✍️ Manually Add / Edit Group 2 Employee:</strong> Fingerprint සටහන් නොවන සේවකයින්ගේ විස්තර එක් කරන්න. In/Out Time Drop-down එකෙන් පැය (Hour) සහ මිනිත්තු (Minute) තෝරන්න. <strong>In Time සහ Out Time දෙකම ඇතුළත් කළ පසු එම පේළිය Light Green පැහැයෙන් ස්වයංක්‍රීයව වෙනස් වේ.</strong>
+                    <strong>✍️ Manually Add / Edit Group 2 Employee:</strong> Fingerprint සටහන් නොවන සේවකයින්ගේ විස්තර එක් කරන්න. In/Out Time Drop-down එකෙන් පැය සහ මිනිත්තු තෝරන්න. In Time සහ Out Time දෙකම ඇතුළත් කළ පසු පේළිය Light Green පැහැයට හැරේ.
                 </div>
 
                 <div class="filter-box" style="background:#ffffff; border:1px solid var(--border); box-shadow:var(--shadow-xs); gap:16px; align-items:flex-end;">
@@ -1013,7 +945,6 @@
                 <div id="manualEntryContainer" style="margin-top:20px;"></div>
             </div>
 
-            <!-- Adjusted Attendance Report Tab with Configuration Dialog Button -->
             <div id="adjReportCenter" class="tab-content">
                 <div class="filter-box" style="justify-content: space-between;">
                     <div style="display:flex; align-items:center; gap:10px;">
@@ -1100,7 +1031,7 @@
     <!-- TAB 3: SALARY REPORT CENTER -->
     <div id="salaryReportCenter" class="tab-content">
         <div class="summary-card">
-            <strong>💡 Salary Report Center:</strong> මෙම Report එක Excel එකක් Upload කර Report Generate කළ පසු Auto-Update වේ. (අදාළ මාසයේ එක දිනක් හෝ පැමිණි සේවකයින් පමණක් මෙහි ඇතුළත් වේ)
+            <strong>💡 Salary Report Center:</strong> මෙම Report එක Excel එකක් Upload කර Report Generate කළ පසු Auto-Update වේ.
         </div>
 
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:18px; margin: 26px 0;">
@@ -1146,7 +1077,7 @@
         <div id="srcEmployeeDetailContainer" style="margin-top:15px;"></div>
     </div>
 
-    <!-- TAB 4: PAY SHEET (With Enhanced PDF Margin Fix, Word, and Excel Downloads) -->
+    <!-- TAB 4: PAY SHEET (With Full Page 5mm Margins, Word & Excel Downloads) -->
     <div id="paySheet" class="tab-content">
         <h3 style="color:#0f172a; margin:15px 0 20px 0; font-size:19px; font-weight:800;">🧾 Pay Sheet</h3>
 
@@ -1174,7 +1105,7 @@
     <!-- TAB 5: EPF / ETF REPORT -->
     <div id="epfEtfReportTab" class="tab-content">
         <div class="summary-card" style="background:linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); border-left:5px solid #3b82f6; color:#1e3a8a;">
-            <strong>🏛️ EPF / ETF Official Compliance Center:</strong> මෙම Report එක Group 1 සේවකයින්ගේ වැටුප් දත්ත මත පදනම්ව ස්වයංක්‍රීයව ජනනය වේ. කිසිදු බාහිර අන්තර්ජාල script එකක් මත රඳා නොපවතින පරිදි, <strong>"🚀 Generate & Download Official Form C"</strong> බොත්තමෙන් නිල C-Form පෝරමය සෘජුවම බාගත (Direct Download) කරගත හැක.
+            <strong>🏛️ EPF / ETF Official Compliance Center:</strong> Group 1 සේවකයින්ගේ වැටුප් දත්ත මත පදනම්ව ස්වයංක්‍රීයව ජනනය වේ.
         </div>
 
         <div class="filter-box" style="justify-content: space-between;">
@@ -1209,7 +1140,6 @@ const firebaseConfig = {
   measurementId: "G-R51K6TT677"
 };
 
-// Initialize Firebase
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
@@ -1320,7 +1250,6 @@ function firebaseSignOut() {
     }
 }
 
-// Session Observer
 auth.onAuthStateChanged(async user => {
     let overlay = document.getElementById('authOverlay');
     let container = document.getElementById('mainContainer');
@@ -1381,13 +1310,12 @@ let companyProfile = { name: '', address: '', phone: '', epfNumber: '' };
 let epfNicData = {};
 let epfOverrides = {};
 
-// ===================== ATTENDANCE RULES CONFIGURATION =====================
 const DEFAULT_ATTENDANCE_RULES = {
-    earliestInMinutes: 450,       // 07:30 AM (450 mins)
-    inRoundInterval: 15,          // Next 15 mins round-up
-    outRoundInterval: 15,         // Previous 15 mins round-down
-    lunchThresholdMinutes: 240,   // If working minutes > 240 (4 hours)
-    lunchDeductionMinutes: 45     // Deduct 45 minutes
+    earliestInMinutes: 450,
+    inRoundInterval: 15,
+    outRoundInterval: 15,
+    lunchThresholdMinutes: 240,
+    lunchDeductionMinutes: 45
 };
 
 let attendanceRules = Object.assign({}, DEFAULT_ATTENDANCE_RULES);
@@ -1447,11 +1375,11 @@ function saveAttendanceRules() {
     closeRulesModal();
 
     recalcAllAdjustedTimes();
-    alert('✅ පැමිණීමේ නීති (Attendance Rules) සාර්ථකව Save කර සියලුම වාර්තා Update කරන ලදී!');
+    alert('✅ පැමිණීමේ නීති සාර්ථකව Save විය!');
 }
 
 function resetAttendanceRulesToDefault() {
-    let proceed = confirm('ඔබට සියලුම Attendance Adjustment Rules නැවතත් Default තත්ත්වයට (07:30 AM, 15 Mins Rounding, 45 Mins Lunch) පත් කිරීමට අවශ්‍යද?');
+    let proceed = confirm('සියලුම Attendance Adjustment Rules නැවතත් Default තත්ත්වයට පත් කිරීමට අවශ්‍යද?');
     if (!proceed) return;
 
     attendanceRules = Object.assign({}, DEFAULT_ATTENDANCE_RULES);
@@ -1662,7 +1590,7 @@ function gatherBackupData() {
 }
 
 async function saveEncryptedBackup() {
-    let proceed = confirm('ඔබට මෙම System එකේ ඒ මොහොතේ තිබෙන සියලුම දත්ත Encrypted File එකක් ලෙස Save කිරීමට අවශ්‍යද?');
+    let proceed = confirm('සියලුම දත්ත Encrypted File එකක් ලෙස Save කිරීමට අවශ්‍යද?');
     if (!proceed) return;
 
     let password = prompt('File එක Encrypt කිරීමට Password එකක් ඇතුළත් කරන්න:');
@@ -1686,7 +1614,7 @@ async function saveEncryptedBackup() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        alert('✅ ඒ මොහොතේ තිබූ සම්පූර්ණ දත්ත Backup File එකක් ලෙස සාර්ථකව Encrypt කර Save කරන ලදී.');
+        alert('✅ සම්පූර්ණ දත්ත Backup File එකක් ලෙස සාර්ථකව Save කරන ලදී.');
     } catch (e) {
         alert('❌ දෝෂයක් ඇති විය: ' + e.message);
     }
@@ -1700,7 +1628,7 @@ function handleRestoreFileSelect(event) {
 }
 
 async function restoreEncryptedBackup(file) {
-    let password = prompt('මෙම Backup File එක Decrypt කිරීමට Password එක ඇතුළත් කරන්න:');
+    let password = prompt('Backup File එක Decrypt කිරීමට Password එක ඇතුළත් කරන්න:');
     if (!password) return;
 
     try {
@@ -1710,7 +1638,7 @@ async function restoreEncryptedBackup(file) {
 
         if (!parsed || !parsed.data) throw new Error('Invalid backup file format');
 
-        let proceed = confirm('Decryption සාර්ථකයි. මෙම Backup එකේ තිබූ සියලුම Data සහ Reports නැවත Load කිරීමට අවශ්‍යද?');
+        let proceed = confirm('දත්ත Restore කිරීමට අවශ්‍යද?');
         if (!proceed) return;
 
         Object.keys(parsed.data).forEach(k => {
@@ -1723,7 +1651,7 @@ async function restoreEncryptedBackup(file) {
             sessionStorage.removeItem(SESSION_RESTORE_KEY);
         }
 
-        alert('✅ Backup File එක සාර්ථකව Restore කරන ලදී! Page එක Reload වේ.');
+        alert('✅ Backup File එක Restore විය! Page එක Reload වේ.');
         window.location.reload();
     } catch (e) {
         alert('❌ Decrypt කිරීමට නොහැකි විය. Password එක වැරදිදැයි බලන්න.');
@@ -1854,7 +1782,7 @@ function validatePoyaSunday(inputElem) {
     if (!inputElem.value) return;
     let selectedDate = new Date(inputElem.value + "T00:00:00");
     if (selectedDate.getDay() === 0) {
-        alert("⚠️ ඔබ තෝරාගත් දිනය ඉරිදා දිනයකි!\n\nඉරිදා දින Holidays ලෙස ගණනය වන බැවින්, පෝය දිනය ලෙස ඉරිදා නොවන දිනයක් තෝරන්න.");
+        alert("⚠️ ඔබ තෝරාගත් දිනය ඉරිදා දිනයකි!\n\nපෝය දිනය ලෙස ඉරිදා නොවන දිනයක් තෝරන්න.");
         inputElem.value = "";
     }
 }
@@ -1909,7 +1837,6 @@ function minutesToRaw24Hour(totalMinutes) {
     return `${pad(hours)}:${pad(minutes)}:00`;
 }
 
-// Configurable Dynamic Adjustment Functions
 function getAdjInMinutes(rawMinutes) {
     if (rawMinutes === null) return null;
     let earliest = attendanceRules.earliestInMinutes;
@@ -2233,17 +2160,17 @@ function loadManualAttendanceTable() {
     let empDept = deptInput.value.trim() || 'Manual';
 
     if (!empId) {
-        alert('කරුණාකර වලංගු Temporary EMP ID (Letters හෝ Numbers) එකක් ඇතුළත් කරන්න.');
+        alert('වලංගු Temporary EMP ID එකක් ඇතුළත් කරන්න.');
         return;
     }
     if (!empName) {
-        alert('කරුණාකර සේවකයාගේ නම ඇතුළත් කරන්න.');
+        alert('සේවකයාගේ නම ඇතුළත් කරන්න.');
         return;
     }
 
     let numCheck = parseInt(empId, 10);
     if (!isNaN(numCheck) && String(numCheck) === empId && numCheck >= 1 && numCheck <= 29) {
-        alert('FP ID 1 - 29 Group 1 ස්ථිර සේවකයින් සඳහා වෙන් කර ඇත. වෙනත් ID එකක් යොදන්න.');
+        alert('FP ID 1 - 29 Group 1 ස්ථිර සේවකයින් සඳහා වෙන් කර ඇත.');
         return;
     }
 
@@ -2518,7 +2445,7 @@ function saveManualEmployeeAttendance(escapedId, encName, encDept) {
     renderSelectionList();
     generateReport();
 
-    alert(`✅ සේවක ${empId} - ${empName} සාර්ථකව Group 2 වෙත එක් කර සියලුම Reports Update කරන ලදී!`);
+    alert(`✅ සේවක ${empId} - ${empName} සාර්ථකව Group 2 වෙත එක් කර Reports Update කරන ලදී!`);
 }
 
 function deleteManualEmployee(empId) {
@@ -2528,7 +2455,7 @@ function deleteManualEmployee(empId) {
         return;
     }
 
-    let proceed = confirm(`ඔබට EMP ID: ${empId} (${emp.name}) සේවකයාගේ සියලුම දත්ත පද්ධතියෙන් සම්පූර්ණයෙන්ම Delete කර ඉවත් කිරීමට අවශ්‍යද?`);
+    let proceed = confirm(`ඔබට EMP ID: ${empId} (${emp.name}) සේවකයා පද්ධතියෙන් ඉවත් කිරීමට අවශ්‍යද?`);
     if (!proceed) return;
 
     delete masterProfiles[empId];
@@ -3648,6 +3575,7 @@ function formatSignedNumber(num) {
     return (num < 0 ? '-' : '') + Math.abs(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+// Group 2 Web Card HTML
 function buildPaySlipCardHtml(e, meta) {
     return `
     <div style="border:1px solid #cbd5e1; border-radius:var(--radius-lg); padding:20px; margin-bottom:20px; max-width:600px; background:#fff; box-shadow:var(--shadow-sm);">
@@ -3662,11 +3590,11 @@ function buildPaySlipCardHtml(e, meta) {
             </div>
         </div>
         <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:14px;">
-            <div><strong>Employee:</strong> ${e.id} - ${e.name}</div>
+            <div><strong>Employee:</strong> ${e.id}</div>
             <div><strong>Dept:</strong> ${e.dept}</div>
         </div>
         <table style="width:100%; border-collapse:collapse; font-size:13px;">
-            <tr><td>Basic Salary</td><td style="text-align:right;">${formatAccounting(e.basicSalary)}</td></tr>
+            <tr><td>B S</td><td style="text-align:right;">${formatAccounting(e.basicSalary)}</td></tr>
             <tr><td>Special</td><td style="text-align:right;">${e.special !== '' ? e.special : '-'}</td></tr>
             <tr><td>OT</td><td style="text-align:right;">${formatAccounting(e.otAmount)}</td></tr>
             <tr><td>Sunday</td><td style="text-align:right;">${formatAccounting(e.sundayAmount)}</td></tr>
@@ -3685,6 +3613,7 @@ function buildPaySlipCardHtml(e, meta) {
     </div>`;
 }
 
+// Group 2 Exact Condition: NO Name, Shows Employee ID only, Shows WD, Uses 'B S'
 function buildPaySlipCardHtmlForPDF(e, meta) {
     return `
     <div style="border:1.5px solid #000; border-radius:4px; padding:12px 14px; max-width:600px; background:#fff; font-family:Arial, sans-serif; box-sizing:border-box;">
@@ -3693,7 +3622,7 @@ function buildPaySlipCardHtmlForPDF(e, meta) {
             <div style="font-weight:bold; font-size:12px; border:1px solid #000; padding:2px 6px; border-radius:3px; background:#fff; white-space:nowrap;">WD: ${e.workDays || 0}</div>
         </div>
         <div style="margin-bottom:8px; font-size:12px; font-weight:bold;">
-            <strong>Employee:</strong> ${e.id} - ${e.name}
+            <strong>Employee:</strong> ${e.id}
         </div>
         <table style="width:100%; border-collapse:collapse; font-size:11.5px; line-height:1.4;">
             <tr><td>B S</td><td style="text-align:right; font-weight:bold;">${formatAccounting(e.basicSalary)}</td></tr>
@@ -3715,6 +3644,7 @@ function buildPaySlipCardHtmlForPDF(e, meta) {
     </div>`;
 }
 
+// Group 1 Pay Sheet Template
 function buildPaySlipGroup1Html(e, meta) {
     let allowance = 0;
     let specialNum = parseFloat(e.special) || 0;
@@ -3923,7 +3853,7 @@ async function renderPaySlipToCanvas(htmlString, widthPx) {
     return canvas;
 }
 
-// ----------------- FULL PAGE A4 PDF DOWNLOAD (TIGHT 5mm / 0.5cm MARGINS) -----------------
+// ----------------- FULL PAGE A4 PDF DOWNLOAD (TIGHT 5mm MARGINS, 4 SLIPS PER PAGE) -----------------
 async function downloadPaySheetPDF(groupNum) {
     let selectId = groupNum === 1 ? 'paySheetG1Select' : 'paySheetG2Select';
     let btnId = groupNum === 1 ? 'paySheetG1PdfBtn' : 'paySheetG2PdfBtn';
@@ -3950,7 +3880,6 @@ async function downloadPaySheetPDF(groupNum) {
     let meta = getPaySheetMeta();
     let buildFn = groupNum === 1 ? buildPaySlipGroup1Html : buildPaySlipCardHtmlForPDF;
     
-    // Per page exact 4 slips (2x2 Grid) for full A4 coverage
     let perPage = 4;
     let columns = 2;
     let rows = 2;
@@ -3964,12 +3893,11 @@ async function downloadPaySheetPDF(groupNum) {
         let doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         let pageWidth = 210, pageHeight = 297;
         
-        // 5mm Margins (~0.5cm) for full print coverage
         let marginX = 5, marginY = 5, gap = 4;
 
         if (val === 'ALL') {
-            let cellWidth = (pageWidth - (marginX * 2) - gap) / columns;   // ~98mm
-            let cellHeight = (pageHeight - (marginY * 2) - gap) / rows;   // ~141.5mm
+            let cellWidth = (pageWidth - (marginX * 2) - gap) / columns;
+            let cellHeight = (pageHeight - (marginY * 2) - gap) / rows;
 
             for (let i = 0; i < data.length; i++) {
                 let e = data[i];
@@ -3996,7 +3924,6 @@ async function downloadPaySheetPDF(groupNum) {
                     drawWidth = cellHeight * imgRatio;
                 }
                 
-                // Centering inside each quadrant
                 let offsetX = x + (cellWidth - drawWidth) / 2;
                 let offsetY = y + (cellHeight - drawHeight) / 2;
 
@@ -4025,7 +3952,7 @@ async function downloadPaySheetPDF(groupNum) {
             let y = marginY + (availHeight - drawHeight) / 2;
 
             doc.addImage(imgData, 'PNG', x, y, drawWidth, drawHeight);
-            doc.save(`Group_${groupNum}_PaySheet_${e.id}_${e.name}.pdf`);
+            doc.save(`Group_${groupNum}_PaySheet_${e.id}_${groupNum === 1 ? e.name : ''}.pdf`);
         }
     } catch (err) {
         alert('❌ PDF Generate කිරීමේදී දෝෂයක් ඇති විය: ' + err.message);
@@ -4059,7 +3986,7 @@ function downloadPaySheetWord(groupNum) {
 
     let meta = getPaySheetMeta();
     let targetEmployees = (val === 'ALL') ? data : data.filter(d => String(d.id) === String(val));
-    let buildFn = groupNum === 1 ? buildPaySlipGroup1Html : buildPaySlipCardHtml;
+    let buildFn = groupNum === 1 ? buildPaySlipGroup1Html : buildPaySlipCardHtmlForPDF;
 
     let slipsHtml = '';
     targetEmployees.forEach((emp, idx) => {
@@ -4076,21 +4003,10 @@ function downloadPaySheetWord(groupNum) {
         <head>
             <meta charset='utf-8'>
             <title>Pay Sheet</title>
-            <!--[if gte mso 9]>
-            <xml>
-                <w:WordDocument>
-                    <w:View>Print</w:View>
-                    <w:Zoom>100</w:Zoom>
-                    <w:DoNotOptimizeForBrowser/>
-                </w:WordDocument>
-            </xml>
-            <![endif]-->
             <style>
                 @page {
                     size: A4 portrait;
                     margin: 0.5in 0.5in 0.5in 0.5in;
-                    mso-header-margin: 0.2in;
-                    mso-footer-margin: 0.2in;
                 }
                 body {
                     font-family: Arial, sans-serif;
@@ -4114,7 +4030,7 @@ function downloadPaySheetWord(groupNum) {
     URL.revokeObjectURL(url);
 }
 
-// ----------------- EXCEL (.XLS) PAY SHEET DOWNLOAD FEATURE -----------------
+// ----------------- EXCEL (.XLSX) PAY SHEET DOWNLOAD FEATURE -----------------
 function downloadPaySheetExcel(groupNum) {
     let selectId = groupNum === 1 ? 'paySheetG1Select' : 'paySheetG2Select';
     let select = document.getElementById(selectId);
@@ -4140,31 +4056,47 @@ function downloadPaySheetExcel(groupNum) {
     let targetEmployees = (val === 'ALL') ? data : data.filter(d => String(d.id) === String(val));
 
     let excelRows = [];
-    excelRows.push([meta.companyName || 'Payroll System']);
+    if (groupNum === 1) {
+        excelRows.push([meta.companyName || 'Payroll System']);
+    }
     excelRows.push([`PAY SHEET — ${meta.monthName || '-'} ${meta.year || ''} (Group ${groupNum})`]);
     excelRows.push([]);
 
     targetEmployees.forEach((e) => {
-        excelRows.push(['FP ID:', e.id, 'Name:', e.name, 'Department:', e.dept, 'Worked Days (WD):', e.workDays || 0]);
-        excelRows.push(['Item Description', 'Earnings (Rs.)', 'Deductions (Rs.)', 'Notes']);
-        excelRows.push(['Basic Salary', e.basicSalary, '', '']);
-        excelRows.push(['Special', e.special !== '' ? e.special : 0, '', '']);
-        excelRows.push(['OT Amount', e.otAmount, '', '']);
-        excelRows.push(['Sunday Amount', e.sundayAmount, '', '']);
-        excelRows.push(['Poya Amount', e.poyaAmount, '', '']);
-        excelRows.push(['P01', e.p01Amount, '', '']);
-        excelRows.push(['P02', e.p02Amount, '', '']);
-        excelRows.push(['P03', e.p03Amount, '', '']);
-        excelRows.push(['No Pay', '', e.noPayAmount, '']);
-        excelRows.push(['Late', '', e.lateAmount, '']);
         if (groupNum === 1) {
-            excelRows.push(['EPF 8%', '', e.epf8, '']);
-        }
-        excelRows.push(['SL Ad', e.slAd !== '' ? e.slAd : 0, '', '']);
-        excelRows.push(['NET SALARY', e.netSalary, '', '']);
-        if (groupNum === 1) {
-            excelRows.push(['Employer EPF 12%', e.epf12, '', '']);
-            excelRows.push(['Employer ETF 3%', e.etf3, '', '']);
+            excelRows.push(['FP ID:', e.id, 'Name:', e.name, 'Department:', e.dept, 'Worked Days (WD):', e.workDays || 0]);
+            excelRows.push(['Item Description', 'Earnings (Rs.)', 'Deductions (Rs.)', 'Notes']);
+            excelRows.push(['BASIC SALARY', e.basicSalary, '', '']);
+            excelRows.push(['Special', e.special !== '' ? e.special : 0, '', '']);
+            excelRows.push(['OT', e.otAmount, '', '']);
+            excelRows.push(['ALLOWANCE', 0, '', '']);
+            excelRows.push(['NO PAY DEDUCTIONS', '', e.noPayAmount, '']);
+            excelRows.push(['Sunday', e.sundayAmount, '', '']);
+            excelRows.push(['Poya Day', e.poyaAmount, '', '']);
+            excelRows.push(['P01', e.p01Amount, '', '']);
+            excelRows.push(['P02', e.p02Amount, '', '']);
+            excelRows.push(['P03', e.p03Amount, '', '']);
+            excelRows.push(['EPF- 8%', '', e.epf8, '']);
+            excelRows.push(['SL Ad', e.slAd !== '' ? e.slAd : 0, '', '']);
+            excelRows.push(['Late', '', e.lateAmount, '']);
+            excelRows.push(['TOTAL NET SALARY', e.netSalary, '', '']);
+            excelRows.push(['EPF -12%', e.epf12, '', '']);
+            excelRows.push(['ETF - 3%', e.etf3, '', '']);
+        } else {
+            excelRows.push(['Employee:', e.id, '', '', '', 'WD:', e.workDays || 0]);
+            excelRows.push(['Item Description', 'Amount (Rs.)']);
+            excelRows.push(['B S', e.basicSalary]);
+            excelRows.push(['Special', e.special !== '' ? e.special : 0]);
+            excelRows.push(['OT', e.otAmount]);
+            excelRows.push(['Sunday', e.sundayAmount]);
+            excelRows.push(['Poya Day', e.poyaAmount]);
+            excelRows.push(['P01', e.p01Amount]);
+            excelRows.push(['P02', e.p02Amount]);
+            excelRows.push(['P03', e.p03Amount]);
+            excelRows.push(['SL Ad', e.slAd !== '' ? e.slAd : 0]);
+            excelRows.push(['No Pay', -e.noPayAmount]);
+            excelRows.push(['Late', -e.lateAmount]);
+            excelRows.push(['Net Salary', e.netSalary]);
         }
         excelRows.push([]);
         excelRows.push(['------------------------------------------------------------------------------------------------']);
@@ -4590,7 +4522,7 @@ async function generateOfficialCFormViaJsPDF() {
 
         let fileName = `EPF_Form_C_${monthYearCode}_Filled.pdf`;
         doc.save(fileName);
-        alert(`✅ Official C-Form PDF එක (${fileName}) සාර්ථකව Generate වී බාගත විය (Download).`);
+        alert(`✅ Official C-Form PDF එක (${fileName}) සාර්ථකව Download විය.`);
     } catch (err) {
         alert('❌ C-Form PDF සකස් කිරීමේදී දෝෂයක් ඇති විය: ' + err.message);
     } finally {
