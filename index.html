@@ -537,41 +537,6 @@
         .input-cell:focus { border-color: var(--primary); background-color: #ffffff; box-shadow: 0 0 0 3px var(--primary-focus); }
         .input-num-cell { text-align: right; font-family: 'JetBrains Mono', monospace; letter-spacing: -0.2px; }
         .input-stat-cell { background-color: #f8fafc; color: #3730a3; border-color: #c7d2fe; }
-        
-        .time-picker-wrapper {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            background: #f8fafc;
-            padding: 3px 5px;
-            border-radius: var(--radius-sm);
-            border: 1px solid #cbd5e1;
-        }
-        .time-select {
-            padding: 3px 4px;
-            border-radius: 4px;
-            border: 1px solid #cbd5e1;
-            font-size: 12px;
-            font-weight: 600;
-            color: #1e293b;
-            background: #fff;
-            outline: none;
-            cursor: pointer;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .time-clear-btn {
-            background: #fee2e2;
-            color: #be123c;
-            border: 1px solid #fca5a5;
-            border-radius: 4px;
-            padding: 2px 6px;
-            font-size: 10.5px;
-            font-weight: 800;
-            cursor: pointer;
-        }
-
-        .manual-row-completed { background-color: #ecfdf5 !important; }
-        .manual-row-completed td { border-bottom: 1px solid #a7f3d0 !important; }
 
         .metric-card {
             background: #ffffff; 
@@ -729,16 +694,20 @@
         </div>
     </div>
 
-    <!-- System Bar with Cloud Progress Status -->
+    <!-- System Bar with Both Cloud and Offline Encrypted Backup Vault -->
     <div class="system-bar">
         <div style="font-weight:700; font-size:13px; color:#1e293b; display:flex; align-items:center; gap:8px;">
-            <span style="font-size:16px;">☁️</span> <span>Cloud Database & Synchronization</span>
+            <span style="font-size:16px;">🔐</span> <span>System Backup & Cloud Sync Vault</span>
             <span id="cloudSyncStatus" style="font-size:11px; background:#dcfce7; color:#166534; padding:3px 8px; border-radius:12px; font-weight:700;">Synced</span>
         </div>
         <div class="system-bar-actions">
             <span id="currentUserDisplay" style="font-size:12px; font-weight:700; color:#3730a3; background:#eef2ff; padding:5px 10px; border-radius:6px; border:1px solid #c7d2fe;"></span>
             <button class="btn-action btn-cloud" onclick="saveMonthProgressToCloud()">☁️ Save Progress (Cloud)</button>
             <button class="btn-action" style="background:#7c3aed; color:white;" onclick="resumeMonthProgressFromCloud()">🔄 Resume Work (Cloud)</button>
+            <!-- Offline Encrypted Backup Controls Retained Exactly -->
+            <button class="btn-action" style="background:#4f46e5; color:white;" onclick="saveEncryptedBackup()">💾 Save Backup (.enc)</button>
+            <button class="btn-action" style="background:#0284c7; color:white;" onclick="document.getElementById('restoreFileInput').click()">📂 Load Backup (.enc)</button>
+            <input type="file" id="restoreFileInput" accept=".enc" style="display:none;" onchange="handleRestoreFileSelect(event)">
             <button class="btn-action" style="background:#dc2626; color:white;" onclick="firebaseSignOut()">🚪 Log Out</button>
         </div>
     </div>
@@ -777,7 +746,7 @@
     <div style="margin-bottom: 24px;">
         <div class="upload-area" onclick="document.getElementById('excelFile').click()">
             <h3>📁 Fingerprint Excel File එක මෙතැනට Upload කරන්න</h3>
-            <p>Excel File (.xlsx / .xls) එක Click කර තෝරන්න (හෝ කලින් Save කළ Work එක Resume කරන්න)</p>
+            <p>Excel File (.xlsx / .xls) එක Click කර තෝරන්න (හෝ Cloud එකෙන් කලින් Save කළ Work එක Resume කරන්න)</p>
             <input type="file" id="excelFile" accept=".xlsx, .xls" style="display:none;" onchange="processExcel(event)">
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
@@ -800,7 +769,7 @@
     <!-- TAB 1: MASTER EMPLOYEE PROFILES -->
     <div id="masterProfiles" class="tab-content active">
         <div class="summary-card">
-            <strong>💡 Master Employee Database (Cloud Firestore):</strong> මෙහි ඇති සේවක විස්තර Cloud එකේ ස්ථිරව සුරක්ෂිත වේ. Group 1 සේවකයින්ගේ EPF/ETF Salary Report Generate වන විට Auto-Calculate වේ. <strong>Manually එක් කළ Group 2 සේවකයින් පමණක් අවශ්‍ය විට Delete කළ හැක.</strong>
+            <strong>💡 Master Employee Database (Cloud Firestore & Backup):</strong> මෙහි ඇති සේවක විස්තර Cloud එකේ ස්ථිරව සුරක්ෂිත වේ. Group 1 සේවකයින්ගේ EPF/ETF Salary Report Generate වන විට Auto-Calculate වේ. <strong>Manually එක් කළ Group 2 සේවකයින් පමණක් අවශ්‍ය විට Delete කළ හැක.</strong>
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; margin-bottom:10px;">
@@ -1320,13 +1289,162 @@ function updateSyncIndicator(synced) {
     let el = document.getElementById('cloudSyncStatus');
     if (!el) return;
     if (synced) {
-        el.textContent = "Cloud Synced";
+        el.textContent = "Synced";
         el.style.background = "#dcfce7";
         el.style.color = "#166534";
     } else {
         el.textContent = "Saving...";
         el.style.background = "#fef3c7";
         el.style.color = "#b45309";
+    }
+}
+
+// ----------------- ENCRYPTED OFFLINE BACKUP & RESTORE -----------------
+const APP_BACKUP_KEYS = [
+    STORAGE_KEY, 'P01_SELECTED_EMPLOYEES', P01_CONFIG_KEY,
+    'P02_SELECTED_EMPLOYEES', P02_CONFIG_KEY, 'P03_SELECTED_EMPLOYEES', P03_CONFIG_KEY, SL_AD_KEY,
+    COMPANY_PROFILE_KEY, EPF_NIC_DATA_KEY, EPF_OVERRIDES_KEY, ATTENDANCE_RULES_KEY
+];
+
+async function deriveEncryptionKey(password, salt) {
+    let enc = new TextEncoder();
+    let keyMaterial = await crypto.subtle.importKey(
+        'raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveKey']
+    );
+    return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: salt, iterations: 150000, hash: 'SHA-256' },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+    );
+}
+
+async function encryptText(plaintext, password) {
+    let salt = crypto.getRandomValues(new Uint8Array(16));
+    let iv = crypto.getRandomValues(new Uint8Array(12));
+    let key = await deriveEncryptionKey(password, salt);
+    let enc = new TextEncoder();
+    let ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, enc.encode(plaintext));
+
+    let combined = new Uint8Array(salt.length + iv.length + ciphertext.byteLength);
+    combined.set(salt, 0);
+    combined.set(iv, salt.length);
+    combined.set(new Uint8Array(ciphertext), salt.length + iv.length);
+
+    let binary = '';
+    combined.forEach(b => binary += String.fromCharCode(b));
+    return btoa(binary);
+}
+
+async function decryptText(base64Data, password) {
+    let binary = atob(base64Data);
+    let combined = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) combined[i] = binary.charCodeAt(i);
+
+    let salt = combined.slice(0, 16);
+    let iv = combined.slice(16, 28);
+    let ciphertext = combined.slice(28);
+
+    let key = await deriveEncryptionKey(password, salt);
+    let decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ciphertext);
+    return new TextDecoder().decode(decrypted);
+}
+
+function gatherBackupData() {
+    let data = {};
+    APP_BACKUP_KEYS.forEach(k => {
+        let v = localStorage.getItem(k);
+        if (v !== null) data[k] = v;
+    });
+
+    let currentMonthData = {
+        currentUploadedData: currentUploadedData,
+        poyaDates: poyaDates,
+        poyaDate1: document.getElementById('poyaDate1') ? document.getElementById('poyaDate1').value : '',
+        poyaDate2: document.getElementById('poyaDate2') ? document.getElementById('poyaDate2').value : ''
+    };
+
+    return JSON.stringify({ 
+        app: 'Attendance & Payroll Management System', 
+        version: 3, 
+        savedAt: new Date().toISOString(), 
+        data: data,
+        currentMonthData: currentMonthData
+    });
+}
+
+async function saveEncryptedBackup() {
+    let proceed = confirm('සියලුම දත්ත Encrypted Backup File (.enc) එකක් ලෙස Save කිරීමට අවශ්‍යද?');
+    if (!proceed) return;
+
+    let password = prompt('File එක Encrypt කිරීමට Password එකක් ඇතුළත් කරන්න:');
+    if (!password) { alert('Password ලබා නොදුන් නිසා Save කිරීම නවත්වන ලදී.'); return; }
+
+    let confirmPassword = prompt('තහවුරු කිරීම සඳහා Password එක නැවත Type කරන්න:');
+    if (password !== confirmPassword) { alert('❌ Password දෙක නොගැලපේ.'); return; }
+
+    try {
+        let plaintext = gatherBackupData();
+        let encrypted = await encryptText(plaintext, password);
+
+        let blob = new Blob([encrypted], { type: 'text/plain' });
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        let dateStr = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = `Attendance_System_Backup_${dateStr}.enc`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        alert('✅ සම්පූර්ණ දත්ත Encrypted Backup File එකක් ලෙස සාර්ථකව Save කරන ලදී.');
+    } catch (e) {
+        alert('❌ දෝෂයක් ඇති විය: ' + e.message);
+    }
+}
+
+function handleRestoreFileSelect(event) {
+    let file = event.target.files[0];
+    event.target.value = '';
+    if (!file) return;
+    restoreEncryptedBackup(file);
+}
+
+async function restoreEncryptedBackup(file) {
+    let password = prompt('Backup File එක Decrypt කිරීමට Password එක ඇතුළත් කරන්න:');
+    if (!password) return;
+
+    try {
+        let cipherText = (await file.text()).trim();
+        let decryptedJson = await decryptText(cipherText, password);
+        let parsed = JSON.parse(decryptedJson);
+
+        if (!parsed || !parsed.data) throw new Error('Invalid backup file format');
+
+        let proceed = confirm('දත්ත Restore කිරීමට අවශ්‍යද?');
+        if (!proceed) return;
+
+        Object.keys(parsed.data).forEach(k => {
+            localStorage.setItem(k, parsed.data[k]);
+        });
+
+        await syncGlobalSettingsToCloud();
+
+        if (parsed.currentMonthData && parsed.currentMonthData.currentUploadedData) {
+            currentUploadedData = parsed.currentMonthData.currentUploadedData;
+            poyaDates = parsed.currentMonthData.poyaDates || [];
+            if (document.getElementById('poyaDate1')) document.getElementById('poyaDate1').value = parsed.currentMonthData.poyaDate1 || '';
+            if (document.getElementById('poyaDate2')) document.getElementById('poyaDate2').value = parsed.currentMonthData.poyaDate2 || '';
+            renderSelectionList();
+            generateReport();
+        }
+
+        alert('✅ Backup File එක සාර්ථකව Restore විය!');
+        window.location.reload();
+    } catch (e) {
+        alert('❌ Decrypt කිරීමට නොහැකි විය. Password එක වැරදිදැයි පරීක්ෂා කරන්න.');
     }
 }
 
@@ -1367,19 +1485,20 @@ async function loadGlobalSettingsFromCloud() {
             if (data.p02Config) p02Config = data.p02Config;
             if (data.p03Config) p03Config = data.p03Config;
             
-            // Backup to localStorage
             localStorage.setItem(STORAGE_KEY, JSON.stringify(masterProfiles));
             localStorage.setItem(COMPANY_PROFILE_KEY, JSON.stringify(companyProfile));
             localStorage.setItem(EPF_NIC_DATA_KEY, JSON.stringify(epfNicData));
             localStorage.setItem(EPF_OVERRIDES_KEY, JSON.stringify(epfOverrides));
             localStorage.setItem(ATTENDANCE_RULES_KEY, JSON.stringify(attendanceRules));
+        } else {
+            let saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) masterProfiles = JSON.parse(saved);
         }
     } catch (e) {
         console.error("Cloud load error:", e);
     }
 }
 
-// Save Month in Progress (Draft) to Cloud
 async function saveMonthProgressToCloud() {
     if (!currentUser) { alert('කරුණාකර පළමුව Log In වන්න.'); return; }
     if (!currentUploadedData || currentUploadedData.length === 0) {
@@ -1415,7 +1534,6 @@ async function saveMonthProgressToCloud() {
     }
 }
 
-// Resume in-progress work from Cloud
 async function resumeMonthProgressFromCloud() {
     if (!currentUser) { alert('කරුණාකර පළමුව Log In වන්න.'); return; }
     
@@ -1563,7 +1681,7 @@ function minutesToRaw24Hour(totalMinutes) {
     return `${pad(hours)}:${pad(minutes)}:00`;
 }
 
-// BUG FIX: remainder === 0 නම් අමතර interval එකතු නොකරයි
+// Fixed Round-up penalty bug
 function getAdjInMinutes(rawMinutes) {
     if (rawMinutes === null) return null;
     let earliest = attendanceRules.earliestInMinutes;
@@ -1607,7 +1725,7 @@ function calculateWorkingHours(inMinutes, outMinutes) {
     return `${pad(hrs)}:${pad(mins)}`;
 }
 
-// ----------------- EXCEL PROCESSING (BUG FIX: CLEANUP) -----------------
+// ----------------- EXCEL PROCESSING (CLEANED) -----------------
 function processExcel(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1788,7 +1906,7 @@ function saveMasterProfiles() {
     updateManualEmployeesDropdown();
 }
 
-// BUG FIX: Sorting function crash fix (a vs b)
+// Fixed Sorting crash issue
 function renderMasterProfilesTable() {
     let tbodyG1 = document.getElementById('masterProfileTbodyG1');
     let tbodyG2 = document.getElementById('masterProfileTbodyG2');
@@ -2786,7 +2904,7 @@ function saveManualEmployeeAttendance(escapedId, encName, encDept) {
     saveMasterProfiles();
     renderSelectionList();
     generateReport();
-    alert(`✅ सේවක ${empId} - ${empName} Group 2 වෙත සාර්ථකව එක් කරන ලදී!`);
+    alert(`✅ සේවක ${empId} - ${empName} Group 2 වෙත සාර්ථකව එක් කරන ලදී!`);
 }
 
 function deleteManualEmployee(empId) {
