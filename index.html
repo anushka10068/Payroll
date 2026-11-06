@@ -3417,24 +3417,30 @@ function buildSalaryReportRows(groupNum) {
 
     let headers = activeCols.map(c => c.header);
     let rows = data.map((emp, idx) => activeCols.map(c => c.getVal(emp, idx)));
+    let totalNetSalary = data.reduce((sum, e) => sum + (e.netSalary || 0), 0);
 
-    return { headers, rows };
+    return { headers, rows, totalNetSalary };
 }
 
 function downloadSalaryReportExcel(groupNum) {
-    let { headers, rows } = buildSalaryReportRows(groupNum);
+    let { headers, rows, totalNetSalary } = buildSalaryReportRows(groupNum);
     if (rows.length === 0) {
         alert('මෙම Group එක සඳහා සේවකයින් නොමැත.');
         return;
     }
-    let ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    let totalRow = new Array(headers.length).fill('');
+    let labelIdx = headers.indexOf('Employee Name') !== -1 ? headers.indexOf('Employee Name') : 0;
+    totalRow[labelIdx] = 'TOTAL';
+    totalRow[headers.length - 1] = formatAccounting(totalNetSalary);
+
+    let ws = XLSX.utils.aoa_to_sheet([headers, ...rows, totalRow]);
     let wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, `Group ${groupNum} Salary`);
     XLSX.writeFile(wb, `Group_${groupNum}_Salary_Report.xlsx`);
 }
 
 function downloadSalaryReportPDF(groupNum) {
-    let { headers, rows } = buildSalaryReportRows(groupNum);
+    let { headers, rows, totalNetSalary } = buildSalaryReportRows(groupNum);
     if (rows.length === 0) {
         alert('මෙම Group එක සඳහා සේවකයින් නොමැත.');
         return;
@@ -3442,6 +3448,12 @@ function downloadSalaryReportPDF(groupNum) {
 
     let pdfHeaders = [...headers, 'Signature'];
     let pdfRows = rows.map(r => [...r, '']);
+
+    let pdfFootRow = new Array(pdfHeaders.length).fill('');
+    let labelIdx = headers.indexOf('Employee Name') !== -1 ? headers.indexOf('Employee Name') : 0;
+    pdfFootRow[labelIdx] = 'TOTAL';
+    pdfFootRow[headers.length - 1] = formatAccounting(totalNetSalary);
+    pdfFootRow[pdfHeaders.length - 1] = '';
 
     let { jsPDF } = window.jspdf;
     let doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
@@ -3455,6 +3467,7 @@ function downloadSalaryReportPDF(groupNum) {
     doc.autoTable({
         head: [pdfHeaders],
         body: pdfRows,
+        foot: [pdfFootRow],
         startY: 42,
         theme: 'grid',
         styles: { 
@@ -3468,6 +3481,13 @@ function downloadSalaryReportPDF(groupNum) {
         headStyles: { 
             fillColor: [255, 255, 255], 
             textColor: [0, 0, 0], 
+            fontStyle: 'bold',
+            lineColor: [0, 0, 0],
+            lineWidth: 0.8
+        },
+        footStyles: {
+            fillColor: [241, 245, 249],
+            textColor: [0, 0, 0],
             fontStyle: 'bold',
             lineColor: [0, 0, 0],
             lineWidth: 0.8
