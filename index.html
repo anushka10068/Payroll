@@ -3402,6 +3402,7 @@ function buildSalaryReportRows(groupNum) {
     }
 
     colDefs.push(
+        { header: 'WD', getVal: (e) => e.workDays || 0, alwaysShow: true },
         { header: 'Absents (AB)', getVal: (e) => e.absentDays, checkActive: (e) => (e.absentDays || 0) !== 0 },
         { header: 'SL Ad', getVal: (e) => (e.slAd !== '' ? e.slAd : '-'), checkActive: (e) => e.slAd !== undefined && e.slAd !== '' && String(e.slAd).trim() !== '-' && parseFloat(e.slAd) !== 0 },
         { header: 'Net Salary', getVal: (e) => formatAccounting(e.netSalary), alwaysShow: true }
