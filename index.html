@@ -3409,10 +3409,7 @@ function buildSalaryReportRows(groupNum) {
 
     let activeCols = colDefs.filter(col => {
         if (col.alwaysShow) return true;
-        if (groupNum === 1) {
-            return data.some(emp => col.checkActive(emp));
-        }
-        return true;
+        return data.some(emp => col.checkActive(emp));
     });
 
     let headers = activeCols.map(c => c.header);
