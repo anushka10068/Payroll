@@ -2032,7 +2032,7 @@ function renderMasterProfilesTable() {
     tbodyG2.innerHTML = "";
 
     let sortedIds = Object.keys(masterProfiles).sort((a, b) => {
-        let numA = parseInt(a, 10), numB = parseInt(b.id, 10);
+        let numA = parseInt(a, 10), numB = parseInt(b, 10);
         if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
         return String(a.id).localeCompare(String(b.id));
     });
@@ -3370,37 +3370,53 @@ function buildSalaryReportRows(groupNum) {
         return String(a.id).localeCompare(String(b.id));
     });
 
-    let includeEpfEtf = groupNum === 1;
+    if (data.length === 0) {
+        return { headers: [], rows: [] };
+    }
 
-    let headers = ['#', 'FP ID', 'Employee Name', 'Basic Salary', 'Special', 'OT', 'Sunday', 'Poya Day', 'P01', 'P02', 'P03', 'No Pay', 'Late'];
-    if (includeEpfEtf) headers = headers.concat(['EPF Salary', 'EPF 8%', 'EPF 12%', 'ETF 3%']);
-    headers = headers.concat(['Absents (AB)', 'SL Ad', 'Net Salary']);
+    let includeEpfEtf = (groupNum === 1);
 
-    let rows = data.map((e, i) => {
-        let row = [
-            i + 1, e.id, e.name,
-            formatAccounting(e.basicSalary),
-            e.special !== '' ? e.special : '-',
-            formatAccounting(e.otAmount),
-            formatAccounting(e.sundayAmount),
-            formatAccounting(e.poyaAmount),
-            formatAccounting(e.p01Amount),
-            formatAccounting(e.p02Amount),
-            formatAccounting(e.p03Amount),
-            formatAccounting(e.noPayAmount),
-            formatAccounting(e.lateAmount)
-        ];
-        if (includeEpfEtf) {
-            row = row.concat([
-                formatAccounting(e.epfSalary),
-                formatAccounting(e.epf8),
-                formatAccounting(e.epf12),
-                formatAccounting(e.etf3)
-            ]);
+    let colDefs = [
+        { header: '#', getVal: (e, i) => i + 1, alwaysShow: true },
+        { header: 'FP ID', getVal: (e) => e.id, alwaysShow: true },
+        { header: 'Employee Name', getVal: (e) => e.name, alwaysShow: true },
+        { header: 'Basic Salary', getVal: (e) => formatAccounting(e.basicSalary), checkActive: (e) => (e.basicSalary || 0) !== 0 },
+        { header: 'Special', getVal: (e) => (e.special !== '' ? e.special : '-'), checkActive: (e) => e.special && String(e.special).trim() !== '' && String(e.special).trim() !== '-' },
+        { header: 'OT', getVal: (e) => formatAccounting(e.otAmount), checkActive: (e) => (e.otAmount || 0) !== 0 },
+        { header: 'Sunday', getVal: (e) => formatAccounting(e.sundayAmount), checkActive: (e) => (e.sundayAmount || 0) !== 0 },
+        { header: 'Poya Day', getVal: (e) => formatAccounting(e.poyaAmount), checkActive: (e) => (e.poyaAmount || 0) !== 0 },
+        { header: 'P01', getVal: (e) => formatAccounting(e.p01Amount), checkActive: (e) => (e.p01Amount || 0) !== 0 },
+        { header: 'P02', getVal: (e) => formatAccounting(e.p02Amount), checkActive: (e) => (e.p02Amount || 0) !== 0 },
+        { header: 'P03', getVal: (e) => formatAccounting(e.p03Amount), checkActive: (e) => (e.p03Amount || 0) !== 0 },
+        { header: 'No Pay', getVal: (e) => formatAccounting(e.noPayAmount), checkActive: (e) => (e.noPayAmount || 0) !== 0 },
+        { header: 'Late', getVal: (e) => formatAccounting(e.lateAmount), checkActive: (e) => (e.lateAmount || 0) !== 0 }
+    ];
+
+    if (includeEpfEtf) {
+        colDefs.push(
+            { header: 'EPF Salary', getVal: (e) => formatAccounting(e.epfSalary), checkActive: (e) => (e.epfSalary || 0) !== 0 },
+            { header: 'EPF 8%', getVal: (e) => formatAccounting(e.epf8), checkActive: (e) => (e.epf8 || 0) !== 0 },
+            { header: 'EPF 12%', getVal: (e) => formatAccounting(e.epf12), checkActive: (e) => (e.epf12 || 0) !== 0 },
+            { header: 'ETF 3%', getVal: (e) => formatAccounting(e.etf3), checkActive: (e) => (e.etf3 || 0) !== 0 }
+        );
+    }
+
+    colDefs.push(
+        { header: 'Absents (AB)', getVal: (e) => e.absentDays, checkActive: (e) => (e.absentDays || 0) !== 0 },
+        { header: 'SL Ad', getVal: (e) => (e.slAd !== '' ? e.slAd : '-'), checkActive: (e) => e.slAd !== undefined && e.slAd !== '' && String(e.slAd).trim() !== '-' && parseFloat(e.slAd) !== 0 },
+        { header: 'Net Salary', getVal: (e) => formatAccounting(e.netSalary), alwaysShow: true }
+    );
+
+    let activeCols = colDefs.filter(col => {
+        if (col.alwaysShow) return true;
+        if (groupNum === 1) {
+            return data.some(emp => col.checkActive(emp));
         }
-        row = row.concat([e.absentDays, e.slAd !== '' ? e.slAd : '-', formatAccounting(e.netSalary)]);
-        return row;
+        return true;
     });
+
+    let headers = activeCols.map(c => c.header);
+    let rows = data.map((emp, idx) => activeCols.map(c => c.getVal(emp, idx)));
 
     return { headers, rows };
 }
